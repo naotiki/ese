@@ -1,6 +1,12 @@
+var userName=""
 fun main(args: Array<String>) {
-    CommandManager.initialize(ListFile)
-    println("Hello World!")
+    print("あなたの名前は？:")
+    userName=readln().ifBlank {
+        "名無しさん"
+    }
+    "".isEmpty()
+    CommandManager.initialize(ListFile,Cat,Exit)
+    println("ようこそ$userName さん")
     while (true) {
         prompt()
     }
@@ -10,13 +16,16 @@ fun main(args: Array<String>) {
 }
 
 fun prompt() {
-    print(PathManager.getPath().value + " >")
-    val input = readln()
-    if (input.isBlank()) return
-    val cmd = CommandManager.resolve(input)
+    print("$userName:${LocationManager.getPath().value} >")
+    val input = readln().takeIf {
+        it.isNotBlank()
+    }?.split(" ")?:return
+    val cmd = CommandManager.tryResolve(input.first())
     if (cmd != null) {
-        cmd.execute()
+        cmd.execute(input.drop(1))
     } else {
-        println("そのようなコマンドはありません")
+        println("""
+            そのようなコマンドはありません。
+            help と入力するとヒントが得られるかも・・・？""".trimIndent())
     }
 }
