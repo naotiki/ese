@@ -32,25 +32,26 @@ object LocationManager {
 
 
     /**
-     * 渡された[path]を解決します
-     * @return 見つからなければnull
+     * 渡された[path]を解決し、[File]を返します
+     * @return [File],見つからなければnull
      * */
     fun tryResolve(path: Path): File? {
         val isAbsolute = path.value.startsWith("/")
         val isHomeDir = path.value.startsWith("~")
         val partialPath = path.value.trim('/').split("/")
-        return if (isAbsolute || isHomeDir) {
+        return  if (isAbsolute || isHomeDir) {
             if (partialPath.size==1) {
                 when{
-                    isAbsolute->root
-                    isHomeDir->FileManager.homeDir
-                    else->null
+                    partialPath.first()==""->return root
+                    isHomeDir->return FileManager.homeDir
                 }
-            }else partialPath.fold<String, File?>(if (isHomeDir) FileManager.homeDir else root) { dir, partial ->
+            }
+            partialPath.fold<String, File?>(if (isHomeDir) FileManager.homeDir else root) { dir, partial ->
                 (dir as? Directory)?.children?.get(partial)
             }
+
         } else {
-            partialPath.fold<String, File?>(currentDirectory) { dir, partial ->
+              partialPath.fold<String, File?>(currentDirectory) { dir, partial ->
                 (dir as? Directory)?.let {
                     when (partial) {
                         "." -> it
