@@ -11,8 +11,6 @@ object LocationManager {
     var currentPath: Path = currentDirectory.getFullPath()
         private set
 
-
-
     @JvmName("getterPath")
     fun getPath(): Path {
         return currentPath
@@ -40,9 +38,15 @@ object LocationManager {
     fun tryResolve(path: Path): File? {
         val isAbsolute = path.value.startsWith("/")
         val isHomeDir = path.value.startsWith("~")
-        val partialPath = path.value.split("/")
+        val partialPath = path.value.trim('/').split("/")
         return if (isAbsolute || isHomeDir) {
-            partialPath.fold<String, File?>(if (isHomeDir) FileManager.homeDir else root) { dir, partial ->
+            if (partialPath.size==1) {
+                when{
+                    isAbsolute->root
+                    isHomeDir->FileManager.homeDir
+                    else->null
+                }
+            }else partialPath.fold<String, File?>(if (isHomeDir) FileManager.homeDir else root) { dir, partial ->
                 (dir as? Directory)?.children?.get(partial)
             }
         } else {

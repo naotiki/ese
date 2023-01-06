@@ -5,8 +5,11 @@ fun main(args: Array<String>) {
         "名無しさん"
     }
     "".isEmpty()
-    CommandManager.initialize(ListFile,Cat,Exit)
-    println("ようこそ$userName さん")
+    CommandManager.initialize(ListFile,CD,Cat,Exit)
+    println("""
+        Hi! $userName
+        
+        """.trimIndent())
     while (true) {
         prompt()
     }
