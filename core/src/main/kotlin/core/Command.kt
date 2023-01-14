@@ -1,7 +1,12 @@
 package core
 
-abstract class Command(val name: String, val description: String = "") {
+import java.io.BufferedReader
+import java.io.PrintStream
 
+abstract class Command(val name: String, val description: String = "") {
+    val out get() = CommandManager.out!!
+    val reader get() = CommandManager.reader!!
+    val console get() = CommandManager.consoleImpl!!
     abstract fun execute(args: List<String>)
 }
 
@@ -23,7 +28,7 @@ object ListFile : Command(
 ) {
     override fun execute(args: List<String>) {
         LocationManager.currentDirectory.children.forEach { (fileName,_)->
-            println(fileName)
+            out.println(fileName)
         }
     }
 }
@@ -33,7 +38,7 @@ object CD : Command("cd") {
         val dir = args.firstOrNull()?.let { LocationManager.tryResolve(Path(it)) } as? Directory
         if (dir != null) {
             LocationManager.setPath(dir)
-        } else println("無効なディレクトリ")
+        } else out.println("無効なディレクトリ")
     }
 }
 
@@ -42,8 +47,8 @@ object Cat : Command("cat") {
     override fun execute(args: List<String>) {
         val txt = args.firstOrNull()?.let { LocationManager.tryResolve(Path(it)) } as? TextFile
         if (txt != null) {
-            println(txt.content)
-        } else println("無効なファイル")
+            out.println(txt.content)
+        } else out.println("無効なファイル")
 
     }
 }
@@ -58,18 +63,24 @@ object SugoiUserDo : Command("sudo") {
 class ExitException(message: String?) : Throwable(message = message)
 object Exit : Command("exit") {
     override fun execute(args: List<String>) {
-        println("終了します")
+        out.println("終了します")
         throw ExitException("ばいばーい")
     }
 }
 
 
-object CommandManager {
+internal object CommandManager {
     private val _commandList = mutableMapOf<String, Command>()
     val commandList get() = _commandList.toMap()
-    fun initialize(vararg cmd: Command) {
+    var out: PrintStream?=null
+    var reader:BufferedReader?=null
+    var consoleImpl:ConsoleInterface?=null
+    fun initialize(out: PrintStream, reader:BufferedReader,consoleImpl:ConsoleInterface, vararg cmd: Command) {
         _commandList.clear()
         _commandList.putAll(cmd.associateBy { it.name })
+        this.out=out
+        this.reader=reader
+        this.consoleImpl=consoleImpl
     }
 
     fun add(cmd: Command) {
