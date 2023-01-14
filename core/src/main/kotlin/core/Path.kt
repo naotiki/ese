@@ -1,6 +1,8 @@
+package core
+
 @JvmInline
 value class Path(val value: String) {
-    fun asAbsolute() {
+    fun asAbsolute(origin: Directory = LocationManager.currentDirectory) {
 
     }
 }
@@ -10,20 +12,12 @@ object LocationManager {
         private set
     var currentPath: Path = currentDirectory.getFullPath()
         private set
-
-    @JvmName("getterPath")
-    fun getPath(): Path {
-        return currentPath
-    }
-
-
     fun setPath(path: Path): Boolean {
         return (tryResolve(path) as? Directory)?.let {
             currentPath = path
             currentDirectory = it
         } != null
     }
-
     fun setPath(dir: Directory) {
         currentPath = dir.getFullPath()
         currentDirectory = dir

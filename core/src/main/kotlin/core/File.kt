@@ -1,3 +1,5 @@
+package core
+
 /**
  * 仮想的ファイルの抽象クラス
  * ディレクトリもファイルとする。
@@ -21,27 +23,29 @@ abstract class File(
     }
 }
 
+/**
+ * 表示可能な文字列を持つファイル
+ * @param [content] 内容
+ * */
 class TextFile(
     name: String, parent: Directory?, content: String
 ) : File(name, parent) {
      var content = content
          private set
-
 }
+
 
 
 open class Directory(name: String, parent: Directory?) : File(name, parent = parent) {
     protected open var _children: MutableMap<String, File> = mutableMapOf()
     val children get() = _children.toMap()
-
-
     fun addChildren(vararg childDir: File) {
         _children.putAll(childDir.associateBy { it.name })
     }
 }
 
 // 進捗状況に応じて中身が変わるディレクトリ
-class DynamicDirectory(name: String, parent: Directory?) :Directory(name, parent){
+class DynamicDirectory(name: String, parent: Directory?) : Directory(name, parent){
     init {
         EventManager.addEventListener {
 
@@ -52,25 +56,18 @@ class DynamicDirectory(name: String, parent: Directory?) :Directory(name, parent
         set(value) {}
 }
 
-object EventManager{
-    inline fun addEventListener(block:()->Unit){
-
-    }
-}
-
 
 //初期状態
 
 object FileManager {
     lateinit var homeDir: Directory
-
     init {
         rootDir {
-            dir("bin") {
+            dynDir("bin") {
 
             }
             dir("home") {
-                homeDir = dir(userName) {
+                homeDir = dir(userName!!) {
                     file(
                         "Readme.txt",
                         """
@@ -86,17 +83,43 @@ object FileManager {
 
 
 val root = Directory("", null)
+
+/**
+ * FileTreeDSLを開始します
+ * @param block [dir],[dynDir],[file]などを使用し[root]にファイルを追加します
+ */
 inline fun rootDir(block: Directory.() -> Unit) {
     root.block()
 }
 
-fun Directory.dir(name: String, block: Directory.() -> Unit): Directory {
+/**
+ * ディレクトリを追加します。
+ * @param name ディレクトリ名
+ * @param block ディレクトリの子を定義するFileTreeDSL
+ */
+inline fun Directory.dir(name: String, block: Directory.() -> Unit): Directory {
     return Directory(name, this).also {
         addChildren(it)
         it.block()
     }
 }
+/**
+ * 子が動的に変化するディレクトリを追加します。
+ * @param name ディレクトリ名
+ * @param block ディレクトリの子を定義するFileTreeDSL
+ */
+inline fun Directory.dynDir(name: String, block: Directory.() -> Unit): Directory {
+    return DynamicDirectory(name, this).also {
+        addChildren(it)
+        it.block()
+    }
+}
 
+/**
+ * テキストファイルを追加します。
+ * @param name ファイル名
+ * @param content ファイルの内容
+ */
 fun Directory.file(name: String, content: String) = addChildren(TextFile(name, this, content))
 
 

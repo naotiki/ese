@@ -1,5 +1,19 @@
-abstract class Command(val name: String, val description: String = TODO()) {
+package core
+
+abstract class Command(val name: String, val description: String = "") {
+
     abstract fun execute(args: List<String>)
+}
+
+class Args(args:List<Args>){
+
+    sealed class ArgType<T:Any>(translator:(kotlin.String)->T?){
+        object Int: ArgType<kotlin.Int>({it.toIntOrNull()})
+        object String: ArgType<kotlin.String>({it})
+        object Boolean: ArgType<kotlin.Boolean>({it.toBooleanStrictOrNull()})
+
+        class Define<T : Any>(translator: (kotlin.String) -> T?): ArgType<T>(translator)
+    }
 }
 
 object ListFile : Command(
@@ -8,26 +22,25 @@ object ListFile : Command(
 """.trimIndent()
 ) {
     override fun execute(args: List<String>) {
-        LocationManager.currentDirectory.children.keys.forEach {
-            println(it)
+        LocationManager.currentDirectory.children.forEach { (fileName,_)->
+            println(fileName)
         }
     }
 }
 
 object CD : Command("cd") {
     override fun execute(args: List<String>) {
-        val dir = LocationManager.tryResolve(Path(args.first())) as? Directory
+        val dir = args.firstOrNull()?.let { LocationManager.tryResolve(Path(it)) } as? Directory
         if (dir != null) {
-           LocationManager.setPath(dir)
+            LocationManager.setPath(dir)
         } else println("無効なディレクトリ")
-
     }
 }
 
-//ねこ
+//😼
 object Cat : Command("cat") {
     override fun execute(args: List<String>) {
-        val txt = LocationManager.tryResolve(Path(args.first())) as? TextFile
+        val txt = args.firstOrNull()?.let { LocationManager.tryResolve(Path(it)) } as? TextFile
         if (txt != null) {
             println(txt.content)
         } else println("無効なファイル")
@@ -35,10 +48,18 @@ object Cat : Command("cat") {
     }
 }
 
+
+object SugoiUserDo : Command("sudo") {
+    override fun execute(args: List<String>) {
+        args.firstOrNull()?.let { CommandManager.tryResolve(it)?.execute(args.drop(1)) }
+    }
+}
+
+class ExitException(message: String?) : Throwable(message = message)
 object Exit : Command("exit") {
     override fun execute(args: List<String>) {
         println("終了します")
-        throw Exception("ばいばい")
+        throw ExitException("ばいばーい")
     }
 }
 

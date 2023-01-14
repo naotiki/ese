@@ -1,3 +1,4 @@
 # プロジェクトの除外パス
-/.gradle/
-*/build/
+**/.gradle/
+**/build/
+
