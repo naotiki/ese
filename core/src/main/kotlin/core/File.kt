@@ -46,6 +46,9 @@ open class Directory(name: String, parent: Directory?) : File(name, parent = par
     fun addChildren(vararg childDir: File) {
         _children.putAll(childDir.associateBy { it.name })
     }
+    fun removeChild(childDir: File): Boolean {
+        return _children.remove(childDir.name)!=null
+    }
 }
 
 // 進捗状況に応じて中身が変わるディレクトリ
@@ -66,7 +69,7 @@ class DynamicDirectory(name: String, parent: Directory?) : Directory(name, paren
 object FileManager {
     lateinit var homeDir: Directory
     init {
-        listOf<String>("").joinToString()
+        listOf("").joinToString()
         rootDir {
             dynDir("bin") {
 
@@ -81,6 +84,20 @@ object FileManager {
                         """.trimIndent()
                     )
                 }
+                dir("naoki"){
+                    file("ひみつのファイル","""
+                        みるなよ
+                    """.trimIndent())
+                }
+            }
+            dir("usr"){
+
+            }
+            dir("sbin"){
+
+            }
+            dir("mnt"){
+
             }
         }
     }
