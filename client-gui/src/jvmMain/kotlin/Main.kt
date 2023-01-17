@@ -23,6 +23,7 @@ import androidx.compose.ui.window.application
 import core.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import kotlin.system.exitProcess
 
 /*val logStream: Flow<String> = flow {
     while (true) {
@@ -32,12 +33,13 @@ import kotlinx.coroutines.flow.*
         println(result)
     }
 }*/
-val logStream= reader.lineSequence().asFlow().flowOn(Dispatchers.IO)
+val logStream = reader.lineSequence().asFlow().flowOn(Dispatchers.IO)
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 @Preview
 fun App() {
+    var historyIndex by remember { mutableStateOf(-1) }
     val coroutine = rememberCoroutineScope()
     val prompt by rememberPrompt("", "")
     var textLogs by remember { mutableStateOf("") }
@@ -48,6 +50,10 @@ fun App() {
             initialize(object : ConsoleInterface {
                 override fun prompt(promptText: String, value: String) {
                     prompt.newPrompt(promptText, value)
+                }
+
+                override fun exit() {
+                    exitProcess(0)
                 }
             })
             println("End:Init")
@@ -65,7 +71,7 @@ fun App() {
                    coroutine.launch {
                        stateVertical.scrollTo(stateVertical.maxValue)
                    }
-                }.verticalScroll(stateVertical).padding(end = 5.dp),
+                }.verticalScroll(stateVertical).padding(5.dp),
                 verticalArrangement = Arrangement.spacedBy((-5).dp, Alignment.Top)
             ) {
                 SelectionContainer {
@@ -73,7 +79,7 @@ fun App() {
                         textLogs,
                         overflow = TextOverflow.Visible,
                         color = Color.White,
-                        fontSize = 25.sp,
+                        fontSize = 20.sp,
                         fontFamily = FontFamily.Monospace
                     )
                 }
@@ -81,7 +87,7 @@ fun App() {
                 BasicTextField(
                     prompt.textFieldValue,
                     onValueChange = {
-                        prompt.updateValue(it) { value, _ ->
+                        prompt.updateTextFieldValue(it) { value, _ ->
                             println("Debug:Updated $value")
                         }
                     },
@@ -89,18 +95,31 @@ fun App() {
                     TextStyle(
                         color = Color.White,
                         fontSize =
-                        25.sp,
+                        20.sp,
                         fontFamily = FontFamily.Monospace
                     ),
                     cursorBrush = SolidColor(Color.White),
                     modifier = Modifier.fillMaxWidth().onPreviewKeyEvent {
-                        return@onPreviewKeyEvent if (it.key == Key.Enter && it.type == KeyEventType.KeyUp && prompt.isEnable) {
-                            textLogs += prompt.textFieldValue.text + "\n"
+                        if (!prompt.isEnable) return@onPreviewKeyEvent false
+                        return@onPreviewKeyEvent if (it.key == Key.Enter && it.type == KeyEventType.KeyDown /*&& prompt
+                        .isEnable*/) {
+                            textLogs += prompt.textFieldValue.text+"\n"
                             consoleWriter.println(prompt.getValue())
                             prompt.reset()
+                            historyIndex=-1
                             true
-                        } else it.key == Key.Enter
+                        }else if ((it.key == Key.DirectionUp||it.key == Key.DirectionDown )&& it.type == KeyEventType.KeyDown ){
+                            historyIndex=when(it.key){
+                                Key.DirectionUp-> minOf(historyIndex+1, commandHistory.lastIndex)
+                                Key.DirectionDown-> maxOf(historyIndex-1,-1)
+                                else -> -1
+                            }
+                            commandHistory.getOrNull(historyIndex).let { s ->
+                                prompt.updateValue(s?:"")
+                            }
 
+                            true
+                        } else false
                     },
                 )
             }

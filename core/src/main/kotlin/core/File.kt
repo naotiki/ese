@@ -21,6 +21,10 @@ abstract class File(
         }
         return Path(path.reversed().joinToString("/", "/"))
     }
+
+    fun toDirectoryOrNull():Directory?{
+        return this as? Directory
+    }
 }
 
 /**
@@ -62,6 +66,7 @@ class DynamicDirectory(name: String, parent: Directory?) : Directory(name, paren
 object FileManager {
     lateinit var homeDir: Directory
     init {
+        listOf<String>("").joinToString()
         rootDir {
             dynDir("bin") {
 

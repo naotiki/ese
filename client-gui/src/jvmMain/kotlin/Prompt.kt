@@ -13,7 +13,7 @@ class Prompt(prompt: String, value: String) {
      * @param newValue 新しい[TextFieldValue]
      * @param onValueChanged [newValue]が有効で値が更新されたときに呼ばれる。
      */
-    fun updateValue(newValue: TextFieldValue, onValueChanged: ((value: String, prompt: String) -> Unit)? = null) {
+    fun updateTextFieldValue(newValue: TextFieldValue, onValueChanged: ((value: String, prompt: String) -> Unit)? = null) {
         if (newValue.text.startsWith(prompt)&&isEnable) {
             textFieldValue = newValue
             onValueChanged?.invoke(getValue(), prompt)
@@ -22,7 +22,11 @@ class Prompt(prompt: String, value: String) {
         }
     }
 
-    private var callback: ((String) -> Unit)? by mutableStateOf(null)
+    fun updateValue(newValue: String, onValueChanged: ((value: String, prompt: String) -> Unit)? = null) {
+        value = newValue
+        textFieldValue = textFieldValue.copy(text = prompt + value,selection = TextRange((prompt + value).length))
+    }
+
     fun newPrompt(promptText: String, defaultValue: String = ""/*onValue:(String)->Unit={}*/) {
         /*//Event消化
         callback?.invoke("")
