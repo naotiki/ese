@@ -1,8 +1,9 @@
 package core
 
 import core.commands.*
-import core.commands.CommandManager
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
@@ -24,13 +25,24 @@ suspend fun ConsoleInterface.newPrompt(promptText: String, value: String = ""): 
     return@withContext consoleReader.readLine()
 }
 
+var job: Job? = null
+const val version="1.0e-500"//1.0 × 10^-500
 suspend fun initialize(consoleInterface: ConsoleInterface) {
+    outputStream.println(
+        """
+        EseLinux Shell ver.$version
+        """.trimIndent()
+    )
     do {
         if (userName != null) outputStream.println("使用できる文字は0~9の数字とアルファベットと一部記号です")
         userName = consoleInterface.newPrompt("あなたの名前は？:")
     } while (userName.isNullOrBlank() || !userName.orEmpty().matches(Regex("[0-9A-z]+")))
     outputStream.println("Hello $userName")
-    CommandManager.initialize(outputStream, consoleReader, consoleInterface, ListFile, CD, Cat, Exit, SugoiUserDo)
+    CommandManager.initialize(
+        outputStream, consoleReader, consoleInterface,
+        ListFile, CD, Cat, Exit, SugoiUserDo,
+        Yes, Clear, Echo,Remove
+    )
     while (true/*TODO 終了機能*/) {
         val input = consoleInterface.newPrompt("$userName:${LocationManager.currentPath.value}>").ifBlank {
             null
@@ -39,7 +51,13 @@ suspend fun initialize(consoleInterface: ConsoleInterface) {
         val cmd = CommandManager.tryResolve(inputArgs.first())
         commandHistoryImpl.add(0, input)
         if (cmd != null) {
-            cmd.execute(inputArgs.drop(1))
+            withContext(Dispatchers.Default) {
+                job = launch {
+                    cmd.execute(inputArgs.drop(1))
+                }
+                job?.join()
+                job = null
+            }
         } else {
             outputStream.println(
                 """
@@ -55,6 +73,14 @@ suspend fun initialize(consoleInterface: ConsoleInterface) {
 private val commandHistoryImpl = mutableListOf<String>()
 val commandHistory get() = commandHistoryImpl.toList()
 
-object Variable{
-    val map= mutableMapOf<String,Any>()
+object Variable {
+    val map = mutableMapOf<String, Any>()
+}
+
+/**キャンセルされた場合は[true]*/
+fun cancelCommand(): Boolean {
+    job?.cancel() ?: return false
+
+    outputStream.println("Ctrl+Cによってキャンセルされました")
+    return true
 }

@@ -55,10 +55,13 @@ fun App() {
                 override fun exit() {
                     exitProcess(0)
                 }
+
+                override fun clear() {
+                    textLogs = ""
+                }
             })
             println("End:Init")
         }
-
         logStream.collect {
             textLogs += it + "\n"
             stateVertical.scrollTo(stateVertical.maxValue)
@@ -68,9 +71,9 @@ fun App() {
         Box(modifier = Modifier.fillMaxSize().background(Color.DarkGray)) {
             Column(
                 modifier = Modifier.fillMaxSize().onSizeChanged {
-                   coroutine.launch {
-                       stateVertical.scrollTo(stateVertical.maxValue)
-                   }
+                    coroutine.launch {
+                        stateVertical.scrollTo(stateVertical.maxValue)
+                    }
                 }.verticalScroll(stateVertical).padding(5.dp),
                 verticalArrangement = Arrangement.spacedBy((-5).dp, Alignment.Top)
             ) {
@@ -101,25 +104,25 @@ fun App() {
                     cursorBrush = SolidColor(Color.White),
                     modifier = Modifier.fillMaxWidth().onPreviewKeyEvent {
                         if (!prompt.isEnable) return@onPreviewKeyEvent false
+
                         return@onPreviewKeyEvent if (it.key == Key.Enter && it.type == KeyEventType.KeyDown /*&& prompt
                         .isEnable*/) {
-                            textLogs += prompt.textFieldValue.text+"\n"
+                            textLogs += prompt.textFieldValue.text + "\n"
                             consoleWriter.println(prompt.getValue())
                             prompt.reset()
-                            historyIndex=-1
+                            historyIndex = -1
                             true
-                        }else if ((it.key == Key.DirectionUp||it.key == Key.DirectionDown )&& it.type == KeyEventType.KeyDown ){
-                            historyIndex=when(it.key){
-                                Key.DirectionUp-> minOf(historyIndex+1, commandHistory.lastIndex)
-                                Key.DirectionDown-> maxOf(historyIndex-1,-1)
+                        } else if ((it.key == Key.DirectionUp || it.key == Key.DirectionDown) && it.type == KeyEventType.KeyDown) {
+                            historyIndex = when (it.key) {
+                                Key.DirectionUp -> minOf(historyIndex + 1, commandHistory.lastIndex)
+                                Key.DirectionDown -> maxOf(historyIndex - 1, -1)
                                 else -> -1
                             }
                             commandHistory.getOrNull(historyIndex).let { s ->
-                                prompt.updateValue(s?:"")
+                                prompt.updateValue(s ?: "")
                             }
-
                             true
-                        } else false
+                        }  else false
                     },
                 )
             }
@@ -133,8 +136,14 @@ fun App() {
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
-    Window(onCloseRequest = ::exitApplication, title = "Console") {
+    Window(onCloseRequest = ::exitApplication, title = "Console", onPreviewKeyEvent = {
+        return@Window if (it.key == Key.C && it.isCtrlPressed) {
+            cancelCommand()
+            true
+        }else false
+    }) {
         App()
     }
 }

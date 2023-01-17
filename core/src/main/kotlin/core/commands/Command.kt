@@ -1,6 +1,7 @@
 package core.commands
 
 import core.*
+import kotlinx.coroutines.delay
 import java.io.BufferedReader
 import java.io.PrintStream
 
@@ -16,7 +17,7 @@ abstract class Command<R>(val name: String, val description: String = "") {
         return this
     }
 
-    abstract fun execute(args: List<String>): R
+    abstract suspend fun execute(args: List<String>): R
 }
 
 class Args(val args: List<String>) {
@@ -41,7 +42,6 @@ sealed class ArgType<T : Any>(val translator: (kotlin.String) -> T?) {
     object Boolean : ArgType<kotlin.Boolean>(kotlin.String::toBooleanStrictOrNull)
 
 
-
     object File : ArgType<core.File>({
         LocationManager.tryResolve(Path(it))
     })
@@ -58,7 +58,7 @@ object ListFile : Command<Unit>(
     今いる場所のファイルを一覧表示します
 """.trimIndent()
 ) {
-    override fun execute(args: List<String>) {
+    override suspend fun execute(args: List<String>) {
         val a = Args(args)
         val b = a.getArg(ArgType.Dir, LocationManager.currentDirectory) ?: let {
             out.println("引数の形式が正しくありません。")
@@ -71,8 +71,26 @@ object ListFile : Command<Unit>(
     }
 }
 
+object Remove : Command<Unit>(
+    "rm", """
+    今いる場所のファイルを一覧表示します
+""".trimIndent()
+) {
+    override suspend fun execute(args: List<String>) {
+        val b = Args(args).getArg(ArgType.Dir, LocationManager.currentDirectory) ?: let {
+            out.println("引数の形式が正しくありません。")
+            null
+        } ?: return
+        if(b.children.isEmpty()){
+            if(b.parent?.removeChild(b) == true){
+                out.println("${b.name}が削除されました")
+            }
+        }
+    }
+}
+
 object CD : Command<Unit>("cd") {
-    override fun execute(args: List<String>) {
+    override suspend fun execute(args: List<String>) {
         val dir = args.firstOrNull()?.let { LocationManager.tryResolve(Path(it)) } as? Directory
         if (dir != null) {
             LocationManager.setPath(dir)
@@ -80,9 +98,22 @@ object CD : Command<Unit>("cd") {
     }
 }
 
+object Yes : Command<Unit>("yes") {
+    override suspend fun execute(args: List<String>) {
+        val a = Args(args)
+        val b = a.getArg(ArgType.String, "yes") ?: return
+
+        while (true) {
+            out.println(b)
+            delay(10)
+        }
+    }
+}
+
+
 //😼
 object Cat : Command<Unit>("cat") {
-    override fun execute(args: List<String>) {
+    override suspend fun execute(args: List<String>) {
         val txt = args.firstOrNull()?.let { LocationManager.tryResolve(Path(it)) } as? TextFile
         if (txt != null) {
             out.println(txt.content)
@@ -91,19 +122,25 @@ object Cat : Command<Unit>("cat") {
 }
 
 object Echo : Command<Unit>("echo") {
-    override fun execute(args: List<String>) {
-        args.firstOrNull()?.let { println(it) }
+    override suspend fun execute(args: List<String>) {
+        args.firstOrNull()?.let { out.println(it) }
+    }
+}
+
+object Clear : Command<Unit>("clear") {
+    override suspend fun execute(args: List<String>) {
+        console.clear()
     }
 }
 
 object SugoiUserDo : Command<Unit>("sudo") {
-    override fun execute(args: List<String>) {
+    override suspend fun execute(args: List<String>) {
         args.firstOrNull()?.let { CommandManager.tryResolve(it)?.execute(args.drop(1)) }
     }
 }
 
 object Exit : Command<Unit>("exit") {
-    override fun execute(args: List<String>) {
+    override suspend fun execute(args: List<String>) {
         out.println("終了します")
         console.exit()
     }
