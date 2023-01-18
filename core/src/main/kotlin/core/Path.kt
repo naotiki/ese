@@ -3,7 +3,7 @@ package core
 @JvmInline
 value class Path(val value: String) {
     fun asAbsolute(origin: Directory = LocationManager.currentDirectory) {
-
+        TODO("いつか実装")
     }
 }
 

@@ -1,39 +1,47 @@
 package core.commands
 
 import core.*
+import core.Variable.expandVariable
 import kotlinx.coroutines.delay
 import java.io.BufferedReader
 import java.io.PrintStream
+
+fun commandBuilder(name:String){
+
+}
+
 
 abstract class Command<R>(val name: String, val description: String = "") {
     val out get() = CommandManager.out!!
     val reader get() = CommandManager.reader!!
     val console get() = CommandManager.consoleImpl!!
-
+    @Deprecated("ひすいしょう",)
     fun <T> T?.expect(message: String): T? {
         if (this == null) {
             out.println(message)
         }
         return this
     }
-
+    @Throws(CommandIllegalArgsException::class)
     abstract suspend fun execute(args: List<String>): R
 }
 
+class CommandIllegalArgsException:Exception()
+
 class Args(val args: List<String>) {
-    var index = 0
+    private var index = 0
     fun <T : Any> getArg(type: ArgType<T>, default: T? = null): T? {
         return (args.getOrNull(index)?.ifBlank { null } ?: return default).let {
             index++
             type.translator(it)
         }
     }
-    /*class ArgValue<T : Any>(val type:ArgType<T>,val target:String){
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
 
-        }
-    }*/
+    fun getOptions(): List<String> {
+        return args.filter { it.startsWith("-") }.flatMap { it.split("") }
+    }
 }
+fun List<String>.toArgs()=Args(this)
 
 //Respect kotlinx.cli
 sealed class ArgType<T : Any>(val translator: (kotlin.String) -> T?) {
@@ -59,8 +67,7 @@ object ListFile : Command<Unit>(
 """.trimIndent()
 ) {
     override suspend fun execute(args: List<String>) {
-        val a = Args(args)
-        val b = a.getArg(ArgType.Dir, LocationManager.currentDirectory) ?: let {
+        val b = args.toArgs().getArg(ArgType.Dir, LocationManager.currentDirectory) ?: let {
             out.println("引数の形式が正しくありません。")
             null
         } ?: return
@@ -77,7 +84,7 @@ object Remove : Command<Unit>(
 """.trimIndent()
 ) {
     override suspend fun execute(args: List<String>) {
-        val b = Args(args).getArg(ArgType.File, LocationManager.currentDirectory) ?: let {
+        val b = args.toArgs().getArg(ArgType.File, LocationManager.currentDirectory) ?: let {
             out.println("引数の形式が正しくありません。")
             null
         } ?: return
@@ -88,7 +95,6 @@ object Remove : Command<Unit>(
                 }
             }
         } else b.parent?.removeChild(b)
-
     }
 }
 
@@ -104,8 +110,7 @@ object ChangeDirectory : Command<Unit>("cd") {
 
 object Yes : Command<Unit>("yes") {
     override suspend fun execute(args: List<String>) {
-        val a = Args(args)
-        val b = a.getArg(ArgType.String, "yes") ?: return
+        val b = args.toArgs().getArg(ArgType.String, "yes") ?: return
 
         while (true) {
             out.println(b)
@@ -127,7 +132,7 @@ object Cat : Command<Unit>("cat") {
 
 object Echo : Command<Unit>("echo") {
     override suspend fun execute(args: List<String>) {
-        args.firstOrNull()?.let { out.println(it) }
+        args.joinToString(" ").let { out.println(expandVariable(it)) }
     }
 }
 

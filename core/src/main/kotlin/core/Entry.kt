@@ -26,7 +26,7 @@ suspend fun ConsoleInterface.newPrompt(promptText: String, value: String = ""): 
 }
 
 var job: Job? = null
-const val version="1.0e-500"//1.0 × 10^-500
+const val version = "1.0e-500"//1.0 × 10^-500
 suspend fun initialize(consoleInterface: ConsoleInterface) {
     outputStream.println(
         """
@@ -40,8 +40,8 @@ suspend fun initialize(consoleInterface: ConsoleInterface) {
     outputStream.println("Hello $userName")
     CommandManager.initialize(
         outputStream, consoleReader, consoleInterface,
-        ListFile, CD, Cat, Exit, SugoiUserDo,
-        Yes, Clear, Echo,Remove
+        ListFile, ChangeDirectory, Cat, Exit, SugoiUserDo,
+        Yes, Clear, Echo, Remove
     )
     while (true/*TODO 終了機能*/) {
         val input = consoleInterface.newPrompt("$userName:${LocationManager.currentPath.value}>").ifBlank {
@@ -59,6 +59,7 @@ suspend fun initialize(consoleInterface: ConsoleInterface) {
                 job = null
             }
         } else {
+            expressionParser(input)
             outputStream.println(
                 """
             そのようなコマンドはありません。
@@ -74,7 +75,16 @@ private val commandHistoryImpl = mutableListOf<String>()
 val commandHistory get() = commandHistoryImpl.toList()
 
 object Variable {
-    val map = mutableMapOf<String, Any>()
+    val nameRule = Regex("[A-z]+")
+    val map = mutableMapOf<String, String>()
+
+    fun expandVariable(string: String): String {
+
+        println(string)
+        return Regex("\\$$nameRule").replace(string) {
+            map.getOrDefault(it.value.trimStart('$'), "")
+        }
+    }
 }
 
 /**キャンセルされた場合は[true]*/

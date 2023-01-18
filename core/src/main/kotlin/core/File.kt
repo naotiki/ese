@@ -1,5 +1,7 @@
 package core
 
+import core.commands.Command
+
 /**
  * 仮想的ファイルの抽象クラス
  * ディレクトリもファイルとする。
@@ -34,8 +36,15 @@ abstract class File(
 class TextFile(
     name: String, parent: Directory?, content: String
 ) : File(name, parent) {
-     var content = content
-         private set
+    var content = content
+        private set
+}
+
+class ExecutableFile(
+    name: String, parent: Directory?, content: String
+) : File(name, parent) {
+    var content = content
+        private set
 }
 
 
@@ -143,6 +152,8 @@ inline fun Directory.dynDir(name: String, block: Directory.() -> Unit): Director
  * @param content ファイルの内容
  */
 fun Directory.file(name: String, content: String) = addChildren(TextFile(name, this, content))
+
+fun Directory.executable(name: String, content: Command<*>) = addChildren(TextFile(name, this, ""))
 
 
 enum class FileType {
