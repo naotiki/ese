@@ -77,19 +77,23 @@ object Remove : Command<Unit>(
 """.trimIndent()
 ) {
     override suspend fun execute(args: List<String>) {
-        val b = Args(args).getArg(ArgType.Dir, LocationManager.currentDirectory) ?: let {
+        val b = Args(args).getArg(ArgType.File, LocationManager.currentDirectory) ?: let {
             out.println("引数の形式が正しくありません。")
             null
         } ?: return
-        if(b.children.isEmpty()){
-            if(b.parent?.removeChild(b) == true){
-                out.println("${b.name}が削除されました")
+        if (b is Directory){
+            if(b.children.isEmpty()){
+                if(b.parent?.removeChild(b) == true){
+                    out.println("${b.name}が削除されました")
+                }
             }
-        }
+        } else b.parent?.removeChild(b)
+
     }
 }
 
-object CD : Command<Unit>("cd") {
+
+object ChangeDirectory : Command<Unit>("cd") {
     override suspend fun execute(args: List<String>) {
         val dir = args.firstOrNull()?.let { LocationManager.tryResolve(Path(it)) } as? Directory
         if (dir != null) {
@@ -164,6 +168,5 @@ internal object CommandManager {
     fun add(cmd: Command<*>) {
         _commandList[cmd.name] = cmd
     }
-
     fun tryResolve(cmd: String): Command<*>? = _commandList[cmd]
 }
