@@ -1,6 +1,7 @@
 package core
 
 import core.commands.*
+import core.vfs.VFS
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -44,7 +45,7 @@ suspend fun initialize(consoleInterface: ConsoleInterface) {
         Yes, Clear, Echo, Remove
     )
     while (true/*TODO 終了機能*/) {
-        val input = consoleInterface.newPrompt("$userName:${LocationManager.currentPath.value}>").ifBlank {
+        val input = consoleInterface.newPrompt("$userName:${VFS.currentPath.value}>").ifBlank {
             null
         } ?: continue
         val inputArgs = input.split(' ')

@@ -1,3 +1,3 @@
 
-rootProject.name = "LegendaryExecutable"
+rootProject.name = "EseLinux"
 include("server")

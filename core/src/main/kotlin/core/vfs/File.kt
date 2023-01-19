@@ -1,6 +1,8 @@
-package core
+package core.vfs
 
+import core.EventManager
 import core.commands.Command
+import core.userName
 
 /**
  * 仮想的ファイルの抽象クラス
@@ -24,7 +26,7 @@ abstract class File(
         return Path(path.reversed().joinToString("/", "/"))
     }
 
-    fun toDirectoryOrNull():Directory?{
+    fun toDirectoryOrNull(): Directory?{
         return this as? Directory
     }
 }

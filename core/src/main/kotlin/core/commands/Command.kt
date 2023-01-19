@@ -2,6 +2,7 @@ package core.commands
 
 import core.*
 import core.Variable.expandVariable
+import core.vfs.*
 import kotlinx.coroutines.delay
 import java.io.BufferedReader
 import java.io.PrintStream
@@ -50,12 +51,12 @@ sealed class ArgType<T : Any>(val translator: (kotlin.String) -> T?) {
     object Boolean : ArgType<kotlin.Boolean>(kotlin.String::toBooleanStrictOrNull)
 
 
-    object File : ArgType<core.File>({
-        LocationManager.tryResolve(Path(it))
+    object File : ArgType<core.vfs.File>({
+        VFS.tryResolve(Path(it))
     })
 
     object Dir : ArgType<Directory>({
-        LocationManager.tryResolve(Path(it))?.toDirectoryOrNull()
+        VFS.tryResolve(Path(it))?.toDirectoryOrNull()
     })
 
     class Define<T : Any>(translator: (kotlin.String) -> T?) : ArgType<T>(translator)
@@ -67,7 +68,7 @@ object ListFile : Command<Unit>(
 """.trimIndent()
 ) {
     override suspend fun execute(args: List<String>) {
-        val b = args.toArgs().getArg(ArgType.Dir, LocationManager.currentDirectory) ?: let {
+        val b = args.toArgs().getArg(ArgType.Dir, VFS.currentDirectory) ?: let {
             out.println("引数の形式が正しくありません。")
             null
         } ?: return
@@ -84,7 +85,7 @@ object Remove : Command<Unit>(
 """.trimIndent()
 ) {
     override suspend fun execute(args: List<String>) {
-        val b = args.toArgs().getArg(ArgType.File, LocationManager.currentDirectory) ?: let {
+        val b = args.toArgs().getArg(ArgType.File, VFS.currentDirectory) ?: let {
             out.println("引数の形式が正しくありません。")
             null
         } ?: return
@@ -101,9 +102,9 @@ object Remove : Command<Unit>(
 
 object ChangeDirectory : Command<Unit>("cd") {
     override suspend fun execute(args: List<String>) {
-        val dir = args.firstOrNull()?.let { LocationManager.tryResolve(Path(it)) } as? Directory
+        val dir = args.firstOrNull()?.let { VFS.tryResolve(Path(it)) } as? Directory
         if (dir != null) {
-            LocationManager.setPath(dir)
+            VFS.setPath(dir)
         } else out.println("無効なディレクトリ")
     }
 }
@@ -123,8 +124,8 @@ object Yes : Command<Unit>("yes") {
 //😼
 object Cat : Command<Unit>("cat") {
     override suspend fun execute(args: List<String>) {
-        val txt = args.firstOrNull()?.let { LocationManager.tryResolve(Path(it)) } as? TextFile
-        if (txt != null) {
+        val txt = args.toArgs().getArg(ArgType.File)
+        if (txt is TextFile) {
             out.println(txt.content)
         } else out.println("無効なファイル")
     }

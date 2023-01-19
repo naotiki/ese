@@ -3,6 +3,9 @@
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel target="18">
       <module name="LegendaryExecutable.main" target="17" />
+      <module name="LegendaryExecutable.server" target="17" />
+      <module name="LegendaryExecutable.server.main" target="17" />
+      <module name="LegendaryExecutable.server.test" target="17" />
       <module name="LegendaryExecutable.test" target="17" />
     </bytecodeTargetLevel>
   </component>
