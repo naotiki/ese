@@ -1,10 +1,9 @@
 package core.vfs
 
 import core.EventManager
+import core.commands.parser.Executable
 import core.user.Group
 import core.user.User
-
-
 
 
 /**
@@ -12,15 +11,16 @@ import core.user.User
  * ディレクトリもファイルとする。
  *  @param name ファイルの名前
  *  @param parent 親ディレクトリ、ルートの場合はnull
- *  @param attribute 属性 [FileAttribute]をとる
+ *  @param hidden 属性 [Boolean]をとる
  */
-abstract class File(
-    var name: String,
-    var parent: Directory?,
-    var attribute: Int = FileAttribute.None,
-    var owner: User ,
-    var ownerGroup:Group
 
+open class File(
+    var name: String,
+    var parent: Directory? = null,
+    var hidden: Boolean,
+    var owner: User,
+    var ownerGroup: Group,
+    var permission: Permission
 ) {
     fun getFullPath(): Path {
         val path = mutableListOf<String>()
@@ -32,72 +32,98 @@ abstract class File(
         return Path(path.reversed().joinToString("/", "/"))
     }
 
-    fun toDirectoryOrNull(): Directory?{
-        return this as? Directory
-    }
 }
+
+fun File.toDirectoryOrNull(): Directory? {
+    return if (this is Directory) {
+        this
+    } else null
+}
+
 
 /**
  * 表示可能な文字列を持つファイル
  * @param [content] 内容
  * */
 class TextFile(
-    name: String, parent: Directory?, content: String, owner: User, group: Group
-) : File(name, parent, owner = owner, ownerGroup = group) {
+    name: String,
+    parent: Directory?,
+    content: String,
+    owner: User,
+    group: Group,
+    permission: Permission,
+    hidden: Boolean
+) : File(name, parent, owner = owner, ownerGroup = group, hidden = hidden, permission = permission) {
     var content = content
         private set
 }
 
-class ExecutableFile(
-    name: String, parent: Directory?, content: String, owner: User, group: Group
-) : File(name, parent, owner = owner, ownerGroup = group) {
-    var content = content
+class ExecutableFile<R>(
+    name: String, parent: Directory?, executable: Executable<R>, owner: User, group: Group, permission: Permission,
+    hidden: Boolean
+) : File(name, parent, owner = owner, ownerGroup = group, hidden = hidden, permission = permission) {
+    var executable = executable
         private set
 }
 
-
-
-open class Directory(name: String, parent: Directory?, owner: User, group: Group) : File(
-    name,
-    parent = parent, owner = owner, ownerGroup = group
+open class Directory(
+    name: String, parent: Directory?, owner: User, group: Group, permission: Permission,
+    hidden: Boolean
+) : File(
+    name, parent = parent, owner = owner, ownerGroup = group, hidden = hidden, permission = permission
 ) {
-    protected open var _children: MutableMap<String, File> = mutableMapOf()
-    val children get() = _children.toMap()
+    open var _children: MutableMap<String, File> = mutableMapOf()
+    fun getChildren(user: User, includeHidden: Boolean = false): Map<String, File>? {
+        return if (
+            permission.has(
+                when {
+                    user == owner -> {
+                        PermissionTarget.OwnerR
+                    }
+
+                    user.group == ownerGroup -> {
+                        PermissionTarget.GroupR
+                    }
+
+                    else -> {
+                        PermissionTarget.OtherR
+                    }
+                }
+            )
+        ) _children.filterValues { !it.hidden || includeHidden }.toMap() else null
+
+
+    }
+
     fun addChildren(vararg childDir: File) {
         _children.putAll(childDir.associateBy { it.name })
     }
+
     fun removeChild(childDir: File): Boolean {
-        return _children.remove(childDir.name)!=null
+        return _children.remove(childDir.name) != null
     }
 }
 
-// 進捗状況に応じて中身が変わるディレクトリ
-class DynamicDirectory(name: String, parent: Directory?, owner: User, group: Group) : Directory(name, parent,owner, group){
+// 進捗状況に応じて中身が変わるディレクトリ TODO 実装やれ
+class DynamicDirectory(
+    name: String,
+    parent: Directory?,
+    owner: User,
+    group: Group,
+    permission: Permission,
+    hidden: Boolean
+) :
+    Directory(name, parent, owner, group, permission, hidden) {
     init {
         EventManager.addEventListener {
 
         }
     }
+
     override var _children: MutableMap<String, File>
         get() = super._children
         set(value) {}
 }
 
 
-//初期状態
 
-
-
-
-
-
-
-enum class FileType {
-
-}
-
-object FileAttribute {
-    const val None = 0
-    const val Hide = 1
-
-}

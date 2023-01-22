@@ -1,70 +1,88 @@
 package core
 
-import core.commands.*
+import core.commands.Expression
+import core.commands.parser.CommandResult
 import core.user.Group
 import core.user.User
-import core.user.VUM
-import core.vfs.FireTree
-import core.vfs.VFS
+import core.user.UserManager
+import core.utils.splitArgs
+import core.vfs.FileSystem
+import core.vfs.FileTree
 import core.vfs.dsl.dir
 import core.vfs.dsl.file
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.koin.core.Koin
+import org.koin.core.KoinApplication
+import org.koin.core.component.KoinComponent
+import org.koin.core.context.loadKoinModules
+import org.koin.core.context.startKoin
+import org.koin.core.logger.Level
+import org.koin.dsl.module
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.io.PrintStream
 
-var userName: String? = null
 
-val inputStream = PipedInputStream()
-val reader = inputStream.bufferedReader()
-private val outputStream = PrintStream(PipedOutputStream(inputStream), true)
-
-private val consoleInput = PipedInputStream()
-private val consoleReader = consoleInput.bufferedReader()
-val consoleWriter = PrintStream(PipedOutputStream(consoleInput), true)
-
-
-suspend fun ConsoleInterface.newPrompt(promptText: String, value: String = ""): String = withContext(Dispatchers.IO) {
-    prompt(promptText, value)
-    return@withContext consoleReader.readLine()
+const val version = "0.0.0-dev"
+val m = module {
+    single { Variable() }
+    single { Expression() }
 }
 
-var job: Job? = null
-const val version = "0.0.0-dev"
-suspend fun initialize(consoleInterface: ConsoleInterface) {
-    outputStream.println(
+fun prepareKoinInjection(): KoinApplication {
+
+
+    m.apply {
+        single { UserManager() }
+        single { FileTree(get()) }
+        single { IO() }
+        single { FileSystem(get<FileTree>().root) }
+    }
+    return startKoin {
+        printLogger(Level.DEBUG)
+        modules(m)
+    }
+}
+
+suspend fun initialize(koin: Koin, consoleInterface: ConsoleInterface) {
+
+    val io = koin.get<IO>()
+    val userManager = koin.get<UserManager>()
+    val fileTree = koin.get<FileTree>()
+    var userName: String
+    io.outputStream.println(
         """
-        EseLinux Shell ver.$version
+        Ese Linux ver.$version
         """.trimIndent()
     )
 
-
+    //名前設定
     while (true) {
-        userName = consoleInterface.newPrompt("あなたの名前は？:")
-        println(VUM.userList)
+        userName = io.newPrompt(consoleInterface, "あなたの名前は？:", "")
+        println(userManager.userList)
         when {
-            userName.isNullOrBlank() -> {
-                outputStream.println("空白は使用できません")
+            userName.isBlank() -> {
+                io.outputStream.println("空白は使用できません")
             }
 
-            !userName.orEmpty().matches(Regex("[0-9A-z]+")) -> {
-                outputStream.println("使用できる文字は0~9の数字とアルファベットと一部記号です")
+            !userName.matches(Regex("[0-9A-z]+")) -> {
+                io.outputStream.println("使用できる文字は0~9の数字とアルファベットと一部記号です")
             }
 
-            VUM.userList.any { it.name == userName } -> {
-                outputStream.println("既にあるユーザー名です")
+            userManager.userList.any { it.name == userName } -> {
+                io.outputStream.println("既にあるユーザー名です")
             }
+
             else -> break
         }
     }
 
-    val a = User(
-        userName!!,
-        Group(userName!!),
-        FireTree.home.dir(userName!!) {
+    val newUser = User(userManager,userName, Group(userManager,userName))
+    newUser.setHomeDir { user, group ->
+        fileTree.home.dir(user.name, user, group) {
             file(
                 "Readme.txt",
                 """
@@ -73,58 +91,78 @@ suspend fun initialize(consoleInterface: ConsoleInterface) {
             """.trimIndent()
             )
         }
-    )
-    println("Hello $a")
-    Vfs = VFS(a.homeDir!!, a.homeDir)
-    println("Hello $userName")
-    CommandManager.initialize(
-        outputStream, consoleReader, consoleInterface,
-        ListFile, ChangeDirectory, Cat, Exit, SugoiUserDo,
-        Yes, Clear, Echo, Remove, Test
-    )
+    }
+    val fileSystem = koin.get<FileSystem>()
+    fileSystem.setCurrentPath(newUser.dir!!)
+    userManager.setUser(newUser)
+    val expression = koin.get<Expression>()
+
+    loadKoinModules(module {
+        single { consoleInterface }
+        single { expression }
+    })
     while (true/*TODO 終了機能*/) {
-        val input = consoleInterface.newPrompt("$userName:${Vfs.currentPath.value}>").ifBlank {
-            null
-        } ?: continue
-        val inputArgs = input.split(' ')
-        val cmd = CommandManager.tryResolve(inputArgs.first())
-        commandHistoryImpl.add(0, input)
+        val input = io.newPrompt(consoleInterface, "${userManager.user.name}:${fileSystem.currentPath.value}>")
+            .ifBlank {
+                null
+            } ?: continue
+        val inputArgs = input.splitArgs()
+        val cmd = expression.tryResolve(inputArgs.first())
+        expression._commandHistory.add(0, input)
         if (cmd != null) {
+            //非同期実行
             withContext(Dispatchers.Default) {
-                job = launch {
-                    val result = cmd.execute(inputArgs.drop(1))
-                    if (result !is Unit) {
-                        outputStream.println("[DEBUG] RETURN:$result")
+                expression.currentJob = launch {
+                    val result = cmd.resolve(inputArgs.drop(1))
+                    if (result is CommandResult.Success) {
+                        //io.outputStream.println("[DEBUG] RETURN:${result.value}")
                     }
                 }
-                job?.join()
-                job = null
+                //待機
+                expression.currentJob?.join()
+                expression.currentJob = null
             }
         } else {
-            expressionParser(input)
-            outputStream.println(
-                """
+            if (!expression.expressionParser(input)) {
+                io.outputStream.println(
+                    """
             そのようなコマンドはありません。
             help と入力するとヒントが得られるかも・・・？
             """.trimIndent()
-            )
+                )
+            }
         }
 
     }
+
+
 }
 
-lateinit var Vfs: VFS
+class IO {
+    private val inputStream = PipedInputStream()
+    val reader = inputStream.bufferedReader()
+    internal val outputStream = PrintStream(PipedOutputStream(inputStream), true)
+
+    private val consoleInput = PipedInputStream()
+    internal val consoleReader = consoleInput.bufferedReader()
+    val consoleWriter = PrintStream(PipedOutputStream(consoleInput), true)
+    suspend fun newPrompt(consoleInterface: ConsoleInterface, promptText: String, value: String = ""): String =
+        withContext(
+            Dispatchers
+                .IO
+        ) {
+            consoleInterface.prompt(promptText, value)
+            return@withContext consoleReader.readLine()
+        }
+}
 
 
-private val commandHistoryImpl = mutableListOf<String>()
-val commandHistory get() = commandHistoryImpl.toList()
 
-object Variable {
+class Variable {
     val nameRule = Regex("[A-z]+")
     val map = mutableMapOf<String, String>()
 
     fun expandVariable(string: String): String {
-
         println(string)
         return Regex("\\$$nameRule").replace(string) {
             map.getOrDefault(it.value.trimStart('$'), "")
@@ -132,12 +170,3 @@ object Variable {
     }
 }
 
-/**キャンセルされた場合は true
- * Jobがnullの場合はfalse
- * */
-fun cancelCommand(): Boolean {
-    job?.cancel() ?: return false
-
-    outputStream.println("Ctrl+Cによってキャンセルされました")
-    return true
-}
