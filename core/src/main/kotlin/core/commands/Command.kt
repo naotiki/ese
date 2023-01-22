@@ -1,74 +1,29 @@
 package core.commands
 
-import core.*
+import core.ConsoleInterface
 import core.Variable.expandVariable
-import core.vfs.*
+import core.Vfs
+import core.commands.parser.ArgType
+import core.commands.parser.Command
+import core.commands.parser.toArgs
+import core.vfs.Directory
+import core.vfs.Path
+import core.vfs.TextFile
 import kotlinx.coroutines.delay
 import java.io.BufferedReader
 import java.io.PrintStream
+import kotlin.reflect.KProperty
 
-fun commandBuilder(name:String){
-
-}
-
-
-abstract class Command<R>(val name: String, val description: String = "") {
-    val out get() = CommandManager.out!!
-    val reader get() = CommandManager.reader!!
-    val console get() = CommandManager.consoleImpl!!
-    @Deprecated("ひすいしょう",)
-    fun <T> T?.expect(message: String): T? {
-        if (this == null) {
-            out.println(message)
-        }
-        return this
-    }
-    @Throws(CommandIllegalArgsException::class)
-    abstract suspend fun execute(args: List<String>): R
-}
-
-class CommandIllegalArgsException:Exception()
-
-class Args(val args: List<String>) {
-    private var index = 0
-    fun <T : Any> getArg(type: ArgType<T>, default: T? = null): T? {
-        return (args.getOrNull(index)?.ifBlank { null } ?: return default).let {
-            index++
-            type.translator(it)
-        }
-    }
-
-    fun getOptions(): List<String> {
-        return args.filter { it.startsWith("-") }.flatMap { it.split("") }
-    }
-}
-fun List<String>.toArgs()=Args(this)
-
-//Respect kotlinx.cli
-sealed class ArgType<T : Any>(val translator: (kotlin.String) -> T?) {
-    object Int : ArgType<kotlin.Int>(kotlin.String::toIntOrNull)
-    object String : ArgType<kotlin.String>({ it })
-    object Boolean : ArgType<kotlin.Boolean>(kotlin.String::toBooleanStrictOrNull)
-
-
-    object File : ArgType<core.vfs.File>({
-        VFS.tryResolve(Path(it))
-    })
-
-    object Dir : ArgType<Directory>({
-        VFS.tryResolve(Path(it))?.toDirectoryOrNull()
-    })
-
-    class Define<T : Any>(translator: (kotlin.String) -> T?) : ArgType<T>(translator)
-}
 
 object ListFile : Command<Unit>(
     "ls", """
     今いる場所のファイルを一覧表示します
 """.trimIndent()
 ) {
+    val option by option(ArgType.Boolean,"","","")
+    val arg1 by argument(ArgType.Dir,"","")
     override suspend fun execute(args: List<String>) {
-        val b = args.toArgs().getArg(ArgType.Dir, VFS.currentDirectory) ?: let {
+        val b = args.toArgs().getArg(ArgType.Dir, Vfs.currentDirectory) ?: let {
             out.println("引数の形式が正しくありません。")
             null
         } ?: return
@@ -79,13 +34,15 @@ object ListFile : Command<Unit>(
     }
 }
 
+
+
 object Remove : Command<Unit>(
     "rm", """
     今いる場所のファイルを一覧表示します
 """.trimIndent()
 ) {
     override suspend fun execute(args: List<String>) {
-        val b = args.toArgs().getArg(ArgType.File, VFS.currentDirectory) ?: let {
+        val b = args.toArgs().getArg(ArgType.File, Vfs.currentDirectory) ?: let {
             out.println("引数の形式が正しくありません。")
             null
         } ?: return
@@ -102,9 +59,9 @@ object Remove : Command<Unit>(
 
 object ChangeDirectory : Command<Unit>("cd") {
     override suspend fun execute(args: List<String>) {
-        val dir = args.firstOrNull()?.let { VFS.tryResolve(Path(it)) } as? Directory
+        val dir = args.firstOrNull()?.let { Vfs.tryResolve(Path(it)) } as? Directory
         if (dir != null) {
-            VFS.setPath(dir)
+            Vfs.setPath(dir)
         } else out.println("無効なディレクトリ")
     }
 }

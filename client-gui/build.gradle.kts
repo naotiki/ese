@@ -3,6 +3,7 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose")
+    id("org.jetbrains.dokka") version "1.7.20"
 }
 
 group = "me.naotiki"
@@ -39,8 +40,11 @@ compose.desktop {
         mainClass = "MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "client-gui"
-            packageVersion = "1.0.0"
+            packageName = "EseLinux"
+            packageVersion = "1.0.1"
         }
     }
+}
+subprojects {
+    apply(plugin = "org.jetbrains.dokka")
 }
