@@ -34,6 +34,10 @@ import kotlin.system.exitProcess
     }
 }*/
 val logStream = reader.lineSequence().asFlow().flowOn(Dispatchers.IO)
+val handler = CoroutineExceptionHandler { _, exception ->
+    println("CoroutineExceptionHandler got $exception")
+    throw exception
+}
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -44,22 +48,27 @@ fun App() {
     val prompt by rememberPrompt("", "")
     var textLogs by remember { mutableStateOf("") }
     val stateVertical = rememberScrollState(0)
-    //ここでStreamの読み取りは危険かもしれぬ
     LaunchedEffect(Unit) {
-        launch {
-            initialize(object : ConsoleInterface {
-                override fun prompt(promptText: String, value: String) {
-                    prompt.newPrompt(promptText, value)
-                }
+        launch(handler) {
+            try {
+                initialize(object : ConsoleInterface {
+                    override fun prompt(promptText: String, value: String) {
+                        prompt.newPrompt(promptText, value)
+                    }
 
-                override fun exit() {
-                    exitProcess(0)
-                }
+                    override fun exit() {
+                        exitProcess(0)
+                    }
 
-                override fun clear() {
-                    textLogs = ""
-                }
-            })
+                    override fun clear() {
+                        textLogs = ""
+                    }
+                })
+            } catch (e: Exception) {
+                e.printStackTrace()
+                throw e
+
+            }
             println("End:Init")
         }
         logStream.collect {
@@ -122,7 +131,7 @@ fun App() {
                                 prompt.updateValue(s ?: "")
                             }
                             true
-                        }  else false
+                        } else false
                     },
                 )
             }
@@ -137,12 +146,12 @@ fun App() {
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
-fun main() = application {
+fun main() = application() {
     Window(onCloseRequest = ::exitApplication, title = "Console", onPreviewKeyEvent = {
         return@Window if (it.key == Key.C && it.isCtrlPressed) {
             cancelCommand()
             true
-        }else false
+        } else false
     }) {
         App()
     }

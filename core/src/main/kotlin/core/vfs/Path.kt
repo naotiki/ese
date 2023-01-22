@@ -1,21 +1,64 @@
 package core.vfs
 
+import core.user.*
+import core.user.VUM.rootGroup
+import core.user.VUM.uNaotiki
+import core.user.VUM.uRoot
+import core.vfs.FireTree.root
+import core.vfs.dsl.*
+
 @JvmInline
 value class Path(val value: String) {
-    fun asAbsolute(origin: Directory = VFS.currentDirectory) {
+    fun asAbsolute(origin: Directory ) {
         TODO("いつか実装")
     }
 }
 
 
+
+object FireTree{
+    val root = Directory("", null, uRoot, rootGroup)
+    lateinit var home:Directory
+    init {
+        rootDir {
+
+            //動的ディレクトリ
+            dynDir("bin") {
+
+            }
+            println("bin:OK")
+            home=dir("home") {
+                uNaotiki.homeDir=dir("naotiki", uNaotiki){
+                    file("ひみつのファイル","""
+                        みるなよ
+                    """.trimIndent())
+                }
+            }
+            dir("usr"){
+
+            }
+            dir("sbin"){
+
+            }
+            dir("mnt"){
+
+            }
+        }
+    }
+}
+
 /**
- * Virtual File System
+ * ぼくのかんがえたさいきょうのVirtual File System
  */
-object VFS {
-    var currentDirectory = FileManager.homeDir
+class VFS(currentDirectory: Directory,var homeDir:Directory?=null,) {
+    var currentDirectory :Directory=currentDirectory
         private set
     var currentPath: Path = currentDirectory.getFullPath()
         private set
+    /**
+     * VFSファイルツリーを初期化します。
+     * @param user homeDirの所有者
+     * */
 
     fun setPath(path: Path): Boolean {
         return (tryResolve(path) as? Directory)?.let {
@@ -32,7 +75,7 @@ object VFS {
 
     /**
      * 渡された[path]を解決し、[File]を返します
-     * @return [File],見つからなければnull
+     * @return [File],見つからなければ null
      * */
     fun tryResolve(path: Path): File? {
         val isAbsolute = path.value.startsWith("/")
@@ -42,17 +85,17 @@ object VFS {
             if (partialPath.size == 1) {
                 when {
                     partialPath.first() == "" -> return root
-                    isHomeDir -> return FileManager.homeDir
+                    isHomeDir -> return homeDir
                 }
             }
 
-            partialPath.drop(if (isHomeDir) 1 else 0).fold<String, File?>(if (isHomeDir) FileManager.homeDir else root) { dir, partial ->
+            partialPath.drop(if (isHomeDir) 1 else 0).fold<String, File?>(if (isHomeDir) homeDir else root) { dir, partial ->
                 println(partial+":dir:"+dir?.name)
                 dir?.toDirectoryOrNull()?.children?.get(partial)
             }
         } else {
             partialPath.fold<String, File?>(currentDirectory) { dir, partial ->
-                (dir as? Directory)?.let {
+                dir?.toDirectoryOrNull()?.let {
                     when (partial) {
                         "." -> it
                         ".." -> it.parent

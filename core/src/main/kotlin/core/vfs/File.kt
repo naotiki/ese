@@ -1,8 +1,11 @@
 package core.vfs
 
 import core.EventManager
-import core.commands.Command
-import core.userName
+import core.user.Group
+import core.user.User
+
+
+
 
 /**
  * 仮想的ファイルの抽象クラス
@@ -14,7 +17,10 @@ import core.userName
 abstract class File(
     var name: String,
     var parent: Directory?,
-    var attribute: Int = FileAttribute.None
+    var attribute: Int = FileAttribute.None,
+    var owner: User ,
+    var ownerGroup:Group
+
 ) {
     fun getFullPath(): Path {
         val path = mutableListOf<String>()
@@ -36,22 +42,25 @@ abstract class File(
  * @param [content] 内容
  * */
 class TextFile(
-    name: String, parent: Directory?, content: String
-) : File(name, parent) {
+    name: String, parent: Directory?, content: String, owner: User, group: Group
+) : File(name, parent, owner = owner, ownerGroup = group) {
     var content = content
         private set
 }
 
 class ExecutableFile(
-    name: String, parent: Directory?, content: String
-) : File(name, parent) {
+    name: String, parent: Directory?, content: String, owner: User, group: Group
+) : File(name, parent, owner = owner, ownerGroup = group) {
     var content = content
         private set
 }
 
 
 
-open class Directory(name: String, parent: Directory?) : File(name, parent = parent) {
+open class Directory(name: String, parent: Directory?, owner: User, group: Group) : File(
+    name,
+    parent = parent, owner = owner, ownerGroup = group
+) {
     protected open var _children: MutableMap<String, File> = mutableMapOf()
     val children get() = _children.toMap()
     fun addChildren(vararg childDir: File) {
@@ -63,7 +72,7 @@ open class Directory(name: String, parent: Directory?) : File(name, parent = par
 }
 
 // 進捗状況に応じて中身が変わるディレクトリ
-class DynamicDirectory(name: String, parent: Directory?) : Directory(name, parent){
+class DynamicDirectory(name: String, parent: Directory?, owner: User, group: Group) : Directory(name, parent,owner, group){
     init {
         EventManager.addEventListener {
 
@@ -77,85 +86,10 @@ class DynamicDirectory(name: String, parent: Directory?) : Directory(name, paren
 
 //初期状態
 
-object FileManager {
-    lateinit var homeDir: Directory
-    init {
-        listOf("").joinToString()
-        rootDir {
-            dynDir("bin") {
-
-            }
-            dir("home") {
-                homeDir = dir(userName!!) {
-                    file(
-                        "Readme.txt",
-                        """
-                        やぁみんな俺だ！
-                        このファイルを開いてくれたんだな！
-                        """.trimIndent()
-                    )
-                }
-                dir("naoki"){
-                    file("ひみつのファイル","""
-                        みるなよ
-                    """.trimIndent())
-                }
-            }
-            dir("usr"){
-
-            }
-            dir("sbin"){
-
-            }
-            dir("mnt"){
-
-            }
-        }
-    }
-}
 
 
-val root = Directory("", null)
 
-/**
- * FileTreeDSLを開始します
- * @param block [dir],[dynDir],[file]などを使用し[root]にファイルを追加します
- */
-inline fun rootDir(block: Directory.() -> Unit) {
-    root.block()
-}
 
-/**
- * ディレクトリを追加します。
- * @param name ディレクトリ名
- * @param block ディレクトリの子を定義するFileTreeDSL
- */
-inline fun Directory.dir(name: String, block: Directory.() -> Unit): Directory {
-    return Directory(name, this).also {
-        addChildren(it)
-        it.block()
-    }
-}
-/**
- * 子が動的に変化するディレクトリを追加します。
- * @param name ディレクトリ名
- * @param block ディレクトリの子を定義するFileTreeDSL
- */
-inline fun Directory.dynDir(name: String, block: Directory.() -> Unit): Directory {
-    return DynamicDirectory(name, this).also {
-        addChildren(it)
-        it.block()
-    }
-}
-
-/**
- * テキストファイルを追加します。
- * @param name ファイル名
- * @param content ファイルの内容
- */
-fun Directory.file(name: String, content: String) = addChildren(TextFile(name, this, content))
-
-fun Directory.executable(name: String, content: Command<*>) = addChildren(TextFile(name, this, ""))
 
 
 enum class FileType {

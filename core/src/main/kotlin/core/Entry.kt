@@ -1,7 +1,13 @@
 package core
 
 import core.commands.*
+import core.user.Group
+import core.user.User
+import core.user.VUM
+import core.vfs.FireTree
 import core.vfs.VFS
+import core.vfs.dsl.dir
+import core.vfs.dsl.file
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -27,25 +33,57 @@ suspend fun ConsoleInterface.newPrompt(promptText: String, value: String = ""): 
 }
 
 var job: Job? = null
-const val version = "1.0e-500"//1.0 × 10^-500
+const val version = "0.0.0-dev"
 suspend fun initialize(consoleInterface: ConsoleInterface) {
     outputStream.println(
         """
         EseLinux Shell ver.$version
         """.trimIndent()
     )
-    do {
-        if (userName != null) outputStream.println("使用できる文字は0~9の数字とアルファベットと一部記号です")
+
+
+    while (true) {
         userName = consoleInterface.newPrompt("あなたの名前は？:")
-    } while (userName.isNullOrBlank() || !userName.orEmpty().matches(Regex("[0-9A-z]+")))
-    outputStream.println("Hello $userName")
+        println(VUM.userList)
+        when {
+            userName.isNullOrBlank() -> {
+                outputStream.println("空白は使用できません")
+            }
+
+            !userName.orEmpty().matches(Regex("[0-9A-z]+")) -> {
+                outputStream.println("使用できる文字は0~9の数字とアルファベットと一部記号です")
+            }
+
+            VUM.userList.any { it.name == userName } -> {
+                outputStream.println("既にあるユーザー名です")
+            }
+            else -> break
+        }
+    }
+
+    val a = User(
+        userName!!,
+        Group(userName!!),
+        FireTree.home.dir(userName!!) {
+            file(
+                "Readme.txt",
+                """
+            やぁみんな俺だ！
+            このファイルを開いてくれたんだな！
+            """.trimIndent()
+            )
+        }
+    )
+    println("Hello $a")
+    Vfs = VFS(a.homeDir!!, a.homeDir)
+    println("Hello $userName")
     CommandManager.initialize(
         outputStream, consoleReader, consoleInterface,
         ListFile, ChangeDirectory, Cat, Exit, SugoiUserDo,
-        Yes, Clear, Echo, Remove
+        Yes, Clear, Echo, Remove, Test
     )
     while (true/*TODO 終了機能*/) {
-        val input = consoleInterface.newPrompt("$userName:${VFS.currentPath.value}>").ifBlank {
+        val input = consoleInterface.newPrompt("$userName:${Vfs.currentPath.value}>").ifBlank {
             null
         } ?: continue
         val inputArgs = input.split(' ')
@@ -54,7 +92,10 @@ suspend fun initialize(consoleInterface: ConsoleInterface) {
         if (cmd != null) {
             withContext(Dispatchers.Default) {
                 job = launch {
-                    cmd.execute(inputArgs.drop(1))
+                    val result = cmd.execute(inputArgs.drop(1))
+                    if (result !is Unit) {
+                        outputStream.println("[DEBUG] RETURN:$result")
+                    }
                 }
                 job?.join()
                 job = null
@@ -72,6 +113,9 @@ suspend fun initialize(consoleInterface: ConsoleInterface) {
     }
 }
 
+lateinit var Vfs: VFS
+
+
 private val commandHistoryImpl = mutableListOf<String>()
 val commandHistory get() = commandHistoryImpl.toList()
 
@@ -88,7 +132,9 @@ object Variable {
     }
 }
 
-/**キャンセルされた場合は[true]*/
+/**キャンセルされた場合は true
+ * Jobがnullの場合はfalse
+ * */
 fun cancelCommand(): Boolean {
     job?.cancel() ?: return false
 
