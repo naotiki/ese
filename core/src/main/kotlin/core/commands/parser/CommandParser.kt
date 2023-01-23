@@ -1,3 +1,6 @@
+/*
+* Respect https://github.com/Kotlin/kotlinx-cli
+*/
 package core.commands.parser
 
 import core.Vfs
@@ -6,86 +9,47 @@ import core.vfs.Directory
 import core.vfs.Path
 import kotlin.reflect.KProperty
 
+interface SafetyString<T : Any> {
+    val name: String
+    val description: String?
+    var value: T?
+    fun reset(){
+        value=null
+    }
+    fun updateValue(str: String)
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): T?
 
-class CommandParserException(s: String) : Exception("コマンド解析エラー:$s")
-class ARGSSUS {
-    val args = mutableListOf<Arg<*>>()
-    val opts = mutableListOf<Opt<*>>()
+    fun hasValue():Boolean
+}
 
-    //解析
-    @Throws(CommandIllegalArgsException::class)
-    fun parse(argList: List<String>) {
-        val q = args.sortedWith { o1: Arg<*>, o2: Arg<*> ->
-            if (o1.vararg) {
-                1
-            } else if (o2.vararg) {
-                -1
-            } else 0
-        }.iterator()
-        var inOption: Opt<*>? = null
-        var target: Arg<*>? = null
-        argList.forEachIndexed { index, s ->
-            when {
-
-                //オプション
-                s.startsWith("-") -> {
-                    val name = s.trimStart('-')
-                    val o = opts.filter {
-                        if (s.startsWith("--")) {
-                            it.name == name
-                        } else {
-                            // ls -lhaなどのBooleanの複数羅列対応
-                            (it.type is ArgType.Boolean && it.shortName?.let { it in name } == true)
-                                    || it.shortName == name
-                        }
-                    }
-                    if (o.isEmpty()) {
-                        throw CommandParserException("オプション解析エラー:不明な名前")
-                    }
-                    o.forEach {
-                        if (it.type is ArgType.Boolean) {
-                            it.strValue = "true"
-                        } else inOption = it
-
-                    }
-                }
-
-                inOption != null -> {
-                    if (inOption!!.multiple) {
-                        inOption!!.strValue += " $s"
-                    } else inOption!!.strValue = s
-                    inOption = null
-                }
-
-                else -> {
-                    if (target?.vararg != true) target = q.next()
-                    if (target!!.vararg) {
-                        target?.strValue += " $s"
-                    } else {
-                        target!!.strValue = s
-                    }
-                }
-            }
-        }
+class MultipleOpt<T : Any>(
+    val type: ArgType<T>,
+) {
+    var value: MutableList<T> = mutableListOf()
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): List<T>? {
+        return value
     }
 
-
+    fun addValue(str: String) {
+        type.translator(str)?.let { value.add(it) }
+    }
 }
 
 class Opt<T : Any>(
-    val type: ArgType<T>,
-    val name: String,
+    val type: ArgType<T>, override val name: String,
     //一文字
-    val shortName: String? = null,
-    val description: String? = null
-) {
+    val shortName: String? = null, override val description: String? = null
+) : SafetyString<T> {
     init {
         if (name.isBlank() || shortName?.isBlank() == true || shortName?.length != 1) {
             throw IllegalArgumentException("コマンド定義エラー")
         }
     }
 
-    var strValue: String = ""
+    override var value: T? = null
+    override fun updateValue(str: String) {
+        value = type.translator(str)!!
+    }
 
     var required = false
     fun required(): Opt<T> {
@@ -93,68 +57,101 @@ class Opt<T : Any>(
         return this
     }
 
-    var multiple = false
-    fun multiple(): Opt<List<T?>> {
-        multiple = true
-        return Opt(
-            varArgType(type), name, description
+    var multiple: MultipleOpt<T>? = null
+    /**
+     * オプションを複数渡せるようになります。
+     * [required]と組み合わせる場合はこの関数を最後に呼び出してください。
+     * */
+    fun multiple(): MultipleOpt<T> {
+        multiple = MultipleOpt(
+            (type)
         )
+        return multiple as MultipleOpt<T>
+    }
+
+    override fun reset() {
+        super.reset()
+        multiple?.value?.clear()
     }
 
     /**
      * 委譲ってコト・・！？
      */
-    operator fun getValue(thisRef: Any?, property: KProperty<*>): T? {
-        return type.translator(strValue)
+    override operator fun getValue(thisRef: Any?, property: KProperty<*>): T? {
+        return value!!
     }
 
-
+    override fun hasValue(): Boolean {
+       return value!=null||(!multiple?.value.isNullOrEmpty())
+    }
 }
 
 
-open class Arg<T : Any>(val type: ArgType<T>, val name: String, val description: String? = null) {
-    var strValue: String = ""
-
-    var optional = false
-    var vararg = false
-    fun vararg(): Arg<List<T?>> {
-        vararg = true
-        return Arg(
-            varArgType(type), name, description
-        )
+class VarArg<T : Any>(
+    val type: ArgType<T>,
+) {
+    var value: MutableList<T> = mutableListOf()
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): List<T>? {
+        return value
     }
 
+    fun addValue(str: String) {
+        type.translator(str)?.let { value.add(it) }
+    }
+}
+
+class Arg<T : Any>
+    (
+    val type: ArgType<T>, override val name: String, override val description: String? = null
+) : SafetyString<T> {
+    override var value: T? = null
+
+    var optional = false
     fun optional(): Arg<T> {
         optional = true
         return this
     }
 
-    open operator fun getValue(thisRef: Any?, property: KProperty<*>): T? {
-        return type.translator(strValue)
+    var vararg: VarArg<T>? = null
+    fun vararg(): VarArg<T> {
+        vararg = VarArg(type)
+        return vararg as VarArg<T>
+    }
+
+    override fun updateValue(str: String) {
+        value = type.translator(str)!!
+    }
+
+    override fun reset() {
+        super.reset()
+        vararg?.value?.clear()
+    }
+
+    override operator fun getValue(thisRef: Any?, property: KProperty<*>): T? {
+        return value!!
+    }
+
+    override fun hasValue(): Boolean {
+        return value!=null||(!vararg?.value.isNullOrEmpty())
     }
 }
 
 
 abstract class Command<R>(val name: String, val description: String = "") {
 
-    val argParser: ARGSSUS = ARGSSUS()
+    val argParser: SuperArgsParser = SuperArgsParser()
 
 
     fun <T : Any> option(
-        type: ArgType<T>,
-        name: String,
-        shortName: String? = null,
-        description: String? = null
+        type: ArgType<T>, name: String, shortName: String? = null, description: String? = null
     ): Opt<T> {
-        val o = Opt(type, name, shortName, description)
+        val o = Opt<T>(type, name, shortName, description)
         argParser.opts.add(o)
         return o
     }
 
     fun <T : Any> argument(
-        type: ArgType<T>,
-        name: String,
-        description: String? = null
+        type: ArgType<T>, name: String, description: String? = null
     ): Arg<T> {
         val a = Arg(type, name, description)
         argParser.args.add(a)
@@ -204,8 +201,8 @@ class Args(val args: List<String>) {
     }
 }
 
-@Deprecated("非推奨", level = DeprecationLevel.WARNING,
-    replaceWith = ReplaceWith("Args(this)", "core.commands.parser.Args")
+@Deprecated(
+    "非推奨", level = DeprecationLevel.WARNING, replaceWith = ReplaceWith("Args(this)", "core.commands.parser.Args")
 )
 fun List<String>.toArgs() = Args(this)
 
@@ -224,12 +221,5 @@ sealed class ArgType<T : Any>(val translator: (kotlin.String) -> T?) {
         Vfs.tryResolve(Path(it))?.toDirectoryOrNull()
     })
 
-    class Define<T : Any>(translator: (kotlin.String) -> T?) :
-        ArgType<T>(translator)
-}
-
-private fun <T : Any> varArgType(type: ArgType<T>) = ArgType.Define {
-    it.split(" ").map {
-        type.translator(it)
-    }
+    class Define<T : Any>(translator: (kotlin.String) -> T?) : ArgType<T>(translator)
 }
