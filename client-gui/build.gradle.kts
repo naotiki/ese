@@ -24,8 +24,10 @@ kotlin {
     }
     sourceSets {
         val jvmMain by getting {
+            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
             dependencies {
                 implementation(compose.desktop.currentOs)
+                implementation(compose.desktop.components.splitPane)
                 implementation(compose.preview)
                 implementation(compose.uiTooling)
                 implementation(project(":core"))
