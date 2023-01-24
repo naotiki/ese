@@ -12,7 +12,6 @@ import core.vfs.TextFile
 import kotlinx.coroutines.delay
 import java.io.BufferedReader
 import java.io.PrintStream
-import kotlin.reflect.KProperty
 
 
 object ListFile : Command<Unit>(
@@ -20,20 +19,18 @@ object ListFile : Command<Unit>(
     今いる場所のファイルを一覧表示します
 """.trimIndent()
 ) {
-    val option by option(ArgType.Boolean,"","","")
-    val arg1 by argument(ArgType.Dir,"","")
+    val list by option(ArgType.Boolean, "list", "l", "").default(false)
+    val all by option(ArgType.Boolean, "all", "a", "").default(false)
+    val directory by argument(ArgType.Dir, "target", "一覧表示するディレクトリ").optional()
     override suspend fun execute(args: List<String>) {
-        val b = args.toArgs().getArg(ArgType.Dir, Vfs.currentDirectory) ?: let {
-            out.println("引数の形式が正しくありません。")
-            null
-        } ?: return
-        //LocationManager.currentDirectory
-        b.children.forEach { (fileName, _) ->
-            out.println(fileName)
+        (directory ?: Vfs.currentDirectory).children.keys.forEach {
+            if (list) {
+                out.println(it)
+            } else out.print("$it ")
         }
+        out.println()
     }
 }
-
 
 
 object Remove : Command<Unit>(
@@ -46,9 +43,9 @@ object Remove : Command<Unit>(
             out.println("引数の形式が正しくありません。")
             null
         } ?: return
-        if (b is Directory){
-            if(b.children.isEmpty()){
-                if(b.parent?.removeChild(b) == true){
+        if (b is Directory) {
+            if (b.children.isEmpty()) {
+                if (b.parent?.removeChild(b) == true) {
                     out.println("${b.name}が削除されました")
                 }
             }
@@ -58,8 +55,9 @@ object Remove : Command<Unit>(
 
 
 object ChangeDirectory : Command<Unit>("cd") {
+    val directory by argument(ArgType.Dir, "target", "一覧表示するディレクトリ")
     override suspend fun execute(args: List<String>) {
-        val dir = args.firstOrNull()?.let { Vfs.tryResolve(Path(it)) } as? Directory
+        val dir = directory//args.firstOrNull()?.let { Vfs.tryResolve(Path(it)) } as? Directory
         if (dir != null) {
             Vfs.setPath(dir)
         } else out.println("無効なディレクトリ")
@@ -131,5 +129,6 @@ internal object CommandManager {
     fun add(cmd: Command<*>) {
         _commandList[cmd.name] = cmd
     }
+
     fun tryResolve(cmd: String): Command<*>? = _commandList[cmd]
 }

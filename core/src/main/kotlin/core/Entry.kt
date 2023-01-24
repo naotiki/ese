@@ -1,6 +1,7 @@
 package core
 
 import core.commands.*
+import core.commands.parser.CommandResult
 import core.user.Group
 import core.user.User
 import core.user.VUM
@@ -57,6 +58,7 @@ suspend fun initialize(consoleInterface: ConsoleInterface) {
             VUM.userList.any { it.name == userName } -> {
                 outputStream.println("既にあるユーザー名です")
             }
+
             else -> break
         }
     }
@@ -92,9 +94,9 @@ suspend fun initialize(consoleInterface: ConsoleInterface) {
         if (cmd != null) {
             withContext(Dispatchers.Default) {
                 job = launch {
-                    val result = cmd.execute(inputArgs.drop(1))
-                    if (result !is Unit) {
-                        outputStream.println("[DEBUG] RETURN:$result")
+                    val result = cmd.resolve(inputArgs.drop(1))
+                    if (result is CommandResult.Success) {
+                        outputStream.println("[DEBUG] RETURN:${result.value}")
                     }
                 }
                 job?.join()

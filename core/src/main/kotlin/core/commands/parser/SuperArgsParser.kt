@@ -24,7 +24,7 @@ class SuperArgsParser {
         var inOption: Opt<*>? = null
         //可変長引数用
         var target: Arg<*>? = null
-        argList.forEachIndexed { index, s ->
+        argList.filter { it.isNotBlank() }.forEachIndexed { index, s ->
             when {
                 //オプション(発見)
                 s.startsWith("-") -> {
@@ -56,7 +56,10 @@ class SuperArgsParser {
                 }
                 //引数
                 else -> {
-                    if (target?.vararg == null) target = q.next()
+
+                    if (target?.vararg == null) {
+                            target = q.next()
+                    }
                     if (target!!.vararg != null) {
                         target?.vararg!!.addValue(s)
                     } else {
@@ -65,14 +68,17 @@ class SuperArgsParser {
                 }
             }
         }
-        if (args.all {
-                it.hasValue() || it.optional
-            } && opts.all {
-                !it.required || it.hasValue()
-            }) {
-            println("えっr")
-            TODO("コマンド不十分")
+        args.filterNot {
+            it.hasValue() || it.optional
+        }.forEach {
+            throw CommandParserException("必須な引数${it.name}が指定されていません")
         }
+        opts.filterNot {
+            it.hasValue() || !it.required
+        }.forEach {
+            throw CommandParserException("必須なオプション${it.name}が指定されていません")
+        }
+
     }
 
 

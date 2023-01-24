@@ -1,12 +1,10 @@
 package core
 
-import core.commands.CommandManager
 import core.commands.parser.ArgType
 import core.commands.parser.Command
 import core.vfs.FireTree
 import core.vfs.VFS
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -31,18 +29,32 @@ class ShellScriptTest {
     }
 
     @Test
-    fun a() {
+    fun testRunCommand() {
         runBlocking(){
-            TestCommandClass.resolve("-la".split(" "))
+            TestCommand.resolve("-la rdfgv / /home".split(" "))
         }
     }
 }
 
-object TestCommandClass : Command<Unit>("ls") {
-    val list by option(ArgType.Boolean, "list","l")
-    val all by option(ArgType.Boolean, "all", "a")
-    val target by argument(ArgType.Dir, name = "target")
+object TestCommand : Command<Unit>(
+    "ls", """
+    今いる場所のファイルを一覧表示します
+""".trimIndent()
+) {
+    val list by option(ArgType.Boolean, "list", "l", "").default(false)
+    val all by option(ArgType.Boolean, "all", "a", "").default(false)
+    val a by argument(ArgType.String, "happy", "一覧表示するディレクトリ")
+    val directory by argument(ArgType.Dir, "target", "一覧表示するディレクトリ").vararg()
     override suspend fun execute(args: List<String>) {
-        println(target?.getFullPath())
+        val b = directory.ifEmpty { listOf(Vfs.currentDirectory) }
+        println("a is $a")
+        b.forEach {
+            it.children.keys.forEach{
+                if (list){
+                    println(it)
+                }else print("$it ")
+            }
+            println("\n--------")
+        }
     }
 }
