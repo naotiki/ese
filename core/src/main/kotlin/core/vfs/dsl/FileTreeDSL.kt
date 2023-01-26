@@ -6,6 +6,7 @@ import core.user.User
 import core.vfs.Directory
 import core.vfs.DynamicDirectory
 import core.vfs.FireTree.root
+import core.vfs.Permission
 import core.vfs.TextFile
 
 
@@ -27,10 +28,11 @@ inline fun Directory.dir(
     name: String,
     owner: User = this.owner,
     group: Group = owner.group,
+    permission: Permission = Permission.dirDefault,
     block: Directory.() -> Unit
 ):
         Directory {
-    return Directory(name, this, owner, group).also {
+    return Directory(name, this, owner, group, permission).also {
         addChildren(it)
         it.block()
     }
@@ -46,9 +48,10 @@ inline fun Directory.dynDir(
     name: String,
     owner: User = this.owner,
     group: Group = owner.group,
+    permission: Permission = Permission.dirDefault,
     block: Directory.() -> Unit
 ): Directory {
-    return DynamicDirectory(name, this, owner, group).also {
+    return DynamicDirectory(name, this, owner, group,permission).also {
         addChildren(it)
         it.block()
     }
@@ -60,8 +63,20 @@ inline fun Directory.dynDir(
  * @param name ファイル名
  * @param content ファイルの内容
  */
-fun Directory.file(name: String, content: String, owner: User = this.owner, group: Group = owner.group) =
-    addChildren(TextFile(name, this, content, owner, group))
+fun Directory.file(
+    name: String,
+    content: String,
+    owner: User = this.owner,
+    group: Group = owner.group,
+    permission: Permission = Permission.fileDefault
+) =
+    addChildren(TextFile(name, this, content, owner, group,permission))
 
-fun Directory.executable(name: String, content: Command<*>, owner: User = this.owner, group: Group = this.ownerGroup) =
-    addChildren(TextFile(name, this, "", owner, group))
+fun Directory.executable(
+    name: String,
+    content: Command<*>,
+    owner: User = this.owner,
+    group: Group = this.ownerGroup,
+    permission: Permission=Permission.fileDefault
+) =
+    addChildren(TextFile(name, this, "", owner, group,permission))

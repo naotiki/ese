@@ -19,15 +19,18 @@ object ListFile : Command<Unit>(
     今いる場所のファイルを一覧表示します
 """.trimIndent()
 ) {
-    val list by option(ArgType.Boolean, "list", "l", "").default(false)
-    val all by option(ArgType.Boolean, "all", "a", "").default(false)
+    val detail by option(ArgType.Boolean, "list", "l", "ディレクトリの内容を詳細表示します。").default(false)
+    val all by option(ArgType.Boolean, "all", "a", "すべてのファイルを一覧表示したい。").default(false)
     val directory by argument(ArgType.Dir, "target", "一覧表示するディレクトリ").optional()
     override suspend fun execute(args: List<String>) {
-        (directory ?: Vfs.currentDirectory).children.keys.forEach {
-            if (list) {
-                out.println(it)
-            } else out.print("$it ")
+        (directory ?: Vfs.currentDirectory).children.forEach { name, dir ->
+            if (detail) {
+                dir.run {
+                    out.println("${permission} ${owner.name} ${ownerGroup.name} ??? 1970 1 1 09:00 $name")
+                }
+            } else out.print("$name ")
         }
+
         out.println()
     }
 }
