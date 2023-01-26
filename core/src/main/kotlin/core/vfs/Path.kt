@@ -1,24 +1,28 @@
 package core.vfs
 
-import core.user.*
+import core.user.VUM
 import core.user.VUM.rootGroup
 import core.user.VUM.uNaotiki
 import core.user.VUM.uRoot
 import core.vfs.FireTree.root
-import core.vfs.dsl.*
+import core.vfs.dsl.dir
+import core.vfs.dsl.dynDir
+import core.vfs.dsl.file
+import core.vfs.dsl.rootDir
+import kotlinx.coroutines.flow.MutableStateFlow
 
 @JvmInline
 value class Path(val value: String) {
-    fun asAbsolute(origin: Directory ) {
+    fun asAbsolute(origin: Directory) {
         TODO("いつか実装")
     }
 }
 
 
+object FireTree {
+    val root = Directory("", null, uRoot, rootGroup, Permission(0b111_111_111))
+    lateinit var home: Directory
 
-object FireTree{
-    val root = Directory("", null, uRoot, rootGroup)
-    lateinit var home:Directory
     init {
         rootDir {
 
@@ -27,20 +31,22 @@ object FireTree{
 
             }
             println("bin:OK")
-            home=dir("home") {
-                uNaotiki.homeDir=dir("naotiki", uNaotiki){
-                    file("ひみつのファイル","""
+            home = dir("home") {
+                uNaotiki.homeDir = dir("naotiki", uNaotiki) {
+                    file(
+                        "ひみつのファイル", """
                         みるなよ
-                    """.trimIndent())
+                    """.trimIndent()
+                    )
                 }
             }
-            dir("usr"){
+            dir("usr") {
 
             }
-            dir("sbin"){
+            dir("sbin") {
 
             }
-            dir("mnt"){
+            dir("mnt") {
 
             }
         }
@@ -50,27 +56,34 @@ object FireTree{
 /**
  * ぼくのかんがえたさいきょうのVirtual File System
  */
-class VFS(currentDirectory: Directory,var homeDir:Directory?=null,) {
-    var currentDirectory :Directory=currentDirectory
+class VFS(currentDirectory: Directory) {
+    val homeDir:Directory? get() = VUM.user?.homeDir
+    var currentDirectory: Directory = currentDirectory
         private set
     var currentPath: Path = currentDirectory.getFullPath()
         private set
+
+    val currentDirectoryFlow = MutableStateFlow(currentDirectory)
+
+    private fun setCurrentPath(dir: Directory, path: Path) {
+        currentDirectory=dir
+        currentPath=path
+        currentDirectoryFlow.tryEmit(dir)
+    }
+
     /**
-     * VFSファイルツリーを初期化します。
-     * @param user homeDirの所有者
+     * Overload [setCurrentPath]
      * */
-
-    fun setPath(path: Path): Boolean {
-        return (tryResolve(path) as? Directory)?.let {
-            currentPath = path
-            currentDirectory = it
-        } != null
+    fun setCurrentPath(path: Path) = tryResolve(path)?.toDirectoryOrNull()?.let {
+        currentPath = path
+        currentDirectory = it
+        setCurrentPath(it, path)
     }
 
-    fun setPath(dir: Directory) {
-        currentPath = dir.getFullPath()
-        currentDirectory = dir
-    }
+    /**
+     * Overload [setCurrentPath]
+     * */
+    fun setCurrentPath(dir: Directory) = setCurrentPath(dir, dir.getFullPath())
 
 
     /**
@@ -89,10 +102,11 @@ class VFS(currentDirectory: Directory,var homeDir:Directory?=null,) {
                 }
             }
 
-            partialPath.drop(if (isHomeDir) 1 else 0).fold<String, File?>(if (isHomeDir) homeDir else root) { dir, partial ->
-                println(partial+":dir:"+dir?.name)
-                dir?.toDirectoryOrNull()?.children?.get(partial)
-            }
+            partialPath.drop(if (isHomeDir) 1 else 0)
+                .fold<String, File?>(if (isHomeDir) homeDir else root) { dir, partial ->
+                    println(partial + ":dir:" + dir?.name)
+                    dir?.toDirectoryOrNull()?.children?.get(partial)
+                }
         } else {
             partialPath.fold<String, File?>(currentDirectory) { dir, partial ->
                 dir?.toDirectoryOrNull()?.let {

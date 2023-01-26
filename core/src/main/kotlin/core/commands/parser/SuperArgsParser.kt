@@ -7,7 +7,7 @@ class SuperArgsParser {
     val opts = mutableListOf<Opt<*>>()
 
     //解析
-    @Throws(CommandIllegalArgsException::class)
+    @Throws(CommandParserException::class)
     fun parse(argList: List<String>) {
         //初期化
         args.forEach { it.reset() }

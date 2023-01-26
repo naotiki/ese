@@ -38,35 +38,31 @@ const val version = "0.0.0-dev"
 suspend fun initialize(consoleInterface: ConsoleInterface) {
     outputStream.println(
         """
-        EseLinux Shell ver.$version
+        Ese Linux ver.$version
         """.trimIndent()
     )
 
-
+    //名前設定
     while (true) {
-        userName = consoleInterface.newPrompt("あなたの名前は？:")
+        userName = consoleInterface.newPrompt("あなたの名前は？:","ktln")
         println(VUM.userList)
         when {
             userName.isNullOrBlank() -> {
                 outputStream.println("空白は使用できません")
             }
-
             !userName.orEmpty().matches(Regex("[0-9A-z]+")) -> {
                 outputStream.println("使用できる文字は0~9の数字とアルファベットと一部記号です")
             }
-
             VUM.userList.any { it.name == userName } -> {
                 outputStream.println("既にあるユーザー名です")
             }
-
             else -> break
         }
     }
 
-    val a = User(
-        userName!!,
-        Group(userName!!),
-        FireTree.home.dir(userName!!) {
+    val newUser = User(userName!!, Group(userName!!))
+    newUser.setHomeDir { user, group ->
+        FireTree.home.dir(user.name, user, group) {
             file(
                 "Readme.txt",
                 """
@@ -75,15 +71,18 @@ suspend fun initialize(consoleInterface: ConsoleInterface) {
             """.trimIndent()
             )
         }
-    )
-    println("Hello $a")
-    Vfs = VFS(a.homeDir!!, a.homeDir)
-    println("Hello $userName")
+    }
+    Vfs.setCurrentPath(newUser.homeDir!!)
+    VUM.setUser(newUser)
+
+
+    //コマンド初期化
     CommandManager.initialize(
         outputStream, consoleReader, consoleInterface,
         ListFile, ChangeDirectory, Cat, Exit, SugoiUserDo,
-        Yes, Clear, Echo, Remove, Test
+        Yes, Clear, Echo, Remove, Test, Parse
     )
+    //無限ルーチン
     while (true/*TODO 終了機能*/) {
         val input = consoleInterface.newPrompt("$userName:${Vfs.currentPath.value}>").ifBlank {
             null
@@ -92,6 +91,7 @@ suspend fun initialize(consoleInterface: ConsoleInterface) {
         val cmd = CommandManager.tryResolve(inputArgs.first())
         commandHistoryImpl.add(0, input)
         if (cmd != null) {
+            //非同期実行
             withContext(Dispatchers.Default) {
                 job = launch {
                     val result = cmd.resolve(inputArgs.drop(1))
@@ -99,23 +99,25 @@ suspend fun initialize(consoleInterface: ConsoleInterface) {
                         outputStream.println("[DEBUG] RETURN:${result.value}")
                     }
                 }
+                //待機
                 job?.join()
                 job = null
             }
         } else {
-            expressionParser(input)
-            outputStream.println(
-                """
+            if (!expressionParser(input)) {
+                outputStream.println(
+                    """
             そのようなコマンドはありません。
             help と入力するとヒントが得られるかも・・・？
             """.trimIndent()
-            )
+                )
+            }
         }
 
     }
 }
 
-lateinit var Vfs: VFS
+var Vfs: VFS = VFS(FireTree.root)
 
 
 private val commandHistoryImpl = mutableListOf<String>()

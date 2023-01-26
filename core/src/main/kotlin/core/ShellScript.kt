@@ -10,7 +10,8 @@ object ShellScript {
 }
 
 //一行のみ
-fun expressionParser(string: String){
+//解析成功でT,失敗でF
+fun expressionParser(string: String):Boolean{
 
     val assignment=Regex("^${Variable.nameRule}=")
 
@@ -21,7 +22,9 @@ fun expressionParser(string: String){
             val a=string.replaceFirst(assignment,"")
             Variable.map[assignment.matchAt(string,0)!!.value.trimEnd('=')]=a
         }
+        else->return false
     }
     println(Variable.map)
+    return true
 }
 

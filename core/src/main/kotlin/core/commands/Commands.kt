@@ -6,13 +6,26 @@ import core.Vfs
 import core.commands.parser.ArgType
 import core.commands.parser.Command
 import core.commands.parser.toArgs
+import core.newPrompt
+import core.user.VUM
 import core.vfs.Directory
-import core.vfs.Path
 import core.vfs.TextFile
 import kotlinx.coroutines.delay
 import java.io.BufferedReader
 import java.io.PrintStream
 
+object Parse : Command<Unit>(
+    "devp", """
+    Print verbose log of parser  
+    開発用 / For development
+""".trimIndent()
+) {
+    val cmd by argument(ArgType.String, "cmd").vararg()
+    override suspend fun execute(args: List<String>) {
+        CommandManager.tryResolve(cmd.first())?.verbose(cmd.drop(1))
+
+    }
+}
 
 object ListFile : Command<Unit>(
     "ls", """
@@ -62,7 +75,7 @@ object ChangeDirectory : Command<Unit>("cd") {
     override suspend fun execute(args: List<String>) {
         val dir = directory//args.firstOrNull()?.let { Vfs.tryResolve(Path(it)) } as? Directory
         if (dir != null) {
-            Vfs.setPath(dir)
+            Vfs.setCurrentPath(dir)
         } else out.println("無効なディレクトリ")
     }
 }
@@ -102,8 +115,22 @@ object Clear : Command<Unit>("clear") {
 }
 
 object SugoiUserDo : Command<Unit>("sudo") {
+    val cmd by argument(ArgType.String, "cmd").vararg()
     override suspend fun execute(args: List<String>) {
-        args.firstOrNull()?.let { CommandManager.tryResolve(it)?.execute(args.drop(1)) }
+        out.println(
+            """あなたはテキストファイルからsudoコマンドの講習を受けたはずです。
+これは通常、以下の3点に要約されます:
+
+    #1) 他人のプライバシーを尊重すること。
+    #2) タイプする前に考えること。
+    #3) 大いなる力には大いなる責任が伴うこと。"""
+        )
+        val n = console.newPrompt("実行しますか？(続行するにはあなたのユーザー名を入力) >>")
+        if (n == VUM.user?.name) {
+            cmd.firstOrNull()?.let { CommandManager.tryResolve(it)?.execute(cmd.drop(1)) }
+        }else{
+            out.println("残念、無効なユーザー名")
+        }
     }
 }
 

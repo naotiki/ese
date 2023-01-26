@@ -37,6 +37,8 @@ object VUM {
     val naotikiGroup = Group("naotiki")
     val uNaotiki = User("naotiki", naotikiGroup)
 
+    var isSugoiUser=false
+        private set
     fun addUser(user: User) {
         users.add(user)
     }
@@ -44,17 +46,30 @@ object VUM {
     fun addGroup(group: Group) {
         groups.add(group)
     }
+
+    var user: User? = null
+        private set
+    fun setUser(u:User){
+        user=u
+    }
 }
 
 data class User(
-    override val name: String, var group: Group,var homeDir:Directory?=null, override val id: UID = UID()
+    override val name: String, var group: Group, override val id: UID = UID(),var homeDir: Directory?=null
 ) : AccessObject {
+
     init {
         homeDir?.run {
             owner=this@User
             ownerGroup=group
         }
         VUM.addUser(this)
+    }
+    /**
+    * ホームディレクトリを設定します。
+    * */
+    fun setHomeDir(builder:(User,Group)->Directory){
+        homeDir=builder(this,group)
     }
 }
 
