@@ -4,8 +4,8 @@ import core.ConsoleInterface
 import core.Variable.expandVariable
 import core.Vfs
 import core.commands.parser.ArgType
+import core.commands.parser.Args
 import core.commands.parser.Command
-import core.commands.parser.toArgs
 import core.newPrompt
 import core.user.VUM
 import core.vfs.Directory
@@ -55,7 +55,7 @@ object Remove : Command<Unit>(
 """.trimIndent()
 ) {
     override suspend fun execute(args: List<String>) {
-        val b = args.toArgs().getArg(ArgType.File, Vfs.currentDirectory) ?: let {
+        val b = Args(args).getArg(ArgType.File, Vfs.currentDirectory) ?: let {
             out.println("引数の形式が正しくありません。")
             null
         } ?: return
@@ -82,7 +82,7 @@ object ChangeDirectory : Command<Unit>("cd") {
 
 object Yes : Command<Unit>("yes") {
     override suspend fun execute(args: List<String>) {
-        val b = args.toArgs().getArg(ArgType.String, "yes") ?: return
+        val b = Args(args).getArg(ArgType.String, "yes") ?: return
 
         while (true) {
             out.println(b)
@@ -95,7 +95,7 @@ object Yes : Command<Unit>("yes") {
 //😼
 object Cat : Command<Unit>("cat") {
     override suspend fun execute(args: List<String>) {
-        val txt = args.toArgs().getArg(ArgType.File)
+        val txt = Args(args).getArg(ArgType.File)
         if (txt is TextFile) {
             out.println(txt.content)
         } else out.println("無効なファイル")
@@ -128,7 +128,7 @@ object SugoiUserDo : Command<Unit>("sudo") {
         val n = console.newPrompt("実行しますか？(続行するにはあなたのユーザー名を入力) >>")
         if (n == VUM.user?.name) {
             cmd.firstOrNull()?.let { CommandManager.tryResolve(it)?.execute(cmd.drop(1)) }
-        }else{
+        } else {
             out.println("残念、無効なユーザー名")
         }
     }

@@ -90,9 +90,7 @@ class DynamicDirectory(name: String, parent: Directory?, owner: User, group: Gro
 //初期状態
 
 
-enum class FileType {
-
-}
+enum class FileType
 
 object FileAttribute {
     const val None = 0

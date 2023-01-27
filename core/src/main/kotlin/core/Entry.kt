@@ -35,7 +35,7 @@ suspend fun ConsoleInterface.newPrompt(promptText: String, value: String = ""): 
 
 var job: Job? = null
 const val version = "0.0.0-dev"
-suspend fun initialize(consoleInterface: ConsoleInterface) {
+suspend fun initialize(consoleInterface: ConsoleInterface ) {
     outputStream.println(
         """
         Ese Linux ver.$version

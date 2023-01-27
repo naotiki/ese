@@ -30,7 +30,7 @@ class ShellScriptTest {
 
     @Test
     fun testRunCommand() {
-        runBlocking(){
+        runBlocking {
             TestCommand.resolve("-la rdfgv / /home".split(" "))
         }
     }

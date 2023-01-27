@@ -14,10 +14,7 @@ value class UID(
     val id: UInt = (System
         .currentTimeMillis() * Random.nextBits(16).toLong()).toUInt()
 ) {
-    companion object {
-
-
-    }
+    companion object
 }
 
 

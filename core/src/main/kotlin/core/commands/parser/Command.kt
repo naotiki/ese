@@ -91,7 +91,7 @@ abstract class Command<R>(val name: String, val description: String = "") {
             e.printStackTrace()
             e.printStackTrace(out)
             CommandResult.Error()
-        }finally {
+        } finally {
             //ヘルプは別処理
             if (help) {
                 out.println(

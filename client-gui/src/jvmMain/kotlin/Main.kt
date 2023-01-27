@@ -146,7 +146,7 @@ fun App() {
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
-fun main() = application() {
+fun main() = application {
     Window(onCloseRequest = ::exitApplication, title = "Console", onPreviewKeyEvent = {
         return@Window if (it.key == Key.C && it.isCtrlPressed) {
             cancelCommand()
