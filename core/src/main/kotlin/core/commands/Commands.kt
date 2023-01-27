@@ -14,6 +14,18 @@ import kotlinx.coroutines.delay
 import java.io.BufferedReader
 import java.io.PrintStream
 
+//Man
+object help : Command<Unit>(
+    "help", """
+        helpを表示します
+""".trimIndent()
+) {
+    val cmd by argument(ArgType.String, "cmd").vararg()
+    override suspend fun execute(args: List<String>) {
+
+    }
+}
+
 object Parse : Command<Unit>(
     "devp", """
     Print verbose log of parser  
@@ -86,6 +98,7 @@ object Yes : Command<Unit>("yes") {
 
         while (true) {
             out.println(b)
+            //Bits per sec yield()にすると ASSERT: 51.500000 != 51.750000 って出るから適度な休憩をあげましょう
             delay(10)
         }
     }

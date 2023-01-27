@@ -18,7 +18,6 @@ abstract class Command<R>(val name: String, val description: String = "") {
 
     val help by option(ArgType.Boolean, "help", "h", "ヘルプを表示します").default(false)
 
-
     fun <T : Any> option(
         type: ArgType<T>, name: String, shortName: String? = null, description: String? = null
     ): Opt<T> {
