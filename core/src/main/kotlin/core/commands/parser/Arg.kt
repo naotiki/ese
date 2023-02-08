@@ -15,7 +15,7 @@ class VarArg<T : Any>(
     }
 
     fun addValue(str: String) {
-        type.cast(str)?.let { value.add(it) }?:throw CommandIllegalArgsException("$name が無効な数値です。",type)
+        type.cast(str)?.let { value.add(it) }?:throw CommandIllegalArgsException("$name が無効な値です。",type)
     }
 }
 
@@ -44,7 +44,7 @@ class Arg<T : Any>(
     }
 
     override fun updateValue(str: String) {
-        value = type.cast(str)?:throw CommandIllegalArgsException("$name が無効な数値です。",type)
+        value = type.cast(str)?:throw CommandIllegalArgsException("$name が無効な値です。",type)
     }
 
     override fun reset() {

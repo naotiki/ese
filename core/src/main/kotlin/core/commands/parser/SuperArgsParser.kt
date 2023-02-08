@@ -15,22 +15,20 @@ class SuperArgsParser {
         args.forEach { it.reset() }
         opts.forEach { it.reset() }
         //可変長引数は最後に持ってくる
-        var index = 0
         //オプションがあるかどうか
         var inOption: Opt<*>? = null
         //可変長引数用
-        var target: Arg<*>? = null
         val normalizedArgs = argList.filter { it.isNotBlank() }
 
 
-        val arxgs = args.sortedWith { o1: Arg<*>, o2: Arg<*> ->
+        val argListIterator = args.sortedWith { o1: Arg<*>, o2: Arg<*> ->
             if (o1.vararg != null) {
                 1
             } else if (o2.vararg != null) {
                 -1
             } else 0
         }.listIterator()
-        var nextArg = arxgs.nextOrNull()
+        var nextArg = argListIterator.nextOrNull()
         //var argIndex = 0
         normalizedArgs.forEach { str: String ->
             val includeOption = nextArg?.vararg?.includeOption == true
@@ -73,7 +71,7 @@ class SuperArgsParser {
                     nextArg != null -> {
                         if (nextArg!!.vararg == null) {
                             nextArg!!.updateValue(str)
-                            nextArg = arxgs.nextOrNull()
+                            nextArg = argListIterator.nextOrNull()
                         } else {
                             nextArg!!.vararg!!.addValue(str)
                         }
@@ -82,57 +80,9 @@ class SuperArgsParser {
                         TODO("💥")
                     }
                 }
-
-
             }
         }
 
-        //
-        /*normalizedArgs.forEach { s ->
-            when {
-                //オプション(発見)
-                s.startsWith("-") -> {
-                    val name = s.trimStart('-')
-                    val o = opts.filter { opt: Opt<*> ->
-                        if (s.startsWith("--")) {
-                            opt.name == name
-                        } else {
-                            // ls -lhaなどのBooleanの複数羅列対応
-                            ((opt.type is ArgType.Boolean) && (opt.shortName?.let { it in name } == true)) || (opt
-                                .shortName == name)
-                        }
-                    }
-                    if (o.isEmpty()) {
-                        throw CommandParserException("オプション解析エラー:不明な名前")
-                    }
-                    o.forEach {
-                        if (it.type is ArgType.Boolean) {
-                            it.updateValue("true")
-                        } else inOption = it
-
-                    }
-                }
-                //オプション(代入)
-                inOption != null -> {
-                    if (inOption!!.multiple != null) {
-                        inOption!!.multiple!!.addValue(s)
-                    } else inOption!!.updateValue(s)
-                    inOption = null
-                }
-                //引数
-                else -> {
-                    if (target?.vararg == null) {
-                        target = q[index++]
-                    }
-
-                    if (target!!.vararg != null) {
-                        target?.vararg!!.addValue(s)
-                    } else {
-                        target!!.updateValue(s)
-                    }
-                }
-            }
-        }*/
         args.filterNot {
             it.value!=null||it.vararg!=null  || it.optional
         }.forEach {
