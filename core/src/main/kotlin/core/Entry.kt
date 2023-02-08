@@ -79,8 +79,7 @@ suspend fun initialize(consoleInterface: ConsoleInterface ) {
     //コマンド初期化
     CommandManager.initialize(
         outputStream, consoleReader, consoleInterface,
-        ListFile, ChangeDirectory, Cat, Exit, SugoiUserDo,
-        Yes, Clear, Echo, Remove, Test, Parse
+
     )
     //無限ルーチン
     while (true/*TODO 終了機能*/) {

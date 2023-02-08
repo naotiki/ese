@@ -14,6 +14,7 @@ dependencies {
     implementation("io.insert-koin:koin-core:3.3.2")
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
     testImplementation("io.insert-koin:koin-test-junit5:3.3.2")
+    implementation(kotlin("reflect"))
 }
 
 tasks.getByName<Test>("test") {

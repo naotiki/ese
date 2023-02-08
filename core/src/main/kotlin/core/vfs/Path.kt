@@ -1,14 +1,13 @@
 package core.vfs
 
+import core.commands.*
+import core.commands.parser.Command
 import core.user.VUM
 import core.user.VUM.rootGroup
 import core.user.VUM.uNaotiki
 import core.user.VUM.uRoot
 import core.vfs.FireTree.root
-import core.vfs.dsl.dir
-import core.vfs.dsl.dynDir
-import core.vfs.dsl.file
-import core.vfs.dsl.rootDir
+import core.vfs.dsl.*
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @JvmInline
@@ -22,14 +21,21 @@ value class Path(val value: String) {
 object FireTree {
     val root = Directory("", null, uRoot, rootGroup, Permission(0b111_111_111))
     lateinit var home: Directory
+    val executableEnvPaths = mutableListOf<Directory>()
 
     init {
+        val initialCommands = listOf<Command<*>>(
+            ListFile(), ChangeDirectory(), Cat(), Exit(), SugoiUserDo(),
+            Yes(), Clear(), Echo(), Remove(), Test(), Parse()
+        )
         rootDir {
 
             //動的ディレクトリ
-            dynDir("bin") {
-
-            }
+            executableEnvPaths.add(dynDir("bin") {
+                initialCommands.forEach {
+                    executable(it)
+                }
+            })
             println("bin:OK")
             home = dir("home") {
                 uNaotiki.homeDir = dir("naotiki", uNaotiki) {
@@ -57,7 +63,7 @@ object FireTree {
  * ぼくのかんがえたさいきょうのVirtual File System
  */
 class VFS(currentDirectory: Directory) {
-    val homeDir:Directory? get() = VUM.user?.homeDir
+    val homeDir: Directory? get() = VUM.user?.homeDir
     var currentDirectory: Directory = currentDirectory
         private set
     var currentPath: Path = currentDirectory.getFullPath()
@@ -66,8 +72,8 @@ class VFS(currentDirectory: Directory) {
     val currentDirectoryFlow = MutableStateFlow(currentDirectory)
 
     private fun setCurrentPath(dir: Directory, path: Path) {
-        currentDirectory=dir
-        currentPath=path
+        currentDirectory = dir
+        currentPath = path
         currentDirectoryFlow.tryEmit(dir)
     }
 

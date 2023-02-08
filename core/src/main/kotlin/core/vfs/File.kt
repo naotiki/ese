@@ -1,6 +1,7 @@
 package core.vfs
 
 import core.EventManager
+import core.commands.parser.Command
 import core.user.Group
 import core.user.User
 
@@ -49,10 +50,10 @@ class TextFile(
         private set
 }
 
-class ExecutableFile(
-    name: String, parent: Directory?, content: String, owner: User, group: Group, permission: Permission
+class ExecutableFile<R>(
+    name: String, parent: Directory?, command: Command<R>, owner: User, group: Group, permission: Permission
 ) : File(name, parent, owner = owner, ownerGroup = group, permission = permission) {
-    var content = content
+    var command = command
         private set
 }
 

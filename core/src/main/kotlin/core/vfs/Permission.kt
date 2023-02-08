@@ -13,7 +13,7 @@ enum class PermissionTarget {
 }
 
 /**
- * @param value 0~511 (OCT:777)(BIN:111111111)までの範囲
+ * @param value 0~511 (OCT:777)(BIN:111_111_111)までの範囲
  */
 @JvmInline
 value class Permission(val value: Int) {

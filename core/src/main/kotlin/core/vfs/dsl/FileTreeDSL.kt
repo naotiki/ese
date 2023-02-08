@@ -3,11 +3,8 @@ package core.vfs.dsl
 import core.commands.parser.Command
 import core.user.Group
 import core.user.User
-import core.vfs.Directory
-import core.vfs.DynamicDirectory
+import core.vfs.*
 import core.vfs.FireTree.root
-import core.vfs.Permission
-import core.vfs.TextFile
 
 
 /**
@@ -72,11 +69,11 @@ fun Directory.file(
 ) =
     addChildren(TextFile(name, this, content, owner, group,permission))
 
-fun Directory.executable(
-    name: String,
-    content: Command<*>,
+fun <R> Directory.executable(
+    command: Command<R>,
+    name: String=command.name,
     owner: User = this.owner,
     group: Group = this.ownerGroup,
     permission: Permission=Permission.fileDefault
 ) =
-    addChildren(TextFile(name, this, "", owner, group,permission))
+    addChildren(ExecutableFile(name, this, command, owner, group,permission))

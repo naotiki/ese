@@ -3,19 +3,19 @@ package core.commands
 import core.ConsoleInterface
 import core.Variable.expandVariable
 import core.Vfs
-import core.commands.parser.ArgType
-import core.commands.parser.Args
-import core.commands.parser.Command
+import core.commands.parser.*
 import core.newPrompt
 import core.user.VUM
 import core.vfs.Directory
+import core.vfs.ExecutableFile
+import core.vfs.FireTree
 import core.vfs.TextFile
 import kotlinx.coroutines.delay
 import java.io.BufferedReader
 import java.io.PrintStream
 
 //Man
-object help : Command<Unit>(
+class help : Command<Unit>(
     "help", """
         helpを表示します
 """.trimIndent()
@@ -26,46 +26,51 @@ object help : Command<Unit>(
     }
 }
 
-object Parse : Command<Unit>(
+class Parse : Command<Unit>(
     "devp", """
     Print verbose log of parser  
     開発用 / For development
 """.trimIndent()
 ) {
-    val cmd by argument(ArgType.String, "cmd").vararg()
+    val cmd by argument(ArgType.Command, "cmd")
+    val bypassArgs by argument(ArgType.String,"args").vararg(true)
     override suspend fun execute(args: List<String>) {
-        CommandManager.tryResolve(cmd.first())?.verbose(cmd.drop(1))
+        cmd.verbose(bypassArgs)
 
     }
 }
 
-object ListFile : Command<Unit>(
+class ListFile : Command<Unit>(
     "ls", """
     今いる場所のファイルを一覧表示します
 """.trimIndent()
 ) {
+
     val detail by option(ArgType.Boolean, "list", "l", "ディレクトリの内容を詳細表示します。").default(false)
-    val all by option(ArgType.Boolean, "all", "a", "すべてのファイルを一覧表示したい。").default(false)
+    val all by option(ArgType.Boolean, "all", "a", "すべてのファイルを一覧表示します。").default(false)
     val directory by argument(ArgType.Dir, "target", "一覧表示するディレクトリ").optional()
     override suspend fun execute(args: List<String>) {
-        (directory ?: Vfs.currentDirectory).children.forEach { name, dir ->
+        (directory ?: Vfs.currentDirectory).children.forEach { (name, dir) ->
             if (detail) {
                 dir.run {
-                    out.println("${permission} ${owner.name} ${ownerGroup.name} ??? 1970 1 1 09:00 $name")
+                    out.println("$permission ${owner.name} ${ownerGroup.name} ??? 1970 1 1 09:00 $name")
                 }
             } else out.print("$name ")
         }
-
         out.println()
     }
 }
 
 
-object Remove : Command<Unit>(
+
+
+class Remove : Command<Unit>(
     "rm", """
     今いる場所のファイルを一覧表示します
 """.trimIndent()
 ) {
+
+
     override suspend fun execute(args: List<String>) {
         val b = Args(args).getArg(ArgType.File, Vfs.currentDirectory) ?: let {
             out.println("引数の形式が正しくありません。")
@@ -82,7 +87,7 @@ object Remove : Command<Unit>(
 }
 
 
-object ChangeDirectory : Command<Unit>("cd") {
+class ChangeDirectory : Command<Unit>("cd") {
     val directory by argument(ArgType.Dir, "target", "一覧表示するディレクトリ")
     override suspend fun execute(args: List<String>) {
         val dir = directory//args.firstOrNull()?.let { Vfs.tryResolve(Path(it)) } as? Directory
@@ -92,9 +97,10 @@ object ChangeDirectory : Command<Unit>("cd") {
     }
 }
 
-object Yes : Command<Unit>("yes") {
+class Yes : Command<Unit>("yes") {
+    val value by argument(ArgType.String,"value","出力する文字列").optional()
     override suspend fun execute(args: List<String>) {
-        val b = Args(args).getArg(ArgType.String, "yes") ?: return
+        val b = value?:"yes"
 
         while (true) {
             out.println(b)
@@ -106,7 +112,7 @@ object Yes : Command<Unit>("yes") {
 
 
 //😼
-object Cat : Command<Unit>("cat") {
+class Cat : Command<Unit>("cat") {
     override suspend fun execute(args: List<String>) {
         val txt = Args(args).getArg(ArgType.File)
         if (txt is TextFile) {
@@ -115,21 +121,23 @@ object Cat : Command<Unit>("cat") {
     }
 }
 
-object Echo : Command<Unit>("echo") {
+class Echo : Command<Unit>("echo") {
     override suspend fun execute(args: List<String>) {
         args.joinToString(" ").let { out.println(expandVariable(it)) }
     }
 }
 
-object Clear : Command<Unit>("clear") {
+class Clear : Command<Unit>("clear") {
     override suspend fun execute(args: List<String>) {
         console.clear()
     }
 }
 
-object SugoiUserDo : Command<Unit>("sudo") {
-    val cmd by argument(ArgType.String, "cmd").vararg()
-    override suspend fun execute(args: List<String>) {
+class SugoiUserDo : Command<Unit>("sudo","SUDO ~Sugoi User DO~ すごいユーザーの権限でコマンドを実行します") {
+    val cfvgyh by option(ArgType.Boolean,"addsds","p")
+    val cmd by argument(ArgType.Command,"command","実行するコマンドです")
+    val args by argument(ArgType.String,"args","commandに渡す引数です").vararg(true)
+    override suspend fun execute(arrrrrrrrrr: List<String>) {
         out.println(
             """あなたはテキストファイルからsudoコマンドの講習を受けたはずです。
 これは通常、以下の3点に要約されます:
@@ -140,14 +148,14 @@ object SugoiUserDo : Command<Unit>("sudo") {
         )
         val n = console.newPrompt("実行しますか？(続行するにはあなたのユーザー名を入力) >>")
         if (n == VUM.user?.name) {
-            cmd.firstOrNull()?.let { CommandManager.tryResolve(it)?.execute(cmd.drop(1)) }
+            cmd.resolve(args)
         } else {
             out.println("残念、無効なユーザー名")
         }
     }
 }
 
-object Exit : Command<Unit>("exit") {
+class Exit : Command<Unit>("exit") {
     override suspend fun execute(args: List<String>) {
         out.println("終了します")
         console.exit()
@@ -161,6 +169,12 @@ internal object CommandManager {
     var out: PrintStream? = null
     var reader: BufferedReader? = null
     var consoleImpl: ConsoleInterface? = null
+    fun initialize(out: PrintStream, reader: BufferedReader, consoleImpl: ConsoleInterface,) {
+        CommandManager.out = out
+        CommandManager.reader = reader
+        CommandManager.consoleImpl = consoleImpl
+    }
+    @Deprecated("用無し")
     fun initialize(out: PrintStream, reader: BufferedReader, consoleImpl: ConsoleInterface, vararg cmd: Command<*>) {
         _commandList.clear()
         _commandList.putAll(cmd.associateBy { it.name })
@@ -173,5 +187,16 @@ internal object CommandManager {
         _commandList[cmd.name] = cmd
     }
 
-    fun tryResolve(cmd: String): Command<*>? = _commandList[cmd]
+    fun tryResolve(cmd:String): Command<*>?{
+        FireTree.executableEnvPaths.forEach {
+            it.children.entries.firstOrNull {(name,_)-> cmd==name }?.let {(_,f) ->
+                if (f is ExecutableFile<*>){
+                    return f.command
+                }
+            }
+        }
+        return null
+    }
+
+    //fun tryResolve(cmd: String): Command<*>? = _commandList[cmd]
 }

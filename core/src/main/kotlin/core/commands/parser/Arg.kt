@@ -7,7 +7,7 @@ import kotlin.reflect.KProperty
 
 
 class VarArg<T : Any>(
-    val type: ArgType<T>,val name: String
+    val type: ArgType<T>,val name: String,val includeOption: Boolean
 ) {
     var value: MutableList<T> = mutableListOf()
     operator fun getValue(thisRef: Any?, property: KProperty<*>): List<T> {
@@ -19,9 +19,11 @@ class VarArg<T : Any>(
     }
 }
 
-class Arg<T : Any>
-    (
-    val type: ArgType<T>, override val name: String, override val description: String? = null
+class Arg<T : Any>(
+    val type: ArgType<T>,
+    override val name: String,
+    override val description: String? = null,
+
 ) : SafetyString<T> {
     override var value: T? = null
 
@@ -36,8 +38,8 @@ class Arg<T : Any>
     }
 
     var vararg: VarArg<T>? = null
-    fun vararg(): VarArg<T> {
-        vararg = VarArg(type,name)
+    fun vararg(includeOption: Boolean=false): VarArg<T> {
+        vararg = VarArg(type,name, includeOption)
         return vararg as VarArg<T>
     }
 

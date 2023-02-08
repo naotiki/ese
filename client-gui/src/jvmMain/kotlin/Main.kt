@@ -18,28 +18,25 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.MenuBar
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import core.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
+import org.jetbrains.compose.splitpane.HorizontalSplitPane
+import org.jetbrains.compose.splitpane.rememberSplitPaneState
+import java.awt.MenuBar
 import kotlin.system.exitProcess
 
-/*val logStream: Flow<String> = flow {
-    while (true) {
-        println("In Loop")
-        val result = withContext(Dispatchers.IO) { reader.readText() }
-        emit(result)
-        println(result)
-    }
-}*/
 val logStream = reader.lineSequence().asFlow().flowOn(Dispatchers.IO)
 val handler = CoroutineExceptionHandler { _, exception ->
     println("CoroutineExceptionHandler got $exception")
     throw exception
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalSplitPaneApi::class)
 @Composable
 @Preview
 fun App() {
@@ -76,71 +73,88 @@ fun App() {
             stateVertical.scrollTo(stateVertical.maxValue)
         }
     }
+    val splitState= rememberSplitPaneState(0.2f)
+
     MaterialTheme {
-        Box(modifier = Modifier.fillMaxSize().background(Color.DarkGray)) {
-            Column(
-                modifier = Modifier.fillMaxSize().onSizeChanged {
-                    coroutine.launch {
-                        stateVertical.scrollTo(stateVertical.maxValue)
-                    }
-                }.verticalScroll(stateVertical).padding(5.dp),
-                verticalArrangement = Arrangement.spacedBy((-5).dp, Alignment.Top)
-            ) {
-                SelectionContainer {
-                    Text(
-                        textLogs,
-                        overflow = TextOverflow.Visible,
-                        color = Color.White,
-                        fontSize = 20.sp,
-                        fontFamily = FontFamily.Monospace
-                    )
+        HorizontalSplitPane(splitPaneState = splitState){
+            first(100.dp) {
+                Box(Modifier.fillMaxSize().onSizeChanged {
+
+                    println("->"+it.width)
+                }) {
+                    Text("GUIアシスト", fontSize = 20.sp)
+
                 }
 
-                BasicTextField(
-                    prompt.textFieldValue,
-                    onValueChange = {
-                        prompt.updateTextFieldValue(it) { value, _ ->
-                            println("Debug:Updated $value")
-                        }
-                    },
-                    textStyle =
-                    TextStyle(
-                        color = Color.White,
-                        fontSize =
-                        20.sp,
-                        fontFamily = FontFamily.Monospace
-                    ),
-                    cursorBrush = SolidColor(Color.White),
-                    modifier = Modifier.fillMaxWidth().onPreviewKeyEvent {
-                        if (!prompt.isEnable) return@onPreviewKeyEvent false
-
-                        return@onPreviewKeyEvent if (it.key == Key.Enter && it.type == KeyEventType.KeyDown /*&& prompt
-                        .isEnable*/) {
-                            textLogs += prompt.textFieldValue.text + "\n"
-                            consoleWriter.println(prompt.getValue())
-                            prompt.reset()
-                            historyIndex = -1
-                            true
-                        } else if ((it.key == Key.DirectionUp || it.key == Key.DirectionDown) && it.type == KeyEventType.KeyDown) {
-                            historyIndex = when (it.key) {
-                                Key.DirectionUp -> minOf(historyIndex + 1, commandHistory.lastIndex)
-                                Key.DirectionDown -> maxOf(historyIndex - 1, -1)
-                                else -> -1
-                            }
-                            commandHistory.getOrNull(historyIndex).let { s ->
-                                prompt.updateValue(s ?: "")
-                            }
-                            true
-                        } else false
-                    },
-                )
             }
-            VerticalScrollbar(
-                modifier = Modifier.align(Alignment.CenterEnd)
-                    .fillMaxHeight(),
-                adapter = rememberScrollbarAdapter(stateVertical), style = LocalScrollbarStyle.current.copy
-                    (hoverColor = Color.LightGray, unhoverColor = Color.Gray, thickness = 5.dp)
-            )
+
+            second(250.dp) {
+                Box(modifier = Modifier.fillMaxSize().background(Color.DarkGray)) {
+                    Column(
+                        modifier = Modifier.fillMaxSize().onSizeChanged {
+                            coroutine.launch {
+                                stateVertical.scrollTo(stateVertical.maxValue)
+                            }
+                        }.verticalScroll(stateVertical).padding(5.dp),
+                        verticalArrangement = Arrangement.spacedBy((-5).dp, Alignment.Top)
+                    ) {
+                        SelectionContainer {
+                            Text(
+                                textLogs,
+                                overflow = TextOverflow.Visible,
+                                color = Color.White,
+                                fontSize = 20.sp,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        }
+
+                        BasicTextField(
+                            prompt.textFieldValue,
+                            onValueChange = {
+                                prompt.updateTextFieldValue(it) { value, _ ->
+                                    println("Debug:Updated $value")
+                                }
+                            },
+                            textStyle =
+                            TextStyle(
+                                color = Color.White,
+                                fontSize =
+                                20.sp,
+                                fontFamily = FontFamily.Monospace
+                            ),
+                            cursorBrush = SolidColor(Color.White),
+                            modifier = Modifier.fillMaxWidth().onPreviewKeyEvent {
+                                if (!prompt.isEnable) return@onPreviewKeyEvent false
+
+                                return@onPreviewKeyEvent if (it.key == Key.Enter && it.type == KeyEventType.KeyDown /*&& prompt
+                        .isEnable*/) {
+                                    textLogs += prompt.textFieldValue.text + "\n"
+                                    consoleWriter.println(prompt.getValue())
+                                    prompt.reset()
+                                    historyIndex = -1
+                                    true
+                                } else if ((it.key == Key.DirectionUp || it.key == Key.DirectionDown) && it.type == KeyEventType.KeyDown) {
+                                    historyIndex = when (it.key) {
+                                        Key.DirectionUp -> minOf(historyIndex + 1, commandHistory.lastIndex)
+                                        Key.DirectionDown -> maxOf(historyIndex - 1, -1)
+                                        else -> -1
+                                    }
+                                    commandHistory.getOrNull(historyIndex).let { s ->
+                                        prompt.updateValue(s ?: "")
+                                    }
+                                    true
+                                } else false
+                            },
+                        )
+                    }
+                    VerticalScrollbar(
+                        modifier = Modifier.align(Alignment.CenterEnd)
+                            .fillMaxHeight(),
+                        adapter = rememberScrollbarAdapter(stateVertical), style = LocalScrollbarStyle.current.copy
+                            (hoverColor = Color.LightGray, unhoverColor = Color.Gray, thickness = 5.dp)
+                    )
+                }
+            }
         }
     }
 }
@@ -153,6 +167,11 @@ fun main() = application {
             true
         } else false
     }) {
+        MenuBar {
+            Menu("表示",) {
+                Item("GUIアシストを折りたたむ", onClick = {  }, shortcut = KeyShortcut(Key.T, ctrl = true))
+            }
+        }
         App()
     }
 }
