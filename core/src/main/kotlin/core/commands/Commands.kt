@@ -50,7 +50,7 @@ class ListFile : Command<Unit>(
     val all by option(ArgType.Boolean, "all", "a", "すべてのファイルを一覧表示します。").default(false)
     val directory by argument(ArgType.Dir, "target", "一覧表示するディレクトリ").optional()
     override suspend fun execute(args: List<String>) {
-        (directory ?: Vfs.currentDirectory).children.forEach { (name, dir) ->
+        (directory ?: Vfs.currentDirectory).children.filter { (_,f)->!f.hidden||all }.forEach { (name, dir) ->
             if (detail) {
                 dir.run {
                     out.println("$permission ${owner.name} ${ownerGroup.name} ??? 1970 1 1 09:00 $name")
@@ -134,10 +134,9 @@ class Clear : Command<Unit>("clear") {
 }
 
 class SugoiUserDo : Command<Unit>("sudo","SUDO ~Sugoi User DO~ すごいユーザーの権限でコマンドを実行します") {
-    val cfvgyh by option(ArgType.Boolean,"addsds","p")
     val cmd by argument(ArgType.Command,"command","実行するコマンドです")
-    val args by argument(ArgType.String,"args","commandに渡す引数です").vararg(true)
-    override suspend fun execute(arrrrrrrrrr: List<String>) {
+    val targetArgs by argument(ArgType.String,"args","commandに渡す引数です").vararg(true)
+    override suspend fun execute(args: List<String>) {
         out.println(
             """あなたはテキストファイルからsudoコマンドの講習を受けたはずです。
 これは通常、以下の3点に要約されます:
@@ -148,7 +147,7 @@ class SugoiUserDo : Command<Unit>("sudo","SUDO ~Sugoi User DO~ すごいユー�
         )
         val n = console.newPrompt("実行しますか？(続行するにはあなたのユーザー名を入力) >>")
         if (n == VUM.user?.name) {
-            cmd.resolve(args)
+            cmd.resolve(targetArgs)
         } else {
             out.println("残念、無効なユーザー名")
         }

@@ -11,12 +11,12 @@ import core.user.User
  * ディレクトリもファイルとする。
  *  @param name ファイルの名前
  *  @param parent 親ディレクトリ、ルートの場合はnull
- *  @param attribute 属性 [FileAttribute]をとる
+ *  @param hidden 属性 [Boolean]をとる
  */
 abstract class File(
     var name: String,
     var parent: Directory?,
-    var attribute: Int = FileAttribute.None,
+    var hidden: Boolean,
     var owner: User,
     var ownerGroup: Group,
     var permission: Permission
@@ -36,7 +36,7 @@ abstract class File(
 fun File.toDirectoryOrNull(): Directory? {
     return if (this is Directory) {
         this
-    }else null
+    } else null
 }
 
 /**
@@ -44,23 +44,32 @@ fun File.toDirectoryOrNull(): Directory? {
  * @param [content] 内容
  * */
 class TextFile(
-    name: String, parent: Directory?, content: String, owner: User, group: Group, permission: Permission
-) : File(name, parent, owner = owner, ownerGroup = group, permission = permission) {
+    name: String,
+    parent: Directory?,
+    content: String,
+    owner: User,
+    group: Group,
+    permission: Permission,
+    hidden: Boolean
+) : File(name, parent, owner = owner, ownerGroup = group, hidden = hidden,permission = permission) {
     var content = content
         private set
 }
 
 class ExecutableFile<R>(
-    name: String, parent: Directory?, command: Command<R>, owner: User, group: Group, permission: Permission
-) : File(name, parent, owner = owner, ownerGroup = group, permission = permission) {
+    name: String, parent: Directory?, command: Command<R>, owner: User, group: Group, permission: Permission,
+    hidden: Boolean
+) : File(name, parent, owner = owner, ownerGroup = group, hidden = hidden,permission = permission) {
     var command = command
         private set
 }
 
 
-open class Directory(name: String, parent: Directory?, owner: User, group: Group, permission: Permission) : File(
+open class Directory(name: String, parent: Directory?, owner: User, group: Group, permission: Permission,
+                     hidden: Boolean
+) : File(
     name,
-    parent = parent, owner = owner, ownerGroup = group, permission = permission
+    parent = parent, owner = owner, ownerGroup = group, hidden = hidden,permission = permission
 ) {
     protected open var _children: MutableMap<String, File> = mutableMapOf()
     val children get() = _children.toMap()
@@ -68,14 +77,21 @@ open class Directory(name: String, parent: Directory?, owner: User, group: Group
         _children.putAll(childDir.associateBy { it.name })
     }
 
-    fun removeChild(childDir: File): Boolean {
+    fun removeChild(childDir: File): kotlin.Boolean {
         return _children.remove(childDir.name) != null
     }
 }
 
 // 進捗状況に応じて中身が変わるディレクトリ TODO 実装やれ
-class DynamicDirectory(name: String, parent: Directory?, owner: User, group: Group,permission: Permission) :
-    Directory(name, parent, owner, group,permission) {
+class DynamicDirectory(
+    name: String,
+    parent: Directory?,
+    owner: User,
+    group: Group,
+    permission: Permission,
+    hidden: Boolean
+) :
+    Directory(name, parent, owner, group, permission, hidden) {
     init {
         EventManager.addEventListener {
 
@@ -88,13 +104,4 @@ class DynamicDirectory(name: String, parent: Directory?, owner: User, group: Gro
 }
 
 
-//初期状態
 
-
-enum class FileType
-
-object FileAttribute {
-    const val None = 0
-    const val Hide = 1
-
-}

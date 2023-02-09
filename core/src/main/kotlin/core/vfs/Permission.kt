@@ -1,5 +1,7 @@
 package core.vfs
 
+import kotlin.Boolean
+
 enum class PermissionTarget {
     OtherX,
     OtherW,
@@ -26,10 +28,17 @@ value class Permission(val value: Int) {
 
     companion object {
         private val permissionLabel = listOf("x", "w", "r")
+
         //rw-rw-r--
         val fileDefault = Permission(0b110_110_100)
+        val exeDefault = fileDefault + PermissionTarget.OwnerX + PermissionTarget.GroupX + PermissionTarget.OtherX
+
         //rwxrwxr-x
         val dirDefault = Permission(0b111_111_101)
+    }
+
+    operator fun plus(target: PermissionTarget): Permission {
+        return Permission(value or target.getFlag())
     }
 
     /**

@@ -26,10 +26,11 @@ inline fun Directory.dir(
     owner: User = this.owner,
     group: Group = owner.group,
     permission: Permission = Permission.dirDefault,
+    hidden:Boolean=false,
     block: Directory.() -> Unit
 ):
         Directory {
-    return Directory(name, this, owner, group, permission).also {
+    return Directory(name, this, owner, group, permission,hidden).also {
         addChildren(it)
         it.block()
     }
@@ -46,9 +47,10 @@ inline fun Directory.dynDir(
     owner: User = this.owner,
     group: Group = owner.group,
     permission: Permission = Permission.dirDefault,
+    hidden:Boolean=false,
     block: Directory.() -> Unit
 ): Directory {
-    return DynamicDirectory(name, this, owner, group,permission).also {
+    return DynamicDirectory(name, this, owner, group, permission,hidden).also {
         addChildren(it)
         it.block()
     }
@@ -65,15 +67,17 @@ fun Directory.file(
     content: String,
     owner: User = this.owner,
     group: Group = owner.group,
-    permission: Permission = Permission.fileDefault
+    permission: Permission = Permission.fileDefault,
+    hidden:Boolean=false,
 ) =
-    addChildren(TextFile(name, this, content, owner, group,permission))
+    addChildren(TextFile(name, this, content, owner, group, permission,hidden))
 
 fun <R> Directory.executable(
     command: Command<R>,
     name: String=command.name,
     owner: User = this.owner,
     group: Group = this.ownerGroup,
-    permission: Permission=Permission.fileDefault
+    permission: Permission=Permission.exeDefault,
+    hidden:Boolean=false,
 ) =
-    addChildren(ExecutableFile(name, this, command, owner, group,permission))
+    addChildren(ExecutableFile(name, this, command, owner, group,permission,hidden))

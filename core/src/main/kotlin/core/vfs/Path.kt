@@ -19,14 +19,14 @@ value class Path(val value: String) {
 
 
 object FireTree {
-    val root = Directory("", null, uRoot, rootGroup, Permission(0b111_111_111))
+    val root = Directory("", null, uRoot, rootGroup, Permission(0b111_111_111),false)
     lateinit var home: Directory
     val executableEnvPaths = mutableListOf<Directory>()
 
     init {
         val initialCommands = listOf<Command<*>>(
             ListFile(), ChangeDirectory(), Cat(), Exit(), SugoiUserDo(),
-            Yes(), Clear(), Echo(), Remove(), Test(), Parse()
+            Yes(), Clear(), Echo(), Remove(), Test(),
         )
         rootDir {
 
@@ -46,11 +46,17 @@ object FireTree {
                     )
                 }
             }
+
             dir("usr") {
 
             }
             dir("sbin") {
 
+            }
+            dir(".ese", hidden = true) {
+                executableEnvPaths.add(dir("bin") {
+                    executable(Parse())
+                })
             }
             dir("mnt") {
 
