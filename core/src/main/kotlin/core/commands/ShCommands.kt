@@ -3,25 +3,24 @@ package core.commands
 import core.Variable
 import core.commands.Operator.*
 import core.commands.parser.Command
-import core.expressionParser
 
 
 class If : Command<Unit>("if") {
-    override suspend fun execute(args: List<String>) {
+    override suspend fun execute(rawArgs: List<String>) {
 
     }
 
 }
 
 class Test : Command<Boolean>("test") {
-    override suspend fun execute(args: List<String>): Boolean {
-        if (args.isEmpty()) return false
+    override suspend fun execute(rawArgs: List<String>): Boolean {
+        if (rawArgs.isEmpty()) return false
 
-        if (args.size == 1) {
-            return args.first() == "true"
+        if (rawArgs.size == 1) {
+            return rawArgs.first() == "true"
         }
 
-        val conditional = args.take(3).map { it.trim() }
+        val conditional = rawArgs.take(3).map { it.trim() }
         val o = Operator.values().firstOrNull {
             it.string == conditional[1]
         }

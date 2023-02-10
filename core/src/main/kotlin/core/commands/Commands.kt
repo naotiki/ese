@@ -21,7 +21,7 @@ class help : Command<Unit>(
 """.trimIndent()
 ) {
     val cmd by argument(ArgType.String, "cmd").vararg()
-    override suspend fun execute(args: List<String>) {
+    override suspend fun execute(rawArgs: List<String>) {
 
     }
 }
@@ -34,7 +34,7 @@ class Parse : Command<Unit>(
 ) {
     val cmd by argument(ArgType.Command, "cmd")
     val bypassArgs by argument(ArgType.String,"args").vararg(true)
-    override suspend fun execute(args: List<String>) {
+    override suspend fun execute(rawArgs: List<String>) {
         cmd.verbose(bypassArgs)
 
     }
@@ -49,7 +49,7 @@ class ListFile : Command<Unit>(
     val detail by option(ArgType.Boolean, "list", "l", "ディレクトリの内容を詳細表示します。").default(false)
     val all by option(ArgType.Boolean, "all", "a", "すべてのファイルを一覧表示します。").default(false)
     val directory by argument(ArgType.Dir, "target", "一覧表示するディレクトリ").optional()
-    override suspend fun execute(args: List<String>) {
+    override suspend fun execute(rawArgs: List<String>) {
         (directory ?: Vfs.currentDirectory).children.filter { (_,f)->!f.hidden||all }.forEach { (name, dir) ->
             if (detail) {
                 dir.run {
@@ -57,6 +57,7 @@ class ListFile : Command<Unit>(
                 }
             } else out.print("$name ")
         }
+        //書き込み
         out.println()
     }
 }
@@ -71,8 +72,8 @@ class Remove : Command<Unit>(
 ) {
 
 
-    override suspend fun execute(args: List<String>) {
-        val b = Args(args).getArg(ArgType.File, Vfs.currentDirectory) ?: let {
+    override suspend fun execute(rawArgs: List<String>) {
+        val b = Args(rawArgs).getArg(ArgType.File, Vfs.currentDirectory) ?: let {
             out.println("引数の形式が正しくありません。")
             null
         } ?: return
@@ -89,7 +90,7 @@ class Remove : Command<Unit>(
 
 class ChangeDirectory : Command<Unit>("cd") {
     val directory by argument(ArgType.Dir, "target", "一覧表示するディレクトリ")
-    override suspend fun execute(args: List<String>) {
+    override suspend fun execute(rawArgs: List<String>) {
         val dir = directory//args.firstOrNull()?.let { Vfs.tryResolve(Path(it)) } as? Directory
         if (dir != null) {
             Vfs.setCurrentPath(dir)
@@ -99,7 +100,7 @@ class ChangeDirectory : Command<Unit>("cd") {
 
 class Yes : Command<Unit>("yes") {
     val value by argument(ArgType.String,"value","出力する文字列").optional()
-    override suspend fun execute(args: List<String>) {
+    override suspend fun execute(rawArgs: List<String>) {
         val b = value?:"yes"
 
         while (true) {
@@ -113,8 +114,8 @@ class Yes : Command<Unit>("yes") {
 
 //😼
 class Cat : Command<Unit>("cat") {
-    override suspend fun execute(args: List<String>) {
-        val txt = Args(args).getArg(ArgType.File)
+    override suspend fun execute(rawArgs: List<String>) {
+        val txt = Args(rawArgs).getArg(ArgType.File)
         if (txt is TextFile) {
             out.println(txt.content)
         } else out.println("無効なファイル")
@@ -122,13 +123,13 @@ class Cat : Command<Unit>("cat") {
 }
 
 class Echo : Command<Unit>("echo") {
-    override suspend fun execute(args: List<String>) {
-        args.joinToString(" ").let { out.println(expandVariable(it)) }
+    override suspend fun execute(rawArgs: List<String>) {
+        rawArgs.joinToString(" ").let { out.println(expandVariable(it)) }
     }
 }
 
 class Clear : Command<Unit>("clear") {
-    override suspend fun execute(args: List<String>) {
+    override suspend fun execute(rawArgs: List<String>) {
         console.clear()
     }
 }
@@ -136,7 +137,7 @@ class Clear : Command<Unit>("clear") {
 class SugoiUserDo : Command<Unit>("sudo","SUDO ~Sugoi User DO~ すごいユーザーの権限でコマンドを実行します") {
     val cmd by argument(ArgType.Command,"command","実行するコマンドです")
     val targetArgs by argument(ArgType.String,"args","commandに渡す引数です").vararg(true)
-    override suspend fun execute(args: List<String>) {
+    override suspend fun execute(rawArgs: List<String>) {
         out.println(
             """あなたはテキストファイルからsudoコマンドの講習を受けたはずです。
 これは通常、以下の3点に要約されます:
@@ -155,7 +156,7 @@ class SugoiUserDo : Command<Unit>("sudo","SUDO ~Sugoi User DO~ すごいユー�
 }
 
 class Exit : Command<Unit>("exit") {
-    override suspend fun execute(args: List<String>) {
+    override suspend fun execute(rawArgs: List<String>) {
         out.println("終了します")
         console.exit()
     }

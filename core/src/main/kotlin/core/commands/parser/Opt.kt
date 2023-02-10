@@ -20,12 +20,14 @@ class MultipleOpt<T : Any>(
         }
     }
     fun addValue(str: String) {
-        type.cast(str)?.let { value.add(it) }?:throw CommandIllegalArgsException("$name が無効な数値です。",type)
+        type.casterFromString(str)?.let { value.add(it) }?:throw CommandIllegalArgsException("$name が無効な数値です。",type)
     }
 }
+
 interface GetWrapper<T>{
     operator fun getValue(thisRef: Any?, property: KProperty<*>):T
 }
+
 class Opt<T : Any>(
     val type: ArgType<T>, override val name: String,
     //一文字
@@ -49,7 +51,7 @@ class Opt<T : Any>(
         }
     }
     override fun updateValue(str: String) {
-        value = type.cast(str)?:throw CommandIllegalArgsException("$name が無効な数値です。",type)
+        value = type.casterFromString(str)?:throw CommandIllegalArgsException("$name が無効な数値です。",type)
     }
 
     var required = false

@@ -44,7 +44,7 @@ object TestCommand : Command<Unit>(
     val list by option(ArgType.Boolean, "list", "l", "").default(false)
     val all by option(ArgType.Boolean, "all", "a", "").default(false)
     val directory by argument(ArgType.Dir, "target", "一覧表示するディレクトリ").vararg()
-    override suspend fun execute(args: List<String>) {
+    override suspend fun execute(rawArgs: List<String>) {
         val b = directory.ifEmpty { listOf(Vfs.currentDirectory) }
         b.forEach { dir ->
             dir.children.keys.forEach{
