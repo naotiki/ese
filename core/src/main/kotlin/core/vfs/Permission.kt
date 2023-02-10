@@ -1,5 +1,6 @@
 package core.vfs
 
+import kotlinx.serialization.Serializable
 import kotlin.Boolean
 
 enum class PermissionTarget {
@@ -14,6 +15,7 @@ enum class PermissionTarget {
     OwnerR
 }
 
+@Serializable
 /**
  * @param value 0~511 (OCT:777)(BIN:111_111_111)までの範囲
  */

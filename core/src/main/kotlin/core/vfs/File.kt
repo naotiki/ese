@@ -4,6 +4,9 @@ import core.EventManager
 import core.commands.parser.Command
 import core.user.Group
 import core.user.User
+import core.utils.DirectoryAsStringSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 
 /**
@@ -13,9 +16,11 @@ import core.user.User
  *  @param parent 親ディレクトリ、ルートの場合はnull
  *  @param hidden 属性 [Boolean]をとる
  */
-abstract class File(
+@Serializable
+open class File(
     var name: String,
-    var parent: Directory?,
+    @Transient
+    var parent: Directory? = null,
     var hidden: Boolean,
     var owner: User,
     var ownerGroup: Group,
@@ -39,6 +44,7 @@ fun File.toDirectoryOrNull(): Directory? {
     } else null
 }
 
+
 /**
  * 表示可能な文字列を持つファイル
  * @param [content] 内容
@@ -51,7 +57,7 @@ class TextFile(
     group: Group,
     permission: Permission,
     hidden: Boolean
-) : File(name, parent, owner = owner, ownerGroup = group, hidden = hidden,permission = permission) {
+) : File(name, parent, owner = owner, ownerGroup = group, hidden = hidden, permission = permission) {
     var content = content
         private set
 }
@@ -59,25 +65,26 @@ class TextFile(
 class ExecutableFile<R>(
     name: String, parent: Directory?, command: Command<R>, owner: User, group: Group, permission: Permission,
     hidden: Boolean
-) : File(name, parent, owner = owner, ownerGroup = group, hidden = hidden,permission = permission) {
+) : File(name, parent, owner = owner, ownerGroup = group, hidden = hidden, permission = permission) {
     var command = command
         private set
 }
 
-
-open class Directory(name: String, parent: Directory?, owner: User, group: Group, permission: Permission,
-                     hidden: Boolean
+@Serializable(with = DirectoryAsStringSerializer::class)
+open class Directory(
+    name: String,  parent: Directory?, owner: User, group: Group, permission: Permission,
+    hidden: Boolean
 ) : File(
-    name,
-    parent = parent, owner = owner, ownerGroup = group, hidden = hidden,permission = permission
+    name, parent = parent, owner = owner, ownerGroup = group, hidden = hidden, permission = permission
 ) {
-    protected open var _children: MutableMap<String, File> = mutableMapOf()
+    open var _children: MutableMap<String, File> = mutableMapOf()
     val children get() = _children.toMap()
+
     fun addChildren(vararg childDir: File) {
         _children.putAll(childDir.associateBy { it.name })
     }
 
-    fun removeChild(childDir: File): kotlin.Boolean {
+    fun removeChild(childDir: File): Boolean {
         return _children.remove(childDir.name) != null
     }
 }
