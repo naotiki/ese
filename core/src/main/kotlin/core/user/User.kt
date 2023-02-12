@@ -22,21 +22,22 @@ value class UID(
 /**
  * Virtual User Manager
  * */
-object VUM {
+class UserManager {
     private val users = mutableListOf<User>()
     val userList get() = users.toList()
 
     private val groups = mutableListOf<Group>()
     val groupList get() = groups.toList()
 
-    val rootGroup = Group("root")
-    val uRoot = User("root", rootGroup)
+    val rootGroup = Group(this,"root")
+    val uRoot = User(this,"root", rootGroup)
 
-    val naotikiGroup = Group("naotiki")
-    val uNaotiki = User("naotiki", naotikiGroup)
+    val naotikiGroup = Group(this,"naotiki")
+    val uNaotiki = User(this,"naotiki", naotikiGroup)
 
-    var isSugoiUser=false
+    var isSugoiUser = false
         private set
+
     fun addUser(user: User) {
         users.add(user)
     }
@@ -45,38 +46,42 @@ object VUM {
         groups.add(group)
     }
 
-    var user: User? = null
+    lateinit var user: User
         private set
-    fun setUser(u:User){
-        user=u
+
+    fun setUser(u: User) {
+        user = u
     }
 }
+
 @Serializable
-data class User(
-    override val name: String, var group: Group, override val id: UID = UID(),var homeDir: Directory?=null
+data class User private constructor(
+    override val name: String, var group: Group, override val id: UID = UID(), var dir:
+    Directory? = null
 ) : AccessObject {
-
-    init {
-        homeDir?.run {
-            owner=this@User
-            ownerGroup=group
-        }
-        VUM.addUser(this)
+    constructor(
+        userManager: UserManager, name: String, group: Group, id: UID = UID(), dir:
+        Directory? = null
+    ) : this(name, group, id, dir) {
+        userManager.addUser(this)
     }
+
     /**
-    * ホームディレクトリを設定します。
-    * */
-    fun setHomeDir(builder:(User,Group)->Directory){
-        homeDir=builder(this,group)
+     * ホームディレクトリを設定します。
+     * */
+    fun setHomeDir(builder: (User, Group) -> Directory) {
+        dir = builder(this, group)
     }
 }
 
 @Serializable
-data class Group(
+data class Group private constructor(
     override val name: String, override val id: UID = UID()
 ) : AccessObject {
-    init {
-        VUM.addGroup(this)
+    constructor(
+        userManager: UserManager, name: String, id: UID = UID(),
+    ) : this(name,  id, ) {
+        userManager.addGroup(this)
     }
 }
 

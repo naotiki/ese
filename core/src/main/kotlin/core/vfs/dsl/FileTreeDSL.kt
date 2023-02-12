@@ -4,15 +4,14 @@ import core.commands.parser.Command
 import core.user.Group
 import core.user.User
 import core.vfs.*
-import core.vfs.FireTree.root
 
 
 /**
  * FileTreeDSLを開始します
  * @param block DSLを使用し[root]にファイルを追加します
  */
-inline fun rootDir(block: Directory.() -> Unit) {
-    root.block()
+inline fun FileTree.rootDir(block: Directory.() -> Unit) {
+    this.root.block()
 }
 
 /**

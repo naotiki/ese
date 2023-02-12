@@ -2,7 +2,7 @@ package core.commands.parser
 
 import core.utils.nextOrNull
 
-class CommandParserException(command: Command<*>?,s: String) : Exception("${command?.name}コマンド解析エラー:$s")
+class CommandParserException(command: Command<*>?, s: String) : Exception("${command?.name}コマンド解析エラー:$s")
 
 class SuperArgsParser {
     val args = mutableListOf<Arg<*>>()
@@ -10,7 +10,7 @@ class SuperArgsParser {
 
     //解析
     @Throws(CommandParserException::class)
-    fun parse(origin: Command<*>,argList: List<String>) {
+    fun parse(origin: Command<*>, argList: List<String>) {
         //初期化
         args.forEach { it.reset() }
         opts.forEach { it.reset() }
@@ -19,8 +19,7 @@ class SuperArgsParser {
         var inOption: Opt<*>? = null
         //可変長引数用
         val normalizedArgs = argList.filter { it.isNotBlank() }
-
-
+        //可変長引数は最後に解析
         val argListIterator = args.sortedWith { o1: Arg<*>, o2: Arg<*> ->
             if (o1.vararg != null) {
                 1
@@ -29,13 +28,12 @@ class SuperArgsParser {
             } else 0
         }.listIterator()
         var nextArg = argListIterator.nextOrNull()
-        //var argIndex = 0
         normalizedArgs.forEach { str: String ->
-            val includeOption = nextArg?.vararg?.includeOption == true
+            val includeOptionInArg = nextArg?.vararg?.includeOptionInArg == true
 
-            //オプションも脳死で入れてく
-            if (includeOption) {
-                //NonNull確定
+            if (includeOptionInArg) {
+                //オプションも脳死で入れてく
+                //nextArgはNonNull確定
                 nextArg!!.vararg!!.addValue(str)
             } else {
                 when {
@@ -46,18 +44,17 @@ class SuperArgsParser {
                                 opt.name == name
                             } else {
                                 // ls -lhaなどのBooleanの複数羅列対応
-                                ((opt.type is ArgType.Boolean) && (opt.shortName?.let { it in name } == true)) || (opt
-                                    .shortName == name)
+                                ((opt.type is ArgType.Boolean) && (opt.shortName?.let { it in name } == true))
+                                        || opt.shortName == name
                             }
                         }
                         if (o.isEmpty()) {
-                            throw CommandParserException(origin,"オプション解析エラー:不明な名前")
+                            throw CommandParserException(origin, "オプション解析エラー:不明な名前")
                         }
                         o.forEach {
                             if (it.type is ArgType.Boolean) {
                                 it.updateValue("true")
                             } else inOption = it
-
                         }
                     }
 
@@ -76,6 +73,7 @@ class SuperArgsParser {
                             nextArg!!.vararg!!.addValue(str)
                         }
                     }
+
                     else -> {
                         TODO("💥")
                     }
@@ -84,17 +82,14 @@ class SuperArgsParser {
         }
 
         args.filterNot {
-            it.value!=null||it.vararg!=null  || it.optional
+            it.value != null || it.vararg != null || it.optional
         }.forEach {
-            throw CommandParserException(origin,"必須な引数${it.name}が指定されていません")
+            throw CommandParserException(origin, "必須な引数${it.name}が指定されていません")
         }
         opts.filterNot {
-            it.value!=null||it.multiple!=null || !it.required
+            it.value != null || it.multiple != null || !it.required
         }.forEach {
-            throw CommandParserException(origin,"必須なオプション${it.name}が指定されていません")
+            throw CommandParserException(origin, "必須なオプション${it.name}が指定されていません")
         }
-
     }
-
-
 }

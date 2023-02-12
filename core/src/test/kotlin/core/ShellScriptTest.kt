@@ -2,16 +2,27 @@ package core
 
 import core.commands.parser.ArgType
 import core.commands.parser.Command
-import core.vfs.FireTree
-import core.vfs.VFS
+import core.user.UserManager
+import core.vfs.FileSystem
+import core.vfs.FileTree
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.koin.core.component.inject
+import org.koin.core.context.startKoin
+import org.koin.dsl.module
+import org.koin.test.KoinTest
 
-class ShellScriptTest {
+class ShellScriptTest :KoinTest{
     @BeforeEach
     fun up(){
-        Vfs = VFS(FireTree.root)
+        startKoin {
+            module {
+                single { UserManager() }
+                single { FileTree(get()) }
+                single { FileSystem(get()) }
+            }
+        }
     }
     @Test
     fun parse() {
@@ -41,11 +52,12 @@ object TestCommand : Command<Unit>(
     今いる場所のファイルを一覧表示します
 """.trimIndent()
 ) {
+    val fs by inject<FileSystem>()
     val list by option(ArgType.Boolean, "list", "l", "").default(false)
     val all by option(ArgType.Boolean, "all", "a", "").default(false)
     val directory by argument(ArgType.Dir, "target", "一覧表示するディレクトリ").vararg()
     override suspend fun execute(rawArgs: List<String>) {
-        val b = directory.ifEmpty { listOf(Vfs.currentDirectory) }
+        val b = directory.ifEmpty { listOf(fs.currentDirectory) }
         b.forEach { dir ->
             dir.children.keys.forEach{
                 if (list){

@@ -3,6 +3,7 @@ package core.commands
 import core.Variable
 import core.commands.Operator.*
 import core.commands.parser.Command
+import org.koin.core.component.inject
 
 
 class If : Command<Unit>("if") {
@@ -13,7 +14,9 @@ class If : Command<Unit>("if") {
 }
 
 class Test : Command<Boolean>("test") {
+    val variable by inject<Variable>()
     override suspend fun execute(rawArgs: List<String>): Boolean {
+
         if (rawArgs.isEmpty()) return false
 
         if (rawArgs.size == 1) {
@@ -24,8 +27,8 @@ class Test : Command<Boolean>("test") {
         val o = Operator.values().firstOrNull {
             it.string == conditional[1]
         }
-        val a = Variable.expandVariable(conditional.first())
-        val b = Variable.expandVariable(conditional[2])
+        val a = variable.expandVariable(conditional.first())
+        val b = variable.expandVariable(conditional[2])
         return when (o) {
             Equal -> a==b
             NotEqual -> a!=b

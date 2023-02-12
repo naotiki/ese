@@ -1,14 +1,8 @@
 package core.vfs
 
-import core.commands.*
-import core.commands.parser.Command
-import core.user.VUM
-import core.user.VUM.rootGroup
-import core.user.VUM.uNaotiki
-import core.user.VUM.uRoot
-import core.vfs.FireTree.root
-import core.vfs.dsl.*
 import kotlinx.coroutines.flow.MutableStateFlow
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 @JvmInline
 value class Path(val value: String) {
@@ -18,58 +12,11 @@ value class Path(val value: String) {
 }
 
 
-object FireTree {
-    val root = Directory("", null, uRoot, rootGroup, Permission(0b111_111_111),false)
-    lateinit var home: Directory
-    val executableEnvPaths = mutableListOf<Directory>()
-
-    init {
-        val initialCommands = listOf<Command<*>>(
-            ListFile(), ChangeDirectory(), Cat(), Exit(), SugoiUserDo(),
-            Yes(), Clear(), Echo(), Remove(), Test(),
-        )
-        rootDir {
-
-            //動的ディレクトリ
-            executableEnvPaths.add(dynDir("bin") {
-                initialCommands.forEach {
-                    executable(it)
-                }
-            })
-            println("bin:OK")
-            home = dir("home") {
-                uNaotiki.homeDir = dir("naotiki", uNaotiki) {
-                    file(
-                        "ひみつのファイル", """
-                        みるなよ
-                    """.trimIndent()
-                    )
-                }
-            }
-
-            dir("usr") {
-
-            }
-            dir("sbin") {
-
-            }
-            dir(".ese", hidden = true) {
-                executableEnvPaths.add(dir("bin") {
-                    executable(Parse())
-                })
-            }
-            dir("mnt") {
-
-            }
-        }
-    }
-}
-
 /**
  * ぼくのかんがえたさいきょうのVirtual File System
  */
-class VFS(currentDirectory: Directory) {
-    val homeDir: Directory? get() = VUM.user?.homeDir
+class FileSystem(currentDirectory: Directory) : KoinComponent {
+    val fileTree by inject<FileTree>()
     var currentDirectory: Directory = currentDirectory
         private set
     var currentPath: Path = currentDirectory.getFullPath()
@@ -109,13 +56,13 @@ class VFS(currentDirectory: Directory) {
         return if (isAbsolute || isHomeDir) {
             if (partialPath.size == 1) {
                 when {
-                    partialPath.first() == "" -> return root
-                    isHomeDir -> return homeDir
+                    partialPath.first() == "" -> return fileTree.root
+                    isHomeDir -> return fileTree.userDir
                 }
             }
 
             partialPath.drop(if (isHomeDir) 1 else 0)
-                .fold<String, File?>(if (isHomeDir) homeDir else root) { dir, partial ->
+                .fold<String, File?>(if (isHomeDir) fileTree.userDir else fileTree.root) { dir, partial ->
                     println(partial + ":dir:" + dir?.name)
                     dir?.toDirectoryOrNull()?.children?.get(partial)
                 }

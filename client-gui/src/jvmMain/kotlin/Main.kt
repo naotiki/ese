@@ -22,156 +22,227 @@ import androidx.compose.ui.window.MenuBar
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import core.*
+import core.commands.Expression
+import easy.EasyFileView
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
+import org.jetbrains.compose.splitpane.SplitPaneState
 import org.jetbrains.compose.splitpane.rememberSplitPaneState
-import java.awt.MenuBar
+import org.koin.core.Koin
+import org.koin.core.KoinApplication
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import kotlin.system.exitProcess
 
-val logStream = reader.lineSequence().asFlow().flowOn(Dispatchers.IO)
 val handler = CoroutineExceptionHandler { _, exception ->
     println("CoroutineExceptionHandler got $exception")
     throw exception
 }
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalSplitPaneApi::class)
+class TerminalViewModel(prompt: Prompt) : CustomKoinComponent() {
+    val io by inject<IO>()
+    val expression by inject<Expression>()
+    val logFlow=io.reader.lineSequence().asFlow().flowOn(Dispatchers.IO)
+    val commandHistory get()=expression.commandHistory
+
+    var textLogs by mutableStateOf("")
+    val consoleImpl=object : ConsoleInterface {
+
+        override fun prompt(promptText: String, value: String) {
+            prompt.newPrompt(promptText, value)
+        }
+
+        override fun exit() {
+            exitProcess(0)
+        }
+
+        override fun clear() {
+            textLogs = ""
+        }
+    }
+    suspend fun initialize() {
+        core.initialize(getKoin(),consoleImpl)
+    }
+
+    fun println(value: String) {
+        io.consoleWriter.println(value)
+    }
+}
 @Composable
-@Preview
-fun App() {
+fun rememberTerminalViewModel(prompt: Prompt) = remember { TerminalViewModel(prompt) }
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+fun Terminal() {
+
+    val prompt by rememberPrompt("", "")
+    val viewModel = rememberTerminalViewModel(prompt)
     var historyIndex by remember { mutableStateOf(-1) }
     val coroutine = rememberCoroutineScope()
-    val prompt by rememberPrompt("", "")
     var textLogs by remember { mutableStateOf("") }
     val stateVertical = rememberScrollState(0)
     LaunchedEffect(Unit) {
         launch(handler) {
             try {
-                initialize(object : ConsoleInterface {
-                    override fun prompt(promptText: String, value: String) {
-                        prompt.newPrompt(promptText, value)
-                    }
-
-                    override fun exit() {
-                        exitProcess(0)
-                    }
-
-                    override fun clear() {
-                        textLogs = ""
-                    }
-                })
+                viewModel.initialize()
             } catch (e: Exception) {
                 e.printStackTrace()
                 throw e
-
             }
             println("End:Init")
         }
-        logStream.collect {
+        viewModel.logFlow.collect {
             textLogs += it + "\n"
             stateVertical.scrollTo(stateVertical.maxValue)
         }
     }
-    val splitState= rememberSplitPaneState(0.2f)
+    Box(modifier = Modifier.fillMaxSize().background(Color.DarkGray)) {
+        Column(
+            modifier = Modifier.fillMaxSize().onSizeChanged {
+                coroutine.launch {
+                    stateVertical.scrollTo(stateVertical.maxValue)
+                }
+            }.verticalScroll(stateVertical).padding(5.dp),
+            verticalArrangement = Arrangement.spacedBy((-5).dp, Alignment.Top)
+        ) {
+            SelectionContainer {
+                Text(
+                    textLogs,
+                    overflow = TextOverflow.Visible,
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    fontFamily = FontFamily.Monospace
+                )
+            }
 
+            BasicTextField(
+                prompt.textFieldValue,
+                onValueChange = {
+                    prompt.updateTextFieldValue(it) { value, _ ->
+                        println("Debug:Updated $value")
+                    }
+                },
+                textStyle =
+                TextStyle(
+                    color = Color.White,
+                    fontSize =
+                    20.sp,
+                    fontFamily = FontFamily.Monospace
+                ),
+                cursorBrush = SolidColor(Color.White),
+                modifier = Modifier.fillMaxWidth().onPreviewKeyEvent {
+                    if (!prompt.isEnable) return@onPreviewKeyEvent false
+
+                    return@onPreviewKeyEvent if (it.key == Key.Enter && it.type == KeyEventType.KeyDown /*&& prompt
+                        .isEnable*/) {
+                        textLogs += prompt.textFieldValue.text + "\n"
+                            viewModel.println(prompt.getValue())
+                        prompt.reset()
+                        historyIndex = -1
+                        true
+                    } else if ((it.key == Key.DirectionUp || it.key == Key.DirectionDown) && it.type == KeyEventType.KeyDown) {
+                        historyIndex = when (it.key) {
+                            Key.DirectionUp -> minOf(historyIndex + 1, viewModel.commandHistory.lastIndex)
+                            Key.DirectionDown -> maxOf(historyIndex - 1, -1)
+                            else -> -1
+                        }
+                        viewModel.commandHistory.getOrNull(historyIndex).let { s ->
+                            prompt.updateValue(s ?: "")
+                        }
+                        true
+                    } else false
+                },
+            )
+        }
+        VerticalScrollbar(
+            modifier = Modifier.align(Alignment.CenterEnd)
+                .fillMaxHeight(),
+            adapter = rememberScrollbarAdapter(stateVertical), style = LocalScrollbarStyle.current.copy
+                (hoverColor = Color.LightGray, unhoverColor = Color.Gray, thickness = 5.dp)
+        )
+    }
+}
+
+
+@OptIn(ExperimentalSplitPaneApi::class)
+@Composable
+@Preview
+fun App(isAssistExtended: Boolean) {
+    val splitState = remember(isAssistExtended) { SplitPaneState(if(isAssistExtended) 0.2f else 0f,isAssistExtended) }
+    /*LaunchedEffect(isAssistExtended, splitState.positionPercentage) {
+        if (isAssistExtended) {
+            splitState.dispatchRawMovement(2000f)
+        } else {
+            splitState.dispatchRawMovement(-2000f)
+        }
+    }*/
     MaterialTheme {
-        HorizontalSplitPane(splitPaneState = splitState){
-            first(100.dp) {
-                Box(Modifier.fillMaxSize().onSizeChanged {
 
-                    println("->"+it.width)
+        HorizontalSplitPane(splitPaneState = splitState) {
+            first(0.dp) {
+                Box(Modifier.fillMaxSize().onSizeChanged {
+                    println("->" + it.width)
                 }) {
                     Text("GUIアシスト", fontSize = 20.sp)
-
+                    EasyFileView()
                 }
 
             }
 
             second(250.dp) {
-                Box(modifier = Modifier.fillMaxSize().background(Color.DarkGray)) {
-                    Column(
-                        modifier = Modifier.fillMaxSize().onSizeChanged {
-                            coroutine.launch {
-                                stateVertical.scrollTo(stateVertical.maxValue)
-                            }
-                        }.verticalScroll(stateVertical).padding(5.dp),
-                        verticalArrangement = Arrangement.spacedBy((-5).dp, Alignment.Top)
-                    ) {
-                        SelectionContainer {
-                            Text(
-                                textLogs,
-                                overflow = TextOverflow.Visible,
-                                color = Color.White,
-                                fontSize = 20.sp,
-                                fontFamily = FontFamily.Monospace
-                            )
-                        }
-
-                        BasicTextField(
-                            prompt.textFieldValue,
-                            onValueChange = {
-                                prompt.updateTextFieldValue(it) { value, _ ->
-                                    println("Debug:Updated $value")
-                                }
-                            },
-                            textStyle =
-                            TextStyle(
-                                color = Color.White,
-                                fontSize =
-                                20.sp,
-                                fontFamily = FontFamily.Monospace
-                            ),
-                            cursorBrush = SolidColor(Color.White),
-                            modifier = Modifier.fillMaxWidth().onPreviewKeyEvent {
-                                if (!prompt.isEnable) return@onPreviewKeyEvent false
-
-                                return@onPreviewKeyEvent if (it.key == Key.Enter && it.type == KeyEventType.KeyDown /*&& prompt
-                        .isEnable*/) {
-                                    textLogs += prompt.textFieldValue.text + "\n"
-                                    consoleWriter.println(prompt.getValue())
-                                    prompt.reset()
-                                    historyIndex = -1
-                                    true
-                                } else if ((it.key == Key.DirectionUp || it.key == Key.DirectionDown) && it.type == KeyEventType.KeyDown) {
-                                    historyIndex = when (it.key) {
-                                        Key.DirectionUp -> minOf(historyIndex + 1, commandHistory.lastIndex)
-                                        Key.DirectionDown -> maxOf(historyIndex - 1, -1)
-                                        else -> -1
-                                    }
-                                    commandHistory.getOrNull(historyIndex).let { s ->
-                                        prompt.updateValue(s ?: "")
-                                    }
-                                    true
-                                } else false
-                            },
-                        )
-                    }
-                    VerticalScrollbar(
-                        modifier = Modifier.align(Alignment.CenterEnd)
-                            .fillMaxHeight(),
-                        adapter = rememberScrollbarAdapter(stateVertical), style = LocalScrollbarStyle.current.copy
-                            (hoverColor = Color.LightGray, unhoverColor = Color.Gray, thickness = 5.dp)
-                    )
-                }
+                Terminal()
             }
         }
+
+
     }
 }
 
+class ApplicationViewModel: CustomKoinComponent() {
+    val expression by inject<Expression>()
+    fun cancelCommand(){
+        expression.cancelJob()
+    }
+}
+object MyKoinContext{
+    lateinit var koinApp:KoinApplication
+}
+abstract class CustomKoinComponent : KoinComponent {
+    // Override default Koin instance, initially target on GlobalContext to yours
+    override fun getKoin(): Koin = MyKoinContext.koinApp.koin
+}
+@Composable
+fun rememberAppViewModel()= remember { ApplicationViewModel() }
 @OptIn(ExperimentalComposeUiApi::class)
-fun main() = application {
-    Window(onCloseRequest = ::exitApplication, title = "Console", onPreviewKeyEvent = {
-        return@Window if (it.key == Key.C && it.isCtrlPressed) {
-            cancelCommand()
-            true
-        } else false
-    }) {
-        MenuBar {
-            Menu("表示",) {
-                Item("GUIアシストを折りたたむ", onClick = {  }, shortcut = KeyShortcut(Key.T, ctrl = true))
+fun main() {
+    MyKoinContext.koinApp=prepareKoinInjection()
+
+    application {
+        val appViewModel=rememberAppViewModel()
+        Window(onCloseRequest = ::exitApplication, title = "Console", onPreviewKeyEvent = {
+            return@Window if (it.key == Key.C && it.isCtrlPressed) {
+                appViewModel.cancelCommand()
+                true
+            } else false
+        }) {
+            var isAssistExtended by remember { mutableStateOf(true) }
+            MenuBar {
+                Menu("表示") {
+                    Item(
+                        "GUIアシストを" + if (isAssistExtended) "折りたたむ" else "表示する", onClick = {
+                            isAssistExtended =
+                                !isAssistExtended
+                        },
+                        shortcut = KeyShortcut(
+                            Key.T,
+                            ctrl = true
+                        )
+                    )
+                }
             }
+            App(isAssistExtended)
         }
-        App()
     }
 }

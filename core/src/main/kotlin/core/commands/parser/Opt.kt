@@ -1,10 +1,11 @@
 package core.commands.parser
 
+import org.koin.core.Koin
 import kotlin.reflect.KProperty
 
 class MultipleOpt<T : Any>(
     val type: ArgType<T>,
-    val name: String,
+    val name: String,val koin: Koin
 ) {
     var value: MutableList<T> = mutableListOf()
     operator fun getValue(thisRef: Any?, property: KProperty<*>): List<T> {
@@ -20,7 +21,7 @@ class MultipleOpt<T : Any>(
         }
     }
     fun addValue(str: String) {
-        type.casterFromString(str)?.let { value.add(it) }?:throw CommandIllegalArgsException("$name が無効な数値です。",type)
+        type.converter(koin,str)?.let { value.add(it) }?:throw CommandIllegalArgsException("$name が無効な数値です。",type)
     }
 }
 
@@ -32,7 +33,7 @@ class Opt<T : Any>(
     val type: ArgType<T>, override val name: String,
     //一文字
     val shortName: String? = null, override val description: String? = null
-) : SafetyString<T> {
+) : CommandElement<T> {
     init {
         if (name.isBlank() || shortName?.isBlank() == true || shortName?.length != 1) {
             throw IllegalArgumentException("コマンド定義エラー")
@@ -51,7 +52,7 @@ class Opt<T : Any>(
         }
     }
     override fun updateValue(str: String) {
-        value = type.casterFromString(str)?:throw CommandIllegalArgsException("$name が無効な数値です。",type)
+        value = type.converter(getKoin(),str)?:throw CommandIllegalArgsException("$name が無効な数値です。",type)
     }
 
     var required = false
@@ -70,7 +71,7 @@ class Opt<T : Any>(
      * */
     fun multiple(): MultipleOpt<T> {
         multiple = MultipleOpt(
-            (type),name
+            type,name,getKoin()
         )
         return multiple as MultipleOpt<T>
     }

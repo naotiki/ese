@@ -1,8 +1,9 @@
 package core.commands.parser
 
+import org.koin.core.component.KoinComponent
 import kotlin.reflect.KProperty
 
-interface SafetyString<T : Any> {
+interface CommandElement<T : Any> :KoinComponent{
     val name: String
     val description: String?
     var value: T?

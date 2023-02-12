@@ -7,6 +7,7 @@ object ShellScript {
     }
 }
 
+/*TODO Migrate Koin DI
 //一行のみ
 //解析成功でT,失敗でF
 fun expressionParser(string: String):Boolean{
@@ -25,4 +26,5 @@ fun expressionParser(string: String):Boolean{
     println(Variable.map)
     return true
 }
+*/
 

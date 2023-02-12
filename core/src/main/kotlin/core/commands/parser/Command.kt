@@ -1,10 +1,16 @@
 package core.commands.parser
 
-import core.Vfs
-import core.commands.CommandManager
+import core.ConsoleInterface
+import core.IO
+import core.commands.Expression
 import core.vfs.Directory
+import core.vfs.FileSystem
 import core.vfs.Path
 import core.vfs.toDirectoryOrNull
+import org.koin.core.Koin
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+
 //TODO サブコマンド
 abstract class SubCommand<R>(val name: String, val regex: Regex? = null) {
     val args = mutableListOf<Arg<*>>()
@@ -16,6 +22,7 @@ abstract class SubCommand<R>(val name: String, val regex: Regex? = null) {
         opts.add(o)
         return o
     }
+
     fun <T : Any> argument(
         type: ArgType<T>, name: String, description: String? = null
     ): Arg<T> {
@@ -23,6 +30,7 @@ abstract class SubCommand<R>(val name: String, val regex: Regex? = null) {
         args.add(a)
         return a
     }
+
     abstract suspend fun execute(args: List<String>): R
 }
 
@@ -33,11 +41,12 @@ abstract class SubCommand<R>(val name: String, val regex: Regex? = null) {
  * helpの挙動を変更するには[outputHelp]をオーバーライドしてください。
  *
  *
- * @param name コマンドの名前、[CommandManager.tryResolve]などで使用されます
+ * @param name コマンドの名前、[Expression.tryResolve]などで使用されます
  * @param description コマンドの説明、ヘルプで使用されます。(オプション)
  * @param R [execute]戻り値の型、基本は[Unit]
  * */
-abstract class Command<R>(val name: String, val description: String = "") {
+abstract class Command<R>(val name: String, val description: String = "") : KoinComponent {
+    val io by inject<IO>()
     private val argParser: SuperArgsParser = SuperArgsParser()
     val help by option(ArgType.Boolean, "help", "h", "ヘルプを表示します。").default(false)
 
@@ -45,9 +54,11 @@ abstract class Command<R>(val name: String, val description: String = "") {
     private var subCommands: List<SubCommand<*>> = this::class.nestedClasses.map {
         it.java.getDeclaredConstructor().newInstance()
     }.filterIsInstance<SubCommand<*>>()
+
     init {
         println(subCommands)
     }
+
     /**
      * @param type 引数の型
      * @param name 指定するときの名前 呼び出すときにプレフィックス"--"を付加する必要があります
@@ -76,22 +87,22 @@ abstract class Command<R>(val name: String, val description: String = "") {
         return a
     }
 
-    val out get() = CommandManager.out!!
-    val reader get() = CommandManager.reader!!
-    val console get() = CommandManager.consoleImpl!!
+    val out get() = io.outputStream
+    val reader get() = io.reader
+    val console by inject<ConsoleInterface>()
 
     /**
      * For Development
      * 解析情報出力用
      * */
     internal fun verbose(args: List<String>) {
-        if (help) {
-            out.println("helpオプションと併用できません")
-            return
-        }
         try {
             println(args)
-            argParser.parse(this,args)
+            argParser.parse(this, args)
+            if (help) {
+                out.println("helpオプションと併用できません")
+                return
+            }
             out.println("引数")
             argParser.args.forEach {
                 out.println("${it.name}/${it.type.javaClass.simpleName}:${it.vararg?.value ?: it.value}")
@@ -113,10 +124,11 @@ abstract class Command<R>(val name: String, val description: String = "") {
 
         }
     }
+
     /**
      * ヘルプを出力します。
      * */
-    open fun outputHelp():CommandResult.Nothing<R>{
+    open fun outputHelp(): CommandResult.Nothing<R> {
         out.println(
             buildString {
                 appendLine("$name コマンドヘルプ")
@@ -140,8 +152,9 @@ abstract class Command<R>(val name: String, val description: String = "") {
         )
         return CommandResult.Nothing()
     }
+
     /**
-    * 引数を解析して[execute]を実行します
+     * 引数を解析して[execute]を実行します
      * @param args 解析前の引数
      * @return 結果
      * @throws CommandIllegalArgsException 型変換に失敗したとき
@@ -150,7 +163,7 @@ abstract class Command<R>(val name: String, val description: String = "") {
     @Throws(CommandIllegalArgsException::class, CommandParserException::class)
     suspend fun resolve(args: List<String>): CommandResult<R> {
         return try {
-            argParser.parse(this,args)
+            argParser.parse(this, args)
             if (help) return outputHelp()
             val r = execute(args)
             CommandResult.Success(r)
@@ -176,24 +189,25 @@ abstract class Command<R>(val name: String, val description: String = "") {
     protected abstract suspend fun execute(rawArgs: List<String>): R
 }
 
-sealed class ArgType<T : Any>(val casterFromString: (kotlin.String) -> T?) {
-    //Primitive Types
-    object Int : ArgType<kotlin.Int>(kotlin.String::toIntOrNull)
-    object String : ArgType<kotlin.String>({ it })
-    object Boolean : ArgType<kotlin.Boolean>(kotlin.String::toBooleanStrictOrNull)
+sealed class ArgType<T : Any>(val converter: Koin.(kotlin.String) -> T?){
 
-    //Original Types TODO:Feature For Argument Suggestion
+    //Primitive Types
+    object Int : ArgType<kotlin.Int>({it.toIntOrNull()})
+    object String : ArgType<kotlin.String>({ it })
+    object Boolean : ArgType<kotlin.Boolean>({it.toBooleanStrictOrNull()})
+
+    //Special Types TODO:Add Argument Suggestion
     object File : ArgType<core.vfs.File>({
-        Vfs.tryResolve(Path(it))
+        get<FileSystem>().tryResolve(Path(it))
     })
 
     object Dir : ArgType<Directory>({
-        Vfs.tryResolve(Path(it))?.toDirectoryOrNull()
+        get<FileSystem>().tryResolve(Path(it))?.toDirectoryOrNull()
     })
 
-    object Command:ArgType<core.commands.parser.Command<*>>({CommandManager.tryResolve(it)})
+    object Command : ArgType<core.commands.parser.Command<*>>({ get<Expression>().tryResolve(it) })
 
-    class Define<T : Any>(translator: (kotlin.String) -> T?) : ArgType<T>(translator)
+    class Define<T : Any>(converter: Koin.(kotlin.String) -> T?) : ArgType<T>(converter)
 }
 
 

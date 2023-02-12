@@ -2,7 +2,6 @@ package core.utils
 
 import core.vfs.Directory
 import core.vfs.File
-import core.vfs.FireTree
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.Serializable
@@ -44,6 +43,10 @@ object DirectoryAsStringSerializer : KSerializer<Directory> {
         element<Map<String,File>>("children")
     }
 
+    override fun deserialize(decoder: Decoder): Directory {
+        TODO("Not yet implemented")
+    }
+
 
     override fun serialize(encoder: Encoder, value: Directory) {
         encoder.encodeStructure(descriptor){
@@ -57,9 +60,7 @@ object DirectoryAsStringSerializer : KSerializer<Directory> {
         encodeSerializableValue(delegateSerializer,value.children)*/
     }
 
-    override fun deserialize(decoder: Decoder): Directory {
-        return FireTree.root
-    }
+
 }
 val module = SerializersModule {
     polymorphic(File::class) {

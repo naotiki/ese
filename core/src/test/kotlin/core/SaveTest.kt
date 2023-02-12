@@ -1,24 +1,33 @@
 package core
 
-import core.utils.DirectoryAsStringSerializer
+import core.user.UserManager
 import core.utils.format
-import core.vfs.Directory
 import core.vfs.File
-import core.vfs.FireTree
-import core.vfs.VFS
+import core.vfs.FileSystem
+import core.vfs.FileTree
 import kotlinx.serialization.PolymorphicSerializer
-import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.koin.core.context.startKoin
+import org.koin.dsl.module
+import org.koin.test.KoinTest
+import org.koin.test.get
+import kotlin.math.sin
 
-class SaveTest {
+class SaveTest :KoinTest{
     @BeforeEach
     fun up(){
-        Vfs = VFS(FireTree.root)
+        startKoin {
+            module {
+                single { UserManager() }
+                single { FileTree(get()) }
+                single { FileSystem(get()) }
+            }
+        }
     }
     @Test
     fun `ディレクトリシリアライズテスト`(){
-        val a= format.encodeToString(PolymorphicSerializer(File::class),FireTree.root)
+        val a= format.encodeToString(PolymorphicSerializer(File::class),get())
         println(a)
     }
 }

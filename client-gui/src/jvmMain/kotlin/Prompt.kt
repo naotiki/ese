@@ -44,8 +44,8 @@ class Prompt(prompt: String, value: String) {
         textFieldValue = textFieldValue.copy(text = prompt + value)
         isEnable=false
     }
-
-    @JvmName("getValueNonPrompt")
+    //valueのgetterと名前が被るので回避
+    @JvmName("getValueWithoutPrompt")
     fun getValue(): String = textFieldValue.text.removePrefix(prompt)
 
 }

@@ -27,12 +27,12 @@ value class Permission(val value: Int) {
         acc or permissionTarget.getFlag()
     })
 
-
     companion object {
         private val permissionLabel = listOf("x", "w", "r")
 
         //rw-rw-r--
         val fileDefault = Permission(0b110_110_100)
+        //rwxrwxr-x
         val exeDefault = fileDefault + PermissionTarget.OwnerX + PermissionTarget.GroupX + PermissionTarget.OtherX
 
         //rwxrwxr-x
