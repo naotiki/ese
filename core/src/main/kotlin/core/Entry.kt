@@ -28,17 +28,17 @@ import java.io.PrintStream
 const val version = "0.0.0-dev"
 val m = module {
     single { Variable() }
+    single { Expression() }
 }
 
 fun prepareKoinInjection(): KoinApplication {
 
-    val io = IO()
-    val userManager = UserManager()
 
     m.apply {
-        single { userManager }
+        single { UserManager() }
         single { FileTree(get()) }
-        single { io }
+        single { IO() }
+        single { FileSystem(get<FileTree>().root) }
     }
     return startKoin {
         printLogger(Level.DEBUG)
@@ -91,13 +91,14 @@ suspend fun initialize(koin: Koin, consoleInterface: ConsoleInterface) {
             )
         }
     }
-    val fileSystem = FileSystem(newUser.dir!!)
+    val fileSystem = koin.get<FileSystem>()
+    fileSystem.setCurrentPath(newUser.dir!!)
     userManager.setUser(newUser)
-    val expression = Expression()
+    val expression = koin.get<Expression>()
 
     loadKoinModules(module {
         single { consoleInterface }
-        single { fileSystem }
+
         single { expression }
     })
     while (true/*TODO 終了機能*/) {
@@ -155,34 +156,6 @@ class IO {
         }
 }
 
-
-val environments = mutableListOf<Environment>()
-
-
-data class Environment(
-    val io: IO,
-    val fileSystem: FileSystem,
-    val userManager: UserManager,
-    val expression: Expression,
-    val variable: Variable,
-    val commandExecuteHistory: MutableList<String> = mutableListOf(),
-    val consoleInterface: ConsoleInterface,
-    private var currentJob: Job? = null,
-) : KoinComponent {
-    init {
-        environments.add(this)
-    }
-
-
-    /**キャンセルされた場合は true
-     * Jobがnullの場合はfalse
-     * */
-    fun cancelCommand(): Boolean {
-        currentJob?.cancel() ?: return false
-        io.outputStream.println("Ctrl+Cによってキャンセルされました")
-        return true
-    }
-}
 
 
 class Variable {

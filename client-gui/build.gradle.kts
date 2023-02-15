@@ -30,6 +30,7 @@ kotlin {
                 implementation(compose.desktop.components.splitPane)
                 implementation(compose.preview)
                 implementation(compose.uiTooling)
+                implementation(compose.materialIconsExtended)
                 implementation(project(":core"))
             }
         }

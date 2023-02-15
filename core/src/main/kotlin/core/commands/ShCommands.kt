@@ -2,18 +2,18 @@ package core.commands
 
 import core.Variable
 import core.commands.Operator.*
-import core.commands.parser.Command
+import core.commands.parser.Executable
 import org.koin.core.component.inject
 
 
-class If : Command<Unit>("if") {
+class If : Executable<Unit>("if") {
     override suspend fun execute(rawArgs: List<String>) {
 
     }
 
 }
 
-class Test : Command<Boolean>("test") {
+class Test : Executable<Boolean>("test") {
     val variable by inject<Variable>()
     override suspend fun execute(rawArgs: List<String>): Boolean {
 

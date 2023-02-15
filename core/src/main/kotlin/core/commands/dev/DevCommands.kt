@@ -1,9 +1,9 @@
 package core.commands.dev
 
 import core.commands.parser.ArgType
-import core.commands.parser.Command
+import core.commands.parser.Executable
 
-class Parse : Command<Unit>(
+class Parse : Executable<Unit>(
     "devp", """
     Print verbose log of parser  
     開発用 / For development
@@ -16,7 +16,7 @@ class Parse : Command<Unit>(
     }
 }
 
-class Status : Command<Unit>(
+class Status : Executable<Unit>(
     "stat", """
     Print JRE Status  
     開発用 / For development

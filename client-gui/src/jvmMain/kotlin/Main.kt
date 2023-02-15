@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Tab
+import androidx.compose.material.TabRow
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,6 +17,7 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -23,16 +26,14 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import core.*
 import core.commands.Expression
+import easy.CommandPanel
 import easy.EasyFileView
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
 import org.jetbrains.compose.splitpane.SplitPaneState
-import org.jetbrains.compose.splitpane.rememberSplitPaneState
-import org.koin.core.Koin
 import org.koin.core.KoinApplication
-import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.system.exitProcess
 
@@ -44,11 +45,11 @@ val handler = CoroutineExceptionHandler { _, exception ->
 class TerminalViewModel(prompt: Prompt) : CustomKoinComponent() {
     val io by inject<IO>()
     val expression by inject<Expression>()
-    val logFlow=io.reader.lineSequence().asFlow().flowOn(Dispatchers.IO)
-    val commandHistory get()=expression.commandHistory
+    val logFlow = io.reader.lineSequence().asFlow().flowOn(Dispatchers.IO)
+    val commandHistory get() = expression.commandHistory
 
     var textLogs by mutableStateOf("")
-    val consoleImpl=object : ConsoleInterface {
+    val consoleImpl = object : ConsoleInterface {
 
         override fun prompt(promptText: String, value: String) {
             prompt.newPrompt(promptText, value)
@@ -62,14 +63,16 @@ class TerminalViewModel(prompt: Prompt) : CustomKoinComponent() {
             textLogs = ""
         }
     }
+
     suspend fun initialize() {
-        core.initialize(getKoin(),consoleImpl)
+        core.initialize(getKoin(), consoleImpl)
     }
 
     fun println(value: String) {
         io.consoleWriter.println(value)
     }
 }
+
 @Composable
 fun rememberTerminalViewModel(prompt: Prompt) = remember { TerminalViewModel(prompt) }
 
@@ -138,7 +141,7 @@ fun Terminal() {
                     return@onPreviewKeyEvent if (it.key == Key.Enter && it.type == KeyEventType.KeyDown /*&& prompt
                         .isEnable*/) {
                         textLogs += prompt.textFieldValue.text + "\n"
-                            viewModel.println(prompt.getValue())
+                        viewModel.println(prompt.getValue())
                         prompt.reset()
                         historyIndex = -1
                         true
@@ -170,24 +173,66 @@ fun Terminal() {
 @Composable
 @Preview
 fun App(isAssistExtended: Boolean) {
-    val splitState = remember(isAssistExtended) { SplitPaneState(if(isAssistExtended) 0.2f else 0f,isAssistExtended) }
-    /*LaunchedEffect(isAssistExtended, splitState.positionPercentage) {
-        if (isAssistExtended) {
-            splitState.dispatchRawMovement(2000f)
-        } else {
-            splitState.dispatchRawMovement(-2000f)
-        }
-    }*/
+    val splitState = remember(isAssistExtended) { SplitPaneState(if (isAssistExtended) 0.35f else 0f,
+        isAssistExtended) }
     MaterialTheme {
-
         HorizontalSplitPane(splitPaneState = splitState) {
             first(0.dp) {
-                Box(Modifier.fillMaxSize().onSizeChanged {
-                    println("->" + it.width)
-                }) {
-                    Text("GUIアシスト", fontSize = 20.sp)
-                    EasyFileView()
+                val stateVertical = rememberScrollState(0)
+                Box(Modifier.fillMaxSize()) {
+                    Column(Modifier.fillMaxSize().padding(2.dp).verticalScroll(stateVertical)) {
+                        Text("GUIアシスタント", fontSize = 20.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
+                        var selectedTabIndex by remember { mutableStateOf(0) }
+
+                        TabRow(
+                            selectedTabIndex = selectedTabIndex,
+                            backgroundColor = MaterialTheme.colors.surface,
+                        ) {
+                            Tab(
+                                selected = selectedTabIndex == 0,
+                                onClick = {
+                                    selectedTabIndex = 0
+                                },
+                                text = {
+                                    Text(
+                                        text = "コマンド",
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (selectedTabIndex == 0) MaterialTheme.colors.primary else
+                                            Color.Unspecified
+                                    )
+                                }
+                            )
+                            Tab(
+                                selected = selectedTabIndex == 1,
+                                onClick = {
+                                    selectedTabIndex = 1
+                                },
+                                text = {
+                                    Text(
+                                        text = "ファイル",
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (selectedTabIndex == 1) MaterialTheme.colors.primary else
+                                            Color.Unspecified
+                                    )
+                                }
+                            )
+                        }
+                        when(selectedTabIndex){
+                            0->CommandPanel()
+                            1->EasyFileView()
+                        }
+
+
+                    }
+                    VerticalScrollbar(
+                        modifier = Modifier.align(Alignment.CenterEnd)
+                            .fillMaxHeight(),
+                        adapter = rememberScrollbarAdapter(stateVertical), style = LocalScrollbarStyle.current.copy
+                            (hoverColor = Color.LightGray, unhoverColor = Color.Gray, thickness = 5.dp)
+                    )
                 }
+
+
 
             }
 
@@ -200,27 +245,27 @@ fun App(isAssistExtended: Boolean) {
     }
 }
 
-class ApplicationViewModel: CustomKoinComponent() {
+class ApplicationViewModel : CustomKoinComponent() {
     val expression by inject<Expression>()
-    fun cancelCommand(){
+    fun cancelCommand() {
         expression.cancelJob()
     }
 }
-object MyKoinContext{
-    lateinit var koinApp:KoinApplication
-}
-abstract class CustomKoinComponent : KoinComponent {
-    // Override default Koin instance, initially target on GlobalContext to yours
-    override fun getKoin(): Koin = MyKoinContext.koinApp.koin
-}
+
+
+
 @Composable
-fun rememberAppViewModel()= remember { ApplicationViewModel() }
+fun rememberAppViewModel() = remember { ApplicationViewModel() }
+
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
-    MyKoinContext.koinApp=prepareKoinInjection()
+    //DIよーい！！！！！！
+    MyKoinContext.koinApp = prepareKoinInjection()
 
+    //以下からCompose(UI部分)
     application {
-        val appViewModel=rememberAppViewModel()
+        val appViewModel = rememberAppViewModel()
+
         Window(onCloseRequest = ::exitApplication, title = "Console", onPreviewKeyEvent = {
             return@Window if (it.key == Key.C && it.isCtrlPressed) {
                 appViewModel.cancelCommand()
@@ -231,7 +276,7 @@ fun main() {
             MenuBar {
                 Menu("表示") {
                     Item(
-                        "GUIアシストを" + if (isAssistExtended) "折りたたむ" else "表示する", onClick = {
+                        "GUIアシスタントを" + if (isAssistExtended) "折りたたむ" else "表示する", onClick = {
                             isAssistExtended =
                                 !isAssistExtended
                         },

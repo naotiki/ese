@@ -2,7 +2,7 @@ package core.commands.parser
 
 import core.utils.nextOrNull
 
-class CommandParserException(command: Command<*>?, s: String) : Exception("${command?.name}コマンド解析エラー:$s")
+class CommandParserException(command: Executable<*>?, s: String) : Exception("${command?.name}コマンド解析エラー:$s")
 
 class SuperArgsParser {
     val args = mutableListOf<Arg<*>>()
@@ -10,7 +10,7 @@ class SuperArgsParser {
 
     //解析
     @Throws(CommandParserException::class)
-    fun parse(origin: Command<*>, argList: List<String>) {
+    fun parse(origin: Executable<*>, argList: List<String>) {
         //初期化
         args.forEach { it.reset() }
         opts.forEach { it.reset() }

@@ -45,10 +45,11 @@ abstract class SubCommand<R>(val name: String, val regex: Regex? = null) {
  * @param description コマンドの説明、ヘルプで使用されます。(オプション)
  * @param R [execute]戻り値の型、基本は[Unit]
  * */
-abstract class Command<R>(val name: String, val description: String = "") : KoinComponent {
+abstract class Executable<R>(val name: String, val description: String? = null) : KoinComponent {
     val io by inject<IO>()
     private val argParser: SuperArgsParser = SuperArgsParser()
     val help by option(ArgType.Boolean, "help", "h", "ヘルプを表示します。").default(false)
+    //fun isHelp(args: List<String>)=args.contains("-h")||args.contains("--help")
 
     //TODO いつかやる
     private var subCommands: List<SubCommand<*>> = this::class.nestedClasses.map {
@@ -98,11 +99,12 @@ abstract class Command<R>(val name: String, val description: String = "") : Koin
     internal fun verbose(args: List<String>) {
         try {
             println(args)
-            argParser.parse(this, args)
-            if (help) {
+            /*if (isHelp(args)) {
                 out.println("helpオプションと併用できません")
                 return
-            }
+            }*/
+            argParser.parse(this, args)
+
             out.println("引数")
             argParser.args.forEach {
                 out.println("${it.name}/${it.type.javaClass.simpleName}:${it.vararg?.value ?: it.value}")
@@ -112,43 +114,46 @@ abstract class Command<R>(val name: String, val description: String = "") : Koin
                 out.println("${it.name}/${it.type.javaClass.simpleName}:${it.multiple?.value ?: it.value}")
             }
         } catch (e: CommandIllegalArgsException) {
-            e.printStackTrace()
-            e.printStackTrace(out)
+            println(e.localizedMessage)
+            out.println(e.localizedMessage)
         } catch (e: CommandParserException) {
-            e.printStackTrace()
-            e.printStackTrace(out)
+            println(e.localizedMessage)
+            out.println(e.localizedMessage)
         } catch (e: Exception) {
-            e.printStackTrace()
-            e.printStackTrace(out)
+            println(e.localizedMessage)
+            out.println(e.localizedMessage)
         } finally {
 
         }
     }
+
+    fun generateHelpText() =
+        buildString {
+            appendLine("$name コマンドヘルプ")
+            appendLine("構文")
+            appendLine(
+                "$name ${argParser.opts.joinToString(" ") { "[-${it.shortName}|--${it.name}]" }} " +
+                        argParser.args.joinToString(" ") { it.name + if (it.vararg != null) "..." else "" }
+            )
+            appendLine("説明：$description")
+            appendLine("引数")
+            argParser.args.forEach {
+                appendLine("${it.name}/${it.type.javaClass.simpleName}")
+                appendLine(it.description)
+            }
+            appendLine("オプション")
+            argParser.opts.forEach {
+                appendLine("${it.name}/${it.type.javaClass.simpleName}")
+                appendLine(it.description)
+            }
+        }
 
     /**
      * ヘルプを出力します。
      * */
     open fun outputHelp(): CommandResult.Nothing<R> {
         out.println(
-            buildString {
-                appendLine("$name コマンドヘルプ")
-                appendLine("構文")
-                appendLine(
-                    "$name ${argParser.opts.joinToString(" ") { "[-${it.shortName}|--${it.name}]" }} " +
-                            argParser.args.joinToString(" ") { it.name + if (it.vararg != null) "..." else "" }
-                )
-                appendLine("説明：$description")
-                appendLine("引数")
-                argParser.args.forEach {
-                    appendLine("${it.name}/${it.type.javaClass.simpleName}")
-                    appendLine(it.description)
-                }
-                appendLine("オプション")
-                argParser.opts.forEach {
-                    appendLine("${it.name}/${it.type.javaClass.simpleName}")
-                    appendLine(it.description)
-                }
-            }
+            generateHelpText()
         )
         return CommandResult.Nothing()
     }
@@ -163,17 +168,29 @@ abstract class Command<R>(val name: String, val description: String = "") : Koin
     @Throws(CommandIllegalArgsException::class, CommandParserException::class)
     suspend fun resolve(args: List<String>): CommandResult<R> {
         return try {
-            argParser.parse(this, args)
-            if (help) return outputHelp()
+            //if (isHelp(args)) return outputHelp()
+            try {
+                argParser.parse(this, args)
+            } catch (e: Exception) {
+                if (help) {
+                    return outputHelp()
+                } else {
+                    throw e
+                }
+            }
+            if (help) {
+                return outputHelp()
+            }
             val r = execute(args)
             CommandResult.Success(r)
+
         } catch (e: CommandIllegalArgsException) {
-            e.printStackTrace()
-            e.printStackTrace(out)
+            println(e.localizedMessage)
+            out.println(e.localizedMessage)
             CommandResult.Error()
         } catch (e: CommandParserException) {
-            e.printStackTrace()
-            e.printStackTrace(out)
+            println(e.localizedMessage)
+            out.println(e.localizedMessage)
             CommandResult.Error()
         } catch (e: Exception) {
             e.printStackTrace()
@@ -189,12 +206,12 @@ abstract class Command<R>(val name: String, val description: String = "") : Koin
     protected abstract suspend fun execute(rawArgs: List<String>): R
 }
 
-sealed class ArgType<T : Any>(val converter: Koin.(kotlin.String) -> T?){
+sealed class ArgType<T : Any>(val converter: Koin.(kotlin.String) -> T?) {
 
     //Primitive Types
-    object Int : ArgType<kotlin.Int>({it.toIntOrNull()})
+    object Int : ArgType<kotlin.Int>({ it.toIntOrNull() })
     object String : ArgType<kotlin.String>({ it })
-    object Boolean : ArgType<kotlin.Boolean>({it.toBooleanStrictOrNull()})
+    object Boolean : ArgType<kotlin.Boolean>({ it.toBooleanStrictOrNull() })
 
     //Special Types TODO:Add Argument Suggestion
     object File : ArgType<core.vfs.File>({
@@ -205,7 +222,7 @@ sealed class ArgType<T : Any>(val converter: Koin.(kotlin.String) -> T?){
         get<FileSystem>().tryResolve(Path(it))?.toDirectoryOrNull()
     })
 
-    object Command : ArgType<core.commands.parser.Command<*>>({ get<Expression>().tryResolve(it) })
+    object Command : ArgType<core.commands.parser.Executable<*>>({ get<Expression>().tryResolve(it) })
 
     class Define<T : Any>(converter: Koin.(kotlin.String) -> T?) : ArgType<T>(converter)
 }

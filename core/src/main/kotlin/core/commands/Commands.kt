@@ -2,8 +2,7 @@ package core.commands
 
 import core.Variable
 import core.commands.parser.ArgType
-import core.commands.parser.Args
-import core.commands.parser.Command
+import core.commands.parser.Executable
 import core.user.UserManager
 import core.vfs.*
 import kotlinx.coroutines.Job
@@ -12,7 +11,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 //Man
-class help : Command<Unit>(
+class help : Executable<Unit>(
     "help", """
         helpを表示します
 """.trimIndent()
@@ -24,8 +23,7 @@ class help : Command<Unit>(
 }
 
 
-
-class ListFile : Command<Unit>(
+class ListSegments : Executable<Unit>(
     "ls", """
     今いる場所のファイルを一覧表示します
 """.trimIndent()
@@ -48,30 +46,28 @@ class ListFile : Command<Unit>(
 }
 
 
-class Remove : Command<Unit>(
+class Remove : Executable<Unit>(
     "rm", """
     今いる場所のファイルを一覧表示します
 """.trimIndent()
 ) {
     val fs by inject<FileSystem>()
+    val file by argument(ArgType.File, "target")
 
     override suspend fun execute(rawArgs: List<String>) {
-        val b = Args(rawArgs).getArg(ArgType.File, fs.currentDirectory) ?: let {
-            out.println("引数の形式が正しくありません。")
-            null
-        } ?: return
-        if (b is Directory) {
-            if (b.children.isEmpty()) {
-                if (b.parent?.removeChild(b) == true) {
-                    out.println("${b.name}が削除されました")
+
+        if (file is Directory) {
+            if ((file as Directory).children.isEmpty()) {
+                if (file.parent?.removeChild(file) == true) {
+                    out.println("${file.name}が削除されました")
                 }
             }
-        } else b.parent?.removeChild(b)
+        } else file.parent?.removeChild(file)
     }
 }
 
 
-class ChangeDirectory : Command<Unit>("cd") {
+class ChangeDirectory : Executable<Unit>("cd") {
     val fs by inject<FileSystem>()
     val directory by argument(ArgType.Dir, "target", "一覧表示するディレクトリ")
     override suspend fun execute(rawArgs: List<String>) {
@@ -80,7 +76,7 @@ class ChangeDirectory : Command<Unit>("cd") {
     }
 }
 
-class Yes : Command<Unit>("yes") {
+class Yes : Executable<Unit>("yes") {
     val value by argument(ArgType.String, "value", "出力する文字列").optional()
     override suspend fun execute(rawArgs: List<String>) {
         val b = value ?: "yes"
@@ -95,29 +91,30 @@ class Yes : Command<Unit>("yes") {
 
 
 //😼
-class Cat : Command<Unit>("cat") {
+class Cat : Executable<Unit>("cat") {
+    private val txt by argument(ArgType.File, "target")
     override suspend fun execute(rawArgs: List<String>) {
-        val txt = Args(rawArgs).getArg(ArgType.File)
+
         if (txt is TextFile) {
-            out.println(txt.content)
+            out.println((txt as TextFile).content)
         } else out.println("無効なファイル")
     }
 }
 
-class Echo : Command<Unit>("echo") {
+class Echo : Executable<Unit>("echo") {
     val variable by inject<Variable>()
     override suspend fun execute(rawArgs: List<String>) {
         rawArgs.joinToString(" ").let { out.println(variable.expandVariable(it)) }
     }
 }
 
-class Clear : Command<Unit>("clear") {
+class Clear : Executable<Unit>("clear") {
     override suspend fun execute(rawArgs: List<String>) {
         console.clear()
     }
 }
 
-class SugoiUserDo : Command<Unit>("sudo", "SUDO ~Sugoi User DO~ すごいユーザーの権限でコマンドを実行します") {
+class SugoiUserDo : Executable<Unit>("sudo", "SUDO ~Sugoi User DO~ すごいユーザーの権限でコマンドを実行します") {
     val userManager by inject<UserManager>()
     val cmd by argument(ArgType.Command, "command", "実行するコマンドです")
     val targetArgs by argument(ArgType.String, "args", "commandに渡す引数です").vararg(true)
@@ -139,7 +136,7 @@ class SugoiUserDo : Command<Unit>("sudo", "SUDO ~Sugoi User DO~ すごいユー�
     }
 }
 
-class Exit : Command<Unit>("exit") {
+class Exit : Executable<Unit>("exit") {
     override suspend fun execute(rawArgs: List<String>) {
         out.println("終了します")
         console.exit()
@@ -149,18 +146,31 @@ class Exit : Command<Unit>("exit") {
 
 class Expression : KoinComponent {
     private val fileTree by inject<FileTree>()
+    private val fileSystem by inject<FileSystem>()
     private val variable by inject<Variable>()
     var currentJob: Job? = null
 
     internal val _commandHistory = mutableListOf<String>()
     val commandHistory get() = _commandHistory.toList()
-    fun tryResolve(cmd: String): Command<*>? {
-        fileTree.executableEnvPaths.forEach {
+    fun getExecutables(dir: Directory? = null): List<ExecutableFile<*>> {
+        val target = if (dir != null)
+            fileTree.executableEnvPaths.plus(dir)
+        else fileTree.executableEnvPaths
+        return target.flatMap {
+            it.children.values.filterIsInstance(ExecutableFile::class.java)
+        }
+    }
+
+    fun tryResolve(cmd: String): Executable<*>? {
+        /*fileTree.executableEnvPaths.forEach {
             it.children.entries.firstOrNull { (name, _) -> cmd == name }?.let { (_, f) ->
                 if (f is ExecutableFile<*>) {
-                    return f.command
+                    return f.executable
                 }
             }
+        }*/
+        getExecutables().firstOrNull { cmd == it.name }?.let {
+            return it.executable
         }
         return null
     }

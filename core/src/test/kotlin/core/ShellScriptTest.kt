@@ -1,7 +1,7 @@
 package core
 
 import core.commands.parser.ArgType
-import core.commands.parser.Command
+import core.commands.parser.Executable
 import core.user.UserManager
 import core.vfs.FileSystem
 import core.vfs.FileTree
@@ -42,12 +42,12 @@ class ShellScriptTest :KoinTest{
     @Test
     fun testRunCommand() {
         runBlocking {
-            TestCommand.resolve("-la rdfgv / /home".split(" "))
+            TestExecutable.resolve("-la rdfgv / /home".split(" "))
         }
     }
 }
 
-object TestCommand : Command<Unit>(
+object TestExecutable : Executable<Unit>(
     "ls", """
     今いる場所のファイルを一覧表示します
 """.trimIndent()

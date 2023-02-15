@@ -3,7 +3,7 @@ package core.vfs
 import core.commands.*
 import core.commands.dev.Parse
 import core.commands.dev.Status
-import core.commands.parser.Command
+import core.commands.parser.Executable
 import core.user.UserManager
 import core.vfs.dsl.dir
 import core.vfs.dsl.executable
@@ -18,8 +18,8 @@ class FileTree(userManager: UserManager)  {
     val executableEnvPaths = mutableListOf<Directory>()
 
     init {
-        val initialCommands = listOf<Command<*>>(
-            ListFile(), ChangeDirectory(), Cat(), Exit(), SugoiUserDo(),
+        val initialCommands = listOf<Executable<*>>(
+            ListSegments(), ChangeDirectory(), Cat(), Exit(), SugoiUserDo(),
             Yes(), Clear(), Echo(), Remove(), Test(),
         )
         rootDir {

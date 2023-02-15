@@ -1,6 +1,6 @@
 package core.vfs.dsl
 
-import core.commands.parser.Command
+import core.commands.parser.Executable
 import core.user.Group
 import core.user.User
 import core.vfs.*
@@ -72,11 +72,11 @@ fun Directory.file(
     addChildren(TextFile(name, this, content, owner, group, permission,hidden))
 
 fun <R> Directory.executable(
-    command: Command<R>,
-    name: String=command.name,
+    executable: Executable<R>,
+    name: String=executable.name,
     owner: User = this.owner,
     group: Group = this.ownerGroup,
     permission: Permission=Permission.exeDefault,
     hidden:Boolean=false,
 ) =
-    addChildren(ExecutableFile(name, this, command, owner, group,permission,hidden))
+    addChildren(ExecutableFile(name, this, executable, owner, group,permission,hidden))
