@@ -5,6 +5,7 @@ import core.commands.parser.CommandResult
 import core.user.Group
 import core.user.User
 import core.user.UserManager
+import core.utils.splitArgs
 import core.vfs.FileSystem
 import core.vfs.FileTree
 import core.vfs.dsl.dir
@@ -106,7 +107,7 @@ suspend fun initialize(koin: Koin, consoleInterface: ConsoleInterface) {
             .ifBlank {
                 null
             } ?: continue
-        val inputArgs = input.split(' ')
+        val inputArgs = input.splitArgs()
         val cmd = expression.tryResolve(inputArgs.first())
         expression._commandHistory.add(0, input)
         if (cmd != null) {

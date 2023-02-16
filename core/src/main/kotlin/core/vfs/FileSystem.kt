@@ -1,5 +1,6 @@
 package core.vfs
 
+import core.user.UserManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -17,6 +18,7 @@ value class Path(val value: String) {
  */
 class FileSystem(currentDirectory: Directory) : KoinComponent {
     val fileTree by inject<FileTree>()
+    val userManager by inject<UserManager>()
     var currentDirectory: Directory = currentDirectory
         private set
     var currentPath: Path = currentDirectory.getFullPath()
@@ -64,7 +66,7 @@ class FileSystem(currentDirectory: Directory) : KoinComponent {
             partialPath.drop(if (isHomeDir) 1 else 0)
                 .fold<String, File?>(if (isHomeDir) fileTree.userDir else fileTree.root) { dir, partial ->
                     println(partial + ":dir:" + dir?.name)
-                    dir?.toDirectoryOrNull()?.children?.get(partial)
+                    dir?.toDirectoryOrNull()?.getChildren(userManager.user)?.get(partial)
                 }
         } else {
             partialPath.fold<String, File?>(currentDirectory) { dir, partial ->
@@ -72,7 +74,7 @@ class FileSystem(currentDirectory: Directory) : KoinComponent {
                     when (partial) {
                         "." -> it
                         ".." -> it.parent
-                        else -> it.children[partial]
+                        else -> it.getChildren(userManager.user)?.get(partial)
                     }
                 }
             }

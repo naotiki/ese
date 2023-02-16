@@ -4,9 +4,9 @@ import core.EventManager
 import core.commands.parser.Executable
 import core.user.Group
 import core.user.User
-import core.utils.DirectoryAsStringSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import java.util.stream.Collectors.toList
 
 
 /**
@@ -16,10 +16,9 @@ import kotlinx.serialization.Transient
  *  @param parent 親ディレクトリ、ルートの場合はnull
  *  @param hidden 属性 [Boolean]をとる
  */
-@Serializable
+
 open class File(
     var name: String,
-    @Transient
     var parent: Directory? = null,
     var hidden: Boolean,
     var owner: User,
@@ -70,15 +69,34 @@ class ExecutableFile<R>(
         private set
 }
 
-@Serializable(with = DirectoryAsStringSerializer::class)
 open class Directory(
-    name: String,  parent: Directory?, owner: User, group: Group, permission: Permission,
+    name: String, parent: Directory?, owner: User, group: Group, permission: Permission,
     hidden: Boolean
 ) : File(
     name, parent = parent, owner = owner, ownerGroup = group, hidden = hidden, permission = permission
 ) {
     open var _children: MutableMap<String, File> = mutableMapOf()
-    val children get() = _children.toMap()
+    fun getChildren(user: User): Map<String, File>? {
+        return if (
+            permission.has(
+                when {
+                    user == owner -> {
+                        PermissionTarget.OwnerR
+                    }
+
+                    user.group == ownerGroup -> {
+                        PermissionTarget.GroupR
+                    }
+
+                    else -> {
+                        PermissionTarget.OtherR
+                    }
+                }
+            )
+        ) _children.toMap() else null
+
+
+    }
 
     fun addChildren(vararg childDir: File) {
         _children.putAll(childDir.associateBy { it.name })

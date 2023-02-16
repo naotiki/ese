@@ -4,10 +4,9 @@ import core.Variable
 import core.commands.parser.ArgType
 import core.commands.parser.Executable
 import core.user.UserManager
-import core.vfs.*
-import kotlinx.coroutines.Job
+import core.vfs.FileSystem
+import core.vfs.TextFile
 import kotlinx.coroutines.delay
-import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 //Man
@@ -28,18 +27,21 @@ class ListSegments : Executable<Unit>(
     今いる場所のファイルを一覧表示します
 """.trimIndent()
 ) {
+    val um by inject<UserManager>()
     val fs by inject<FileSystem>()
     val detail by option(ArgType.Boolean, "list", "l", "ディレクトリの内容を詳細表示します。").default(false)
     val all by option(ArgType.Boolean, "all", "a", "すべてのファイルを一覧表示します。").default(false)
     val directory by argument(ArgType.Dir, "target", "一覧表示するディレクトリ").optional()
     override suspend fun execute(rawArgs: List<String>) {
-        (directory ?: fs.currentDirectory).children.filter { (_, f) -> !f.hidden || all }.forEach { (name, dir) ->
+        (directory ?: fs.currentDirectory).getChildren(um.user)?.filter { (_, f) -> !f.hidden || all }?.forEach {
+                (name,
+                                                                                                               dir) ->
             if (detail) {
                 dir.run {
                     out.println("$permission ${owner.name} ${ownerGroup.name} ??? 1970 1 1 09:00 $name")
                 }
             } else out.print("$name ")
-        }
+        }?:out.println("権限が足りません。")
         //書き込み
         out.println()
     }
@@ -52,17 +54,21 @@ class Remove : Executable<Unit>(
 """.trimIndent()
 ) {
     val fs by inject<FileSystem>()
-    val file by argument(ArgType.File, "target")
+    val recursive by option(ArgType.Boolean,"recursive","r","ディレクトリを削除します。")
+    val force by option(ArgType.Boolean,"force","f","強制的に削除します。")
+    val interactive by option(ArgType.Boolean,"interactive","i","削除前に確認します。")
+
+    val file by argument(ArgType.File, "target").vararg()
 
     override suspend fun execute(rawArgs: List<String>) {
 
-        if (file is Directory) {
+       /* if (file is Directory) {
             if ((file as Directory).children.isEmpty()) {
                 if (file.parent?.removeChild(file) == true) {
                     out.println("${file.name}が削除されました")
                 }
             }
-        } else file.parent?.removeChild(file)
+        } else file.parent?.removeChild(file)*/
     }
 }
 
@@ -116,11 +122,11 @@ class Clear : Executable<Unit>("clear") {
 
 class SugoiUserDo : Executable<Unit>("sudo", "SUDO ~Sugoi User DO~ すごいユーザーの権限でコマンドを実行します") {
     val userManager by inject<UserManager>()
-    val cmd by argument(ArgType.Command, "command", "実行するコマンドです")
+    val cmd by argument(ArgType.Executable, "command", "実行するコマンドです")
     val targetArgs by argument(ArgType.String, "args", "commandに渡す引数です").vararg(true)
     override suspend fun execute(rawArgs: List<String>) {
         out.println(
-            """あなたはテキストファイルからsudoコマンドの講習を受けたはずです。
+            """あなたはsudoコマンドの講習を受けたはずです。
 これは通常、以下の3点に要約されます:
 
     #1) 他人のプライバシーを尊重すること。
@@ -129,7 +135,10 @@ class SugoiUserDo : Executable<Unit>("sudo", "SUDO ~Sugoi User DO~ すごいユ�
         )
         val n = io.newPrompt(console, "実行しますか？(続行するにはあなたのユーザー名を入力) >>")
         if (n == userManager.user.name) {
+            val u=userManager.user
+            userManager.setUser(userManager.uRoot)
             cmd.resolve(targetArgs)
+            userManager.setUser(u)
         } else {
             out.println("残念、無効なユーザー名")
         }
@@ -144,55 +153,3 @@ class Exit : Executable<Unit>("exit") {
 }
 
 
-class Expression : KoinComponent {
-    private val fileTree by inject<FileTree>()
-    private val fileSystem by inject<FileSystem>()
-    private val variable by inject<Variable>()
-    var currentJob: Job? = null
-
-    internal val _commandHistory = mutableListOf<String>()
-    val commandHistory get() = _commandHistory.toList()
-    fun getExecutables(dir: Directory? = null): List<ExecutableFile<*>> {
-        val target = if (dir != null)
-            fileTree.executableEnvPaths.plus(dir)
-        else fileTree.executableEnvPaths
-        return target.flatMap {
-            it.children.values.filterIsInstance(ExecutableFile::class.java)
-        }
-    }
-
-    fun tryResolve(cmd: String): Executable<*>? {
-        /*fileTree.executableEnvPaths.forEach {
-            it.children.entries.firstOrNull { (name, _) -> cmd == name }?.let { (_, f) ->
-                if (f is ExecutableFile<*>) {
-                    return f.executable
-                }
-            }
-        }*/
-        getExecutables().firstOrNull { cmd == it.name }?.let {
-            return it.executable
-        }
-        return null
-    }
-
-    fun expressionParser(string: String): Boolean {
-
-        val assignment = Regex("^${variable.nameRule}=")
-        when {
-            string.contains(assignment) -> {
-
-                val a = string.replaceFirst(assignment, "")
-                variable.map[assignment.matchAt(string, 0)!!.value.trimEnd('=')] = a
-            }
-
-            else -> return false
-        }
-        println(variable.map)
-        return true
-    }
-
-    fun cancelJob(): Boolean {
-        currentJob?.cancel() ?: return false
-        return true
-    }
-}

@@ -18,6 +18,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,6 +27,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import core.*
 import core.commands.Expression
+import core.utils.splitArgs
 import easy.CommandPanel
 import easy.EasyFileView
 import kotlinx.coroutines.*
@@ -33,7 +35,6 @@ import kotlinx.coroutines.flow.*
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
 import org.jetbrains.compose.splitpane.SplitPaneState
-import org.koin.core.KoinApplication
 import org.koin.core.component.inject
 import kotlin.system.exitProcess
 
@@ -63,12 +64,40 @@ class TerminalViewModel(prompt: Prompt) : CustomKoinComponent() {
             textLogs = ""
         }
     }
+    var suggestion by mutableStateOf<String?>(null)
+    var suggestList by mutableStateOf(emptyList<String>())
+    var count by mutableStateOf(0)
+    fun nextSuggest(value: String): String {
+
+        val target = value.splitArgs()
+        val arg = target.last()
+        if (suggestion != arg) {
+            suggestion = arg
+            suggestList = getSuggestList(value)
+        }
+        return (suggestList.ifEmpty { null }?.let {
+            val a = (it.getOrNull(count) ?: run {
+                count = 0
+                suggestList.getOrNull(count)
+            } )?: return@let null
+            count++
+            (target.dropLast(1) + a).joinToString(" ")
+        } ?: value).also { System.out.println(it) }
+    }
+
+    fun getSuggestList(value: String) =
+        expression.suggest(value).also {
+            println(it)
+        }
+
 
     suspend fun initialize() {
         core.initialize(getKoin(), consoleImpl)
     }
 
-    fun println(value: String) {
+    fun outln(value: String) {
+        suggestion=null
+        suggestList= emptyList()
         io.consoleWriter.println(value)
     }
 }
@@ -79,7 +108,6 @@ fun rememberTerminalViewModel(prompt: Prompt) = remember { TerminalViewModel(pro
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun Terminal() {
-
     val prompt by rememberPrompt("", "")
     val viewModel = rememberTerminalViewModel(prompt)
     var historyIndex by remember { mutableStateOf(-1) }
@@ -119,11 +147,12 @@ fun Terminal() {
                     fontFamily = FontFamily.Monospace
                 )
             }
-
+            var lastInput by remember { mutableStateOf("") }
             BasicTextField(
                 prompt.textFieldValue,
                 onValueChange = {
                     prompt.updateTextFieldValue(it) { value, _ ->
+                        lastInput=value
                         println("Debug:Updated $value")
                     }
                 },
@@ -141,8 +170,9 @@ fun Terminal() {
                     return@onPreviewKeyEvent if (it.key == Key.Enter && it.type == KeyEventType.KeyDown /*&& prompt
                         .isEnable*/) {
                         textLogs += prompt.textFieldValue.text + "\n"
-                        viewModel.println(prompt.getValue())
+                        viewModel.outln(prompt.getValue())
                         prompt.reset()
+
                         historyIndex = -1
                         true
                     } else if ((it.key == Key.DirectionUp || it.key == Key.DirectionDown) && it.type == KeyEventType.KeyDown) {
@@ -154,6 +184,9 @@ fun Terminal() {
                         viewModel.commandHistory.getOrNull(historyIndex).let { s ->
                             prompt.updateValue(s ?: "")
                         }
+                        true
+                    } else if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
+                        prompt.updateValue(viewModel.nextSuggest(lastInput))
                         true
                     } else false
                 },
@@ -173,8 +206,12 @@ fun Terminal() {
 @Composable
 @Preview
 fun App(isAssistExtended: Boolean) {
-    val splitState = remember(isAssistExtended) { SplitPaneState(if (isAssistExtended) 0.35f else 0f,
-        isAssistExtended) }
+    val splitState = remember(isAssistExtended) {
+        SplitPaneState(
+            if (isAssistExtended) 0.35f else 0f,
+            isAssistExtended
+        )
+    }
     MaterialTheme {
         HorizontalSplitPane(splitPaneState = splitState) {
             first(0.dp) {
@@ -217,9 +254,9 @@ fun App(isAssistExtended: Boolean) {
                                 }
                             )
                         }
-                        when(selectedTabIndex){
-                            0->CommandPanel()
-                            1->EasyFileView()
+                        when (selectedTabIndex) {
+                            0 -> CommandPanel()
+                            1 -> EasyFileView()
                         }
 
 
@@ -231,7 +268,6 @@ fun App(isAssistExtended: Boolean) {
                             (hoverColor = Color.LightGray, unhoverColor = Color.Gray, thickness = 5.dp)
                     )
                 }
-
 
 
             }
@@ -251,7 +287,6 @@ class ApplicationViewModel : CustomKoinComponent() {
         expression.cancelJob()
     }
 }
-
 
 
 @Composable

@@ -32,6 +32,10 @@ class UserManager {
     val rootGroup = Group(this,"root")
     val uRoot = User(this,"root", rootGroup)
 
+
+    val nullGroup = Group(this,"null")
+    val uNull = User(this,"null", nullGroup)
+
     val naotikiGroup = Group(this,"naotiki")
     val uNaotiki = User(this,"naotiki", naotikiGroup)
 
@@ -46,7 +50,7 @@ class UserManager {
         groups.add(group)
     }
 
-    lateinit var user: User
+     var user: User=uNull
         private set
 
     fun setUser(u: User) {
@@ -54,7 +58,6 @@ class UserManager {
     }
 }
 
-@Serializable
 data class User private constructor(
     override val name: String, var group: Group, override val id: UID = UID(), var dir:
     Directory? = null

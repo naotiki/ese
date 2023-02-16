@@ -15,14 +15,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import component.Accordion
+import core.user.UserManager
 import core.vfs.Directory
+import core.vfs.File
 import core.vfs.FileSystem
+import kotlinx.coroutines.flow.onEach
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 class FilePanelViewModel : KoinComponent {
+    val um by inject<UserManager>()
     private val fs by inject<FileSystem>()
     val flow get() = fs.currentDirectoryFlow
+    fun getChildren(dir:Directory): Map<String, File>? {
+        return dir.getChildren(um.user)
+    }
 }
 
 @Composable
@@ -39,7 +46,7 @@ fun EasyFileView() {
             Text(dir.name)
         },true) {
             Column {
-                dir.children.forEach { (t, u) ->
+                viewModel.getChildren(dir)?.forEach { (t, u) ->
                     Row{
                         Spacer(Modifier.width(24.dp))
                         if (u is Directory) {

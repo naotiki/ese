@@ -47,7 +47,7 @@ abstract class SubCommand<R>(val name: String, val regex: Regex? = null) {
  * */
 abstract class Executable<R>(val name: String, val description: String? = null) : KoinComponent {
     val io by inject<IO>()
-    private val argParser: SuperArgsParser = SuperArgsParser()
+    internal val argParser: SuperArgsParser = SuperArgsParser()
     val help by option(ArgType.Boolean, "help", "h", "ヘルプを表示します。").default(false)
     //fun isHelp(args: List<String>)=args.contains("-h")||args.contains("--help")
 
@@ -222,7 +222,7 @@ sealed class ArgType<T : Any>(val converter: Koin.(kotlin.String) -> T?) {
         get<FileSystem>().tryResolve(Path(it))?.toDirectoryOrNull()
     })
 
-    object Command : ArgType<core.commands.parser.Executable<*>>({ get<Expression>().tryResolve(it) })
+    object Executable : ArgType<core.commands.parser.Executable<*>>({ get<Expression>().tryResolve(it) })
 
     class Define<T : Any>(converter: Koin.(kotlin.String) -> T?) : ArgType<T>(converter)
 }

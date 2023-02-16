@@ -9,7 +9,7 @@ class Parse : Executable<Unit>(
     開発用 / For development
 """.trimIndent()
 ) {
-    val cmd by argument(ArgType.Command, "cmd")
+    val cmd by argument(ArgType.Executable, "cmd")
     val bypassArgs by argument(ArgType.String, "args").vararg(true)
     override suspend fun execute(rawArgs: List<String>) {
         cmd.verbose(bypassArgs)
