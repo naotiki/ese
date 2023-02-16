@@ -1,4 +1,4 @@
-package easy
+package component.assistant
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,7 +19,6 @@ import core.user.UserManager
 import core.vfs.Directory
 import core.vfs.File
 import core.vfs.FileSystem
-import kotlinx.coroutines.flow.onEach
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 

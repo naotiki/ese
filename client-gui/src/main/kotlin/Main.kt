@@ -27,8 +27,8 @@ import androidx.compose.ui.window.application
 import core.*
 import core.commands.Expression
 import core.utils.splitArgs
-import easy.CommandPanel
-import easy.EasyFileView
+import component.assistant.CommandPanel
+import component.assistant.EasyFileView
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
@@ -180,7 +180,7 @@ fun Terminal() {
                             else -> -1
                         }
                         viewModel.commandHistory.getOrNull(historyIndex).let { s ->
-                            prompt.updateValue(s ?: "")
+                            prompt.updateValue((s ?: "").also { lastInput=it })
                         }
                         true
                     } else if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {

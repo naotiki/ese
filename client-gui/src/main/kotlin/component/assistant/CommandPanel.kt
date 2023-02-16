@@ -1,7 +1,6 @@
-package easy
+package component.assistant
 import CustomKoinComponent
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -13,10 +12,7 @@ import androidx.compose.ui.window.Window
 import component.Accordion
 import core.commands.Expression
 import core.commands.parser.Executable
-import core.vfs.ExecutableFile
-import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.koin.java.KoinJavaComponent.inject
 
 class CommandPanelViewModel  : CustomKoinComponent() {
     private val ex by inject<Expression>()
