@@ -48,6 +48,11 @@ class Expression : KoinComponent {
         val (exe, args) = targetText.splitArgs().let {
             tryResolve(it.first()) to it.drop(1)
         }
+        if (exe==null&&targetText.isNotBlank()){
+            return fileTree.executableEnvPaths.flatMap {
+                it.getChildren(um.user)?.keys?: emptyList()
+            }.filter { it.startsWith(targetText) }
+        }
 
         val (type, value) = exe?.argParser?.getNextArgTypeOrNull(args) ?: return emptyList()
         return (when (type) {
@@ -55,22 +60,21 @@ class Expression : KoinComponent {
                 fileTree.executableEnvPaths.flatMap {
                     it.getChildren(um.user)?.keys?: emptyList()
                 }
-
             }
 
             is ArgType.File -> {
-                fileSystem.currentDirectory.getChildren(um.user)?.keys?.filter { it.startsWith(value) }
+                fileSystem.currentDirectory.getChildren(um.user)?.keys
             }
 
             is ArgType.Dir -> {
                 fileSystem.currentDirectory.getChildren(um.user)
-                    ?.filterValues { it is Directory }?.keys?.filter { it.startsWith(value) }
+                    ?.filterValues { it is Directory }?.keys
             }
 
             else -> {
                 emptyList()
             }
-        } ?: emptyList())
+        } ?: emptyList()).filter { it.startsWith(value) }
 
     }
 

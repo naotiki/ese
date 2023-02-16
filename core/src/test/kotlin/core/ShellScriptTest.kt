@@ -1,5 +1,6 @@
-package core
 
+package core
+/*
 import core.commands.parser.ArgType
 import core.commands.parser.Executable
 import core.user.UserManager
@@ -68,3 +69,4 @@ object TestExecutable : Executable<Unit>(
         }
     }
 }
+*/

@@ -99,7 +99,6 @@ suspend fun initialize(koin: Koin, consoleInterface: ConsoleInterface) {
 
     loadKoinModules(module {
         single { consoleInterface }
-
         single { expression }
     })
     while (true/*TODO 終了機能*/) {

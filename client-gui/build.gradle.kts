@@ -3,7 +3,7 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose")
-    id("org.jetbrains.dokka") version "1.7.20"
+    //id("org.jetbrains.dokka") version "1.7.20"
 }
 
 group = "me.naotiki"
@@ -16,10 +16,17 @@ repositories {
 }
 
 kotlin {
+
     jvm {
+
         compilations.all {
-            kotlinOptions.jvmTarget = "11"
+            compilerOptions.configure {
+
+               // this.freeCompilerArgs.addAll("-encoding","utf-8")
+            }
+            kotlinOptions.jvmTarget = "15"
         }
+
         withJava()
     }
     sourceSets {
@@ -29,7 +36,7 @@ kotlin {
                 implementation(compose.desktop.currentOs)
                 implementation(compose.desktop.components.splitPane)
                 implementation(compose.preview)
-                implementation(compose.uiTooling)
+                //implementation(compose.uiTooling)
                 implementation(compose.materialIconsExtended)
                 implementation(project(":core"))
             }
@@ -41,13 +48,24 @@ kotlin {
 compose.desktop {
     application {
         mainClass = "MainKt"
+        jvmArgs+=listOf("-Dfile.encoding=UTF-8")
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Exe, TargetFormat.Deb)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "EseLinux"
             packageVersion = "1.0.0"
+            linux{
+                shortcut=true
+            }
+            windows{
+                console=false
+                menu=true
+                shortcut=true
+            }
         }
     }
 }
+/*
 subprojects {
     apply(plugin = "org.jetbrains.dokka")
 }
+*/

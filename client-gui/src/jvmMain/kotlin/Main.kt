@@ -170,7 +170,7 @@ fun Terminal() {
                         viewModel.textLogs += prompt.textFieldValue.text + "\n"
                         viewModel.outln(prompt.getValue())
                         prompt.reset()
-
+                        lastInput=""
                         historyIndex = -1
                         true
                     } else if ((it.key == Key.DirectionUp || it.key == Key.DirectionDown) && it.type == KeyEventType.KeyDown) {
@@ -299,7 +299,7 @@ fun main() {
     application {
         val appViewModel = rememberAppViewModel()
 
-        Window(onCloseRequest = ::exitApplication, title = "Console", onPreviewKeyEvent = {
+        Window(onCloseRequest = ::exitApplication, title = "EseLinux", onPreviewKeyEvent = {
             return@Window if (it.key == Key.C && it.isCtrlPressed) {
                 appViewModel.cancelCommand()
                 true
