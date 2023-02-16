@@ -18,7 +18,6 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -82,7 +81,7 @@ class TerminalViewModel(prompt: Prompt) : CustomKoinComponent() {
             } )?: return@let null
             count++
             (target.dropLast(1) + a).joinToString(" ")
-        } ?: value).also { System.out.println(it) }
+        } ?: value).also { println(it) }
     }
 
     fun getSuggestList(value: String) =
@@ -112,7 +111,6 @@ fun Terminal() {
     val viewModel = rememberTerminalViewModel(prompt)
     var historyIndex by remember { mutableStateOf(-1) }
     val coroutine = rememberCoroutineScope()
-    var textLogs by remember { mutableStateOf("") }
     val stateVertical = rememberScrollState(0)
     LaunchedEffect(Unit) {
         launch(handler) {
@@ -125,7 +123,7 @@ fun Terminal() {
             println("End:Init")
         }
         viewModel.logFlow.collect {
-            textLogs += it + "\n"
+            viewModel.textLogs += it + "\n"
             stateVertical.scrollTo(stateVertical.maxValue)
         }
     }
@@ -140,7 +138,7 @@ fun Terminal() {
         ) {
             SelectionContainer {
                 Text(
-                    textLogs,
+                    viewModel.textLogs,
                     overflow = TextOverflow.Visible,
                     color = Color.White,
                     fontSize = 20.sp,
@@ -169,7 +167,7 @@ fun Terminal() {
 
                     return@onPreviewKeyEvent if (it.key == Key.Enter && it.type == KeyEventType.KeyDown /*&& prompt
                         .isEnable*/) {
-                        textLogs += prompt.textFieldValue.text + "\n"
+                        viewModel.textLogs += prompt.textFieldValue.text + "\n"
                         viewModel.outln(prompt.getValue())
                         prompt.reset()
 

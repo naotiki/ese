@@ -73,7 +73,9 @@ class Remove : Executable<Unit>(
 }
 
 
-class ChangeDirectory : Executable<Unit>("cd") {
+class ChangeDirectory : Executable<Unit>("cd","""
+    対象のディレクトリに移動します。
+""".trimIndent()) {
     val fs by inject<FileSystem>()
     val directory by argument(ArgType.Dir, "target", "一覧表示するディレクトリ")
     override suspend fun execute(rawArgs: List<String>) {
@@ -82,14 +84,16 @@ class ChangeDirectory : Executable<Unit>("cd") {
     }
 }
 
-class Yes : Executable<Unit>("yes") {
+class Yes : Executable<Unit>("yes","""
+    YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES
+""".trimIndent()) {
     val value by argument(ArgType.String, "value", "出力する文字列").optional()
     override suspend fun execute(rawArgs: List<String>) {
         val b = value ?: "yes"
 
         while (true) {
             out.println(b)
-            //Bits per sec yield()にすると ASSERT: 51.500000 != 51.750000 って出るから適度な休憩をあげましょう
+            //yield()にすると ASSERT: 51.500000 != 51.750000 って出るから適度な休憩をあげましょう
             delay(10)
         }
     }
@@ -97,7 +101,10 @@ class Yes : Executable<Unit>("yes") {
 
 
 //😼
-class Cat : Executable<Unit>("cat") {
+class Cat : Executable<Unit>("cat","""
+    😼😼😼😼😼😼😼😼😼😼
+    対象のファイルを表示します
+""".trimIndent()) {
     private val txt by argument(ArgType.File, "target")
     override suspend fun execute(rawArgs: List<String>) {
 
@@ -107,20 +114,22 @@ class Cat : Executable<Unit>("cat") {
     }
 }
 
-class Echo : Executable<Unit>("echo") {
+class Echo : Executable<Unit>("echo","メッセージを出力します") {
     val variable by inject<Variable>()
+    val input by argument(ArgType.String,"msg","出力するメッセージ").vararg()
     override suspend fun execute(rawArgs: List<String>) {
-        rawArgs.joinToString(" ").let { out.println(variable.expandVariable(it)) }
+        input.joinToString(" ").let { out.println(variable.expandVariable(it)) }
     }
 }
 
-class Clear : Executable<Unit>("clear") {
+class Clear : Executable<Unit>("clear","コンソールの出力を削除します") {
     override suspend fun execute(rawArgs: List<String>) {
         console.clear()
     }
 }
 
-class SugoiUserDo : Executable<Unit>("sudo", "SUDO ~Sugoi User DO~ すごいユーザーの権限でコマンドを実行します") {
+class SugoiUserDo : Executable<Unit>("sudo", """Sugoi User DO
+    | すごいユーザーの権限でコマンドを実行します""".trimMargin()) {
     val userManager by inject<UserManager>()
     val cmd by argument(ArgType.Executable, "command", "実行するコマンドです")
     val targetArgs by argument(ArgType.String, "args", "commandに渡す引数です").vararg(true)
@@ -145,7 +154,7 @@ class SugoiUserDo : Executable<Unit>("sudo", "SUDO ~Sugoi User DO~ すごいユ�
     }
 }
 
-class Exit : Executable<Unit>("exit") {
+class Exit : Executable<Unit>("exit","Ese Linux を終了します。") {
     override suspend fun execute(rawArgs: List<String>) {
         out.println("終了します")
         console.exit()

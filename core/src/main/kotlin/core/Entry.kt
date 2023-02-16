@@ -61,7 +61,7 @@ suspend fun initialize(koin: Koin, consoleInterface: ConsoleInterface) {
 
     //名前設定
     while (true) {
-        userName = io.newPrompt(consoleInterface, "あなたの名前は？:", "ktln")
+        userName = io.newPrompt(consoleInterface, "あなたの名前は？:", "")
         println(userManager.userList)
         when {
             userName.isBlank() -> {
