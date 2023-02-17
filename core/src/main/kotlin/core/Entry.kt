@@ -115,7 +115,7 @@ suspend fun initialize(koin: Koin, consoleInterface: ConsoleInterface) {
                 expression.currentJob = launch {
                     val result = cmd.resolve(inputArgs.drop(1))
                     if (result is CommandResult.Success) {
-                        io.outputStream.println("[DEBUG] RETURN:${result.value}")
+                        //io.outputStream.println("[DEBUG] RETURN:${result.value}")
                     }
                 }
                 //待機

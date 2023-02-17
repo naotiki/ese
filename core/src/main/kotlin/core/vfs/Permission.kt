@@ -21,7 +21,6 @@ enum class PermissionTarget {
  */
 @JvmInline
 value class Permission(val value: Int) {
-    constructor(string: String) : this(string.toInt(8))
 
     constructor(vararg targets: PermissionTarget) : this(targets.fold(0) { acc, permissionTarget ->
         acc or permissionTarget.getFlag()

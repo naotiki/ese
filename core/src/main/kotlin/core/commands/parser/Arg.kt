@@ -66,24 +66,3 @@ class Arg<T : Any>(
 
 class CommandIllegalArgsException(message: String?,val type:ArgType<*>) : Exception(message)
 
-@Deprecated("非推奨", level = DeprecationLevel.WARNING)
-class Args(val args: List<String>) {
-    private var index = 0
-    @Deprecated("非推奨", level = DeprecationLevel.WARNING)
-    fun <T : Any> getArg(type: ArgType<T>, default: T? = null): T? {
-        return (args.getOrNull(index)?.ifBlank { null } ?: return default).let {
-            index++
-            type.converter(getKoin(),it)
-        }
-    }
-
-    fun getOptions(): List<String> {
-        return args.filter { it.startsWith('-') }.flatMap { it.split("") }
-    }
-}
-
-@Deprecated(
-    "非推奨", level = DeprecationLevel.WARNING, replaceWith = ReplaceWith("Args(this)", "core.commands.parser.Args")
-)
-fun List<String>.toArgs() = Args(this)
-

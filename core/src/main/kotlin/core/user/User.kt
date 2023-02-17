@@ -39,9 +39,6 @@ class UserManager {
     val naotikiGroup = Group(this,"naotiki")
     val uNaotiki = User(this,"naotiki", naotikiGroup)
 
-    var isSugoiUser = false
-        private set
-
     fun addUser(user: User) {
         users.add(user)
     }
