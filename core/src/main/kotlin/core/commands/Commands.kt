@@ -10,6 +10,7 @@ import core.vfs.Permission
 import core.vfs.TextFile
 import core.vfs.dsl.dir
 import core.vfs.dsl.file
+import core.vfs.dsl.fileDSL
 import kotlinx.coroutines.delay
 import org.koin.core.component.inject
 
@@ -21,7 +22,7 @@ class Help : Executable<Unit>(
 ) {
     val ex by inject<Expression>()
     override suspend fun execute(rawArgs: List<String>) {
-        val exes = ex.getExecutables().map { it.executable }
+        val exes = ex.getExecutables().map { it.executable.get() }
         out.println("現在、以下の${exes.count()}個のコマンドが使用可能です。")
         exes.forEach {
             out.println(it.name)
@@ -37,7 +38,6 @@ class ListSegments : Executable<Unit>(
     今いる場所のファイルを一覧表示します。
 """.trimIndent()
 ) {
-    val um by inject<UserManager>()
     val fs by inject<FileSystem>()
     val detail by option(ArgType.Boolean, "list", "l", "ディレクトリの内容を詳細表示します。").default(false)
     val all by option(ArgType.Boolean, "all", "a", "すべてのファイルを一覧表示します。").default(false)
@@ -46,7 +46,7 @@ class ListSegments : Executable<Unit>(
         (directory ?: fs.currentDirectory).getChildren(um.user, all)?.forEach { (name, dir) ->
             if (detail) {
                 dir.run {
-                    out.println("$permission ${owner.name} ${ownerGroup.name} ??? 1970 1 1 09:00 $name")
+                    out.println("$permission ${owner.get().name} ${ownerGroup.get().name} ??? 1970 1 1 09:00 $name")
                 }
             } else out.print("$name ")
         } ?: out.println("権限が足りません。")
@@ -147,7 +147,6 @@ class SugoiUserDo : Executable<Unit>(
     | すごいユーザーの権限でコマンドを実行します。""".trimMargin()
 ) {
     var isConfirm = false
-    val userManager by inject<UserManager>()
     val cmd by argument(ArgType.Executable, "command", "実行するコマンドです")
     val targetArgs by argument(ArgType.String, "args", "commandに渡す引数です").vararg(true)
     override suspend fun execute(rawArgs: List<String>) {
@@ -163,12 +162,12 @@ class SugoiUserDo : Executable<Unit>(
             )
         }
         val n = io.newPrompt(console, "実行しますか？(続行するにはあなたのユーザー名を入力) >>")
-        if (n == userManager.user.name) {
+        if (n == um.user.name) {
             isConfirm = true
-            val u = userManager.user
-            userManager.setUser(userManager.uRoot)
+            val u = um.user
+            um.setUser(um.uRoot)
             cmd.resolve(targetArgs)
-            userManager.setUser(u)
+            um.setUser(u)
         } else {
             out.println("残念、間違いなユーザー名")
         }
@@ -186,7 +185,10 @@ class MakeDirectory : Executable<Unit>("mkdir", "ディレクトリを作成し�
     val fs by inject<FileSystem>()
     val dirName by argument(ArgType.String, "name", "作成するディレクトリの名前")
     override suspend fun execute(rawArgs: List<String>) {
-        fs.currentDirectory.dir(dirName)
+        fileDSL(fs.currentDirectory,um.user){
+            dir(dirName)
+        }
+
     }
 }
 
@@ -194,7 +196,9 @@ class Touch : Executable<Unit>("touch", "書き込み可能ファイルを作成
     val fs by inject<FileSystem>()
     val fileName by argument(ArgType.String, "name", "作成するファイルの名前")
     override suspend fun execute(rawArgs: List<String>) {
-        fs.currentDirectory.file(fileName,"")
+        fileDSL(fs.currentDirectory,um.user){
+            file(fileName,"")
+        }
     }
 }
 class Chmod : Executable<Unit>("chmod", "権限を変更します。") {
@@ -207,7 +211,7 @@ class Chmod : Executable<Unit>("chmod", "権限を変更します。") {
             throw CommandIllegalArgsException("不正な権限値",ArgType.String)
         }
 
-        file.permission=Permission(p)
+        file.permission.set(um.user,Permission(p))
     }
 }
 

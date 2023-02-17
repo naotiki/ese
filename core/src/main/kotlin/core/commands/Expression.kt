@@ -39,7 +39,7 @@ class Expression : KoinComponent {
             }
         }*/
         getExecutables().firstOrNull { cmd == it.name }?.let {
-            return it.executable
+            return it.executable.get()
         }
         return null
     }

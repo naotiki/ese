@@ -3,6 +3,7 @@ package core.commands.parser
 import core.ConsoleInterface
 import core.IO
 import core.commands.Expression
+import core.user.UserManager
 import core.vfs.Directory
 import core.vfs.FileSystem
 import core.vfs.Path
@@ -48,6 +49,7 @@ abstract class SubCommand<R>(val name: String, val regex: Regex? = null) {
  * @param R [execute]戻り値の型、基本は[Unit]
  * */
 abstract class Executable<R>(val name: String, val description: String? = null) : KoinComponent {
+    val um by inject<UserManager>()
     val io by inject<IO>()
     internal val argParser: SuperArgsParser = SuperArgsParser()
     val help by option(ArgType.Boolean, "help", "h", "ヘルプを表示します。").default(false)

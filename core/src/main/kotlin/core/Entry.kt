@@ -8,15 +8,15 @@ import core.user.UserManager
 import core.utils.splitArgs
 import core.vfs.FileSystem
 import core.vfs.FileTree
+import core.vfs.dsl.DSLContext
 import core.vfs.dsl.dir
 import core.vfs.dsl.file
+import core.vfs.dsl.fileDSL
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.Koin
 import org.koin.core.KoinApplication
-import org.koin.core.component.KoinComponent
 import org.koin.core.context.loadKoinModules
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
@@ -82,14 +82,16 @@ suspend fun initialize(koin: Koin, consoleInterface: ConsoleInterface) {
 
     val newUser = User(userManager,userName, Group(userManager,userName))
     newUser.setHomeDir { user, group ->
-        fileTree.home.dir(user.name, user, group) {
-            file(
-                "Readme.txt",
-                """
+        fileDSL(fileTree.home,userManager.uRoot){
+            dir(user.name, user, group) {
+                file(
+                    "Readme.txt",
+                    """
             やぁみんな俺だ！
             このファイルを開いてくれたんだな！
             """.trimIndent()
-            )
+                )
+            }
         }
     }
     val fileSystem = koin.get<FileSystem>()

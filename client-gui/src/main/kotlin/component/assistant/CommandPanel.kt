@@ -18,7 +18,7 @@ class CommandPanelViewModel  : CustomKoinComponent() {
     private val ex by inject<Expression>()
     fun getExecutablesList(): List<Executable<*>> {
         println("exe")
-        return ex.getExecutables().map { it.executable }
+        return ex.getExecutables().map { it.executable.get() }
     }
 }
 
