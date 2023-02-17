@@ -4,9 +4,6 @@ import core.EventManager
 import core.commands.parser.Executable
 import core.user.Group
 import core.user.User
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
-import java.util.stream.Collectors.toList
 
 
 /**
@@ -76,7 +73,7 @@ open class Directory(
     name, parent = parent, owner = owner, ownerGroup = group, hidden = hidden, permission = permission
 ) {
     open var _children: MutableMap<String, File> = mutableMapOf()
-    fun getChildren(user: User): Map<String, File>? {
+    fun getChildren(user: User, includeHidden: Boolean = false): Map<String, File>? {
         return if (
             permission.has(
                 when {
@@ -93,7 +90,7 @@ open class Directory(
                     }
                 }
             )
-        ) _children.toMap() else null
+        ) _children.filterValues { !it.hidden || includeHidden }.toMap() else null
 
 
     }

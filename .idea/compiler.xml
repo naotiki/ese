@@ -2,6 +2,9 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel target="18">
+      <module name="EseLinux.server" target="17" />
+      <module name="EseLinux.server.main" target="17" />
+      <module name="EseLinux.server.test" target="17" />
       <module name="LegendaryExecutable.main" target="17" />
       <module name="LegendaryExecutable.server" target="17" />
       <module name="LegendaryExecutable.server.main" target="17" />

@@ -26,7 +26,7 @@ inline fun Directory.dir(
     group: Group = owner.group,
     permission: Permission = Permission.dirDefault,
     hidden:Boolean=false,
-    block: Directory.() -> Unit
+    block: Directory.() -> Unit={}
 ):
         Directory {
     return Directory(name, this, owner, group, permission,hidden).also {

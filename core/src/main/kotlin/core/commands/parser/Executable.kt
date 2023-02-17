@@ -7,9 +7,11 @@ import core.vfs.Directory
 import core.vfs.FileSystem
 import core.vfs.Path
 import core.vfs.toDirectoryOrNull
+import kotlinx.coroutines.CoroutineExceptionHandler
 import org.koin.core.Koin
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import kotlin.coroutines.cancellation.CancellationException
 
 //TODO サブコマンド
 abstract class SubCommand<R>(val name: String, val regex: Regex? = null) {
@@ -171,6 +173,8 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
             //if (isHelp(args)) return outputHelp()
             try {
                 argParser.parse(this, args)
+            }catch (e:CancellationException){
+
             } catch (e: Exception) {
                 if (help) {
                     return outputHelp()
