@@ -18,7 +18,7 @@ class Prompt(prompt: String, value: String) {
             textFieldValue = newValue
             onValueChanged?.invoke(getValue(), prompt)
         } else {
-            textFieldValue = textFieldValue.copy(selection = TextRange(textFieldValue.text.length))
+            textFieldValue = textFieldValue.copy(selection = TextRange(prompt.length))
         }
     }
 

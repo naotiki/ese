@@ -6,18 +6,18 @@ import core.user.User
 import core.vfs.*
 
 
-data class DSLContext(val dir:Directory, val operator: User)
+data class DSLContext constructor(val dir: Directory, val operator: User)
 
 /**
  * FileTreeDSLを開始します
  * @param block DSLを使用し[root]にファイルを追加します
  */
 internal inline fun FileTree.rootDir(block: DSLContext.() -> Unit) {
-    DSLContext(this.root,this.userManager.uRoot).block()
+    DSLContext(this.root, this.userManager.uRoot).block()
 }
 
-inline fun <T> fileDSL(parent:Directory,operator: User,block: DSLContext.() -> T): T {
-    return DSLContext(parent,operator).block()
+inline fun <T> fileDSL(parent: Directory, operator: User, block: DSLContext.() -> T): T {
+    return DSLContext(parent, operator).block()
 }
 
 /**
@@ -37,7 +37,7 @@ inline fun DSLContext.dir(
         Directory {
     return Directory(name, dir, owner, group, permission, hidden).also {
         dir.addChildren(operator, it)
-        copy(dir=it).block()
+        copy(dir = it).block()
     }
 }
 
@@ -71,11 +71,14 @@ fun DSLContext.file(
     name: String,
     content: String,
     owner: User = dir.owner.get(),
-    group: Group = dir.ownerGroup.get(),
+    group: Group = owner.group,
     permission: Permission = Permission.fileDefault,
     hidden: Boolean = false,
-) =
-    dir.addChildren(operator,TextFile(name, dir, content, owner, group, permission, hidden))
+) = TextFile(name, dir, content, owner, group, permission, hidden).also {
+    println("LOG2:${dir.name}")
+    dir.addChildren(operator, it)
+}
+
 
 fun <R> DSLContext.executable(
     executable: Executable<R>,
@@ -85,4 +88,4 @@ fun <R> DSLContext.executable(
     permission: Permission = Permission.exeDefault,
     hidden: Boolean = false,
 ) =
-    dir.addChildren(operator,ExecutableFile(name, dir, executable, owner, group, permission, hidden))
+    dir.addChildren(operator, ExecutableFile(executable, name, dir, owner, group, permission, hidden))

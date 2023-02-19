@@ -24,16 +24,15 @@ jobs:
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: packageReleaseDeb
+          arguments: packageReleaseDeb --project-prop appVersion=2.0.0
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v1.0.3
         with:
-          # Path of the directory containing the static assets.
-          path: build/compose/binaries/main-release/deb/eselinux_1.0.0-1_amd64.deb
+          name: Debian Package
+          path: client-gui/build/compose/binaries/main-release/deb/*.deb
+          if-no-files-found: error
   build-windows:
-
     runs-on: windows-latest
-
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 17
@@ -44,8 +43,9 @@ jobs:
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: packageReleaseMsi
+          arguments: packageReleaseMsi --project-prop appVersion=2.0.0
       - uses: actions/upload-artifact@v3
         with:
-          name: Package
-          path: build/compose/binaries/main-release/msi/EseLinux-1.0.0.msi
+          name: Windows Package
+          path: client-gui/build/compose/binaries/main-release/msi/*.msi
+          if-no-files-found: error

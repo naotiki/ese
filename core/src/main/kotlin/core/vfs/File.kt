@@ -1,35 +1,48 @@
 package core.vfs
 
-import core.EventManager
+import core.commands.parser.CommandResult
 import core.commands.parser.Executable
+import core.commands.parser.SuperArgsParser
 import core.user.Group
 import core.user.User
-import kotlinx.serialization.json.JsonNull.content
-import org.koin.core.component.KoinComponent
+import core.vfs.Permission.Companion.Operation
 
 
-class FileValue<T>(private val file: File, private var internalValue:T):KoinComponent{
-    fun set(user: User,value: T):Boolean {
-        internalValue=value
-        return true
+class FileValue<T>(private val file: File, private var internalValue: T) {
+    fun set(user: User, value: T): Boolean {
+        if (file.checkPermission(user, Operation.Write)) {
+            internalValue = value
+            return true
+        }
+        return false
     }
+
     fun get(): T {
         return internalValue
     }
 }
-class SealedFileValue<T>(private val file: File, private var internalValue:T):KoinComponent{
-    fun set(user: User,value: T):Boolean {
-        internalValue=value
-        return true
+
+class SealedFileValue<T>(private val file: File, private var internalValue: T) {
+    fun set(user: User, value: T): Boolean {
+        if (file.checkPermission(user, Operation.Write)) {
+            internalValue = value
+            return true
+        }
+        return false
     }
+
     fun get(user: User): T? {
-        return internalValue
+        if (file.checkPermission(user, Operation.Read)) {
+            return internalValue
+        }
+        return null
     }
 }
 
 
-fun <T> File.sealedValue(value:T)=SealedFileValue(this,value)
-fun <T> File.value(value:T)=FileValue(this,value)
+fun <T> File.sealedValue(value: T) = SealedFileValue(this, value)
+fun <T> File.value(value: T) = FileValue(this, value)
+
 /**
  * 仮想的ファイルの抽象クラス
  * ディレクトリもファイルとする。
@@ -38,12 +51,12 @@ fun <T> File.value(value:T)=FileValue(this,value)
  *  @param hidden 属性 [Boolean]をとる
  */
 open class File(
-    var name: String,  val parent: Directory? = null,hidden: Boolean, owner: User, group: Group, permission: Permission,
+    var name: String, val parent: Directory? = null, hidden: Boolean, owner: User, group: Group, permission: Permission,
 ) {
     val hidden = value(hidden)
-    val owner=value(owner)
-    val ownerGroup=value(group)
-    val permission=value(permission)
+    val owner = value(owner)
+    val ownerGroup = value(group)
+    val permission = value(permission)
     fun getFullPath(): Path {
         val path = mutableListOf<String>()
         var f: File? = this
@@ -80,10 +93,22 @@ class TextFile(
 }
 
 class ExecutableFile<R>(
-    name: String, parent: Directory?, executable: Executable<R>, owner: User, group: Group, permission: Permission,
+    private val executable: Executable<R>, name: String=executable.name, parent: Directory?, owner: User, group: Group, permission:
+    Permission,
     hidden: Boolean
 ) : File(name, parent, owner = owner, group = group, hidden = hidden, permission = permission) {
-    val executable = value(executable)
+    val argParser: SuperArgsParser get() = executable.argParser
+    val description get() = executable.description
+    fun generateHelpText()=executable.generateHelpText()
+    fun verbose(args: List<String>) =executable.verbose(args)
+    suspend fun execute(user: User, args: List<String>): CommandResult<R> {
+        return if (checkPermission(user, Permission.Companion.Operation.Execute)) {
+            executable.resolve(user,args)
+        } else {
+            executable.out.println("実行権限が不足しています。\nls -lで確認してみましょう。")
+            CommandResult.Error()
+        }
+    }
 }
 
 open class Directory(
@@ -92,64 +117,23 @@ open class Directory(
 ) : File(
     name, parent = parent, owner = owner, group = group, hidden = hidden, permission = permission
 ) {
-    open var _children=sealedValue(mutableMapOf<String,File>())
+    open val _children = sealedValue(mutableMapOf<String, File>())
     fun getChildren(user: User, includeHidden: Boolean = false): Map<String, File>? {
         return _children.get(user)?.filterValues { !it.hidden.get() || includeHidden }?.toMap()
     }
 
-    /*fun getChildren(user: User, includeHidden: Boolean = false): Map<String, File>? {
-        return if (
-            permission.get().has(
-                when {
-                    user == owner.get() -> {
-                        PermissionTarget.OwnerR
-                    }
-
-                    user.group == ownerGroup.get() -> {
-                        PermissionTarget.GroupR
-                    }
-
-                    else -> {
-                        PermissionTarget.OtherR
-                    }
-                }
-            )
-        ) _children.filterValues { !it.hidden.get() || includeHidden }.toMap() else null
-
-
-    }*/
-
-    fun addChildren(user:User,vararg childDir: File): Boolean {
-        return _children.get(user)?.putAll(childDir.associateBy { it.name })!=null
+    fun addChildren(user: User, vararg childDir: File): Boolean {
+        return _children.get(user)?.putAll(childDir.associateBy { it.name }) != null
     }
 
-    fun removeChild(user:User,childDir: File): Boolean {
-        return _children.get(user)?.remove(childDir.name) != null
+    fun removeChild(user: User, childDir: File): Boolean {
+        println("削除：${childDir.name}")
+        return if (checkPermission(user,Operation.Write)) {
+            println("権限許可：${childDir.name}")
+            (_children.get(user)?.remove(childDir.name)!= null).also {
+                if (it) println("成功")
+            }
+        }else false
     }
 }
-
-/*
-// 進捗状況に応じて中身が変わるディレクトリ TODO 実装やれ
-class DynamicDirectory(
-    name: String,
-    parent: Directory?,
-    owner: User,
-    group: Group,
-    permission: Permission,
-    hidden: Boolean
-) :
-    Directory(name, parent, owner, group, permission, hidden) {
-    init {
-        EventManager.addEventListener {
-
-        }
-    }
-
-    override var _children: MutableMap<String, File>
-        get() = super._children
-        set(value) {}
-}
-*/
-
-
 

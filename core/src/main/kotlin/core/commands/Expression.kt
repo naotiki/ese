@@ -4,11 +4,13 @@ import core.IO
 import core.Variable
 import core.commands.parser.ArgType
 import core.commands.parser.Executable
+import core.user.User
 import core.user.UserManager
 import core.utils.splitArgs
 import core.vfs.*
 import kotlinx.coroutines.Job
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import org.koin.core.component.inject
 
 class Expression : KoinComponent {
@@ -30,7 +32,7 @@ class Expression : KoinComponent {
         }
     }
 
-    fun tryResolve(cmd: String): Executable<*>? {
+    fun tryResolve(cmd: String): ExecutableFile<*>? {
         /*fileTree.executableEnvPaths.forEach {
             it.children.entries.firstOrNull { (name, _) -> cmd == name }?.let { (_, f) ->
                 if (f is ExecutableFile<*>) {
@@ -38,13 +40,15 @@ class Expression : KoinComponent {
                 }
             }
         }*/
-        getExecutables().firstOrNull { cmd == it.name }?.let {
-            return it.executable.get()
+        (getExecutables().firstOrNull { cmd == it.name }?:
+        fileSystem.tryResolve(Path(cmd)) as? ExecutableFile<*>
+        )?.let {
+            return it
         }
         return null
     }
 
-    fun suggest(targetText: String): List<String> {
+    fun suggest(user: User,targetText: String): List<String> {
         val (exe, args) = targetText.splitArgs().let {
             tryResolve(it.first()) to it.drop(1)
         }

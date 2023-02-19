@@ -29,6 +29,8 @@ import core.commands.Expression
 import core.utils.splitArgs
 import component.assistant.CommandPanel
 import component.assistant.EasyFileView
+import core.user.User
+import core.user.UserManager
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
@@ -44,6 +46,7 @@ val handler = CoroutineExceptionHandler { _, exception ->
 
 class TerminalViewModel(prompt: Prompt) : CustomKoinComponent() {
     val io by inject<IO>()
+    val userManager by inject<UserManager>()
     val expression by inject<Expression>()
     val logFlow = io.reader.lineSequence().asFlow().flowOn(Dispatchers.IO)
     val commandHistory get() = expression.commandHistory
@@ -85,7 +88,7 @@ class TerminalViewModel(prompt: Prompt) : CustomKoinComponent() {
     }
 
     fun getSuggestList(value: String) =
-        expression.suggest(value).also {
+        expression.suggest(userManager.user,value).also {
             println(it)
         }
 

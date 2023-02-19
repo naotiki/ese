@@ -3,12 +3,9 @@ package core.commands.parser
 import core.ConsoleInterface
 import core.IO
 import core.commands.Expression
+import core.user.User
 import core.user.UserManager
-import core.vfs.Directory
-import core.vfs.FileSystem
-import core.vfs.Path
-import core.vfs.toDirectoryOrNull
-import kotlinx.coroutines.CoroutineExceptionHandler
+import core.vfs.*
 import org.koin.core.Koin
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -170,7 +167,8 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
      * @throws CommandParserException 引数の形式が定義と異なるとき
      * */
     @Throws(CommandIllegalArgsException::class, CommandParserException::class)
-    suspend fun resolve(args: List<String>): CommandResult<R> {
+    suspend fun resolve(user:User,args: List<String>): CommandResult<R> {
+
         return try {
             //if (isHelp(args)) return outputHelp()
             try {
@@ -187,7 +185,7 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
             if (help) {
                 return outputHelp()
             }
-            val r = execute(args)
+            val r = execute(user,args)
             CommandResult.Success(r)
 
         } catch (e: CommandIllegalArgsException) {
@@ -209,7 +207,7 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
      * 実際に実行される関数
      * @param rawArgs 生の引数
      * */
-    protected abstract suspend fun execute(rawArgs: List<String>): R
+    protected abstract suspend fun execute(user: User, rawArgs: List<String>): R
 }
 
 sealed class ArgType<T : Any>(val converter: Koin.(kotlin.String) -> T?) {
@@ -228,7 +226,7 @@ sealed class ArgType<T : Any>(val converter: Koin.(kotlin.String) -> T?) {
         get<FileSystem>().tryResolve(Path(it))?.toDirectoryOrNull()
     })
 
-    object Executable : ArgType<core.commands.parser.Executable<*>>({ get<Expression>().tryResolve(it) })
+    object Executable : ArgType<ExecutableFile<*>>({ get<Expression>().tryResolve(it) })
 
     class Define<T : Any>(converter: Koin.(kotlin.String) -> T?) : ArgType<T>(converter)
 }

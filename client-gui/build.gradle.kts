@@ -1,4 +1,6 @@
+import org.jetbrains.compose.ComposeBuildConfig
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.compose.desktop.application.tasks.AbstractJPackageTask
 
 plugins {
     kotlin("jvm")
@@ -16,31 +18,48 @@ repositories {
 }
 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
 dependencies {
+
     implementation(compose.desktop.currentOs)
+    implementation(compose.desktop.windows_x64)
     implementation(compose.desktop.components.splitPane)
     implementation(compose.preview)
-    //implementation(compose.uiTooling)
+    implementation(compose.uiTooling)
     implementation(compose.materialIconsExtended)
     implementation(project(":core"))
 }
 
+tasks.withType(AbstractJPackageTask::class){
+
+    doLast {
+
+        val artifact=this@withType.outputs.files.singleFile.listFiles()!!.first()
+        println(artifact.absolutePath)
+
+    }
+}
+
+
 
 compose.desktop {
+
     application {
         mainClass = "MainKt"
-        jvmArgs+=listOf("-Dfile.encoding=UTF-8")
+        jvmArgs += listOf("-Dfile.encoding=UTF-8")
         nativeDistributions {
+
+            println(this.outputBaseDir.asFile.get().absolutePath)
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "EseLinux"
-            packageVersion = "1.0.0"
-            linux{
-                shortcut=true
+            description = "Ese Linux"
+            packageVersion = project.properties.getOrDefault("appVersion", "1.0.0").toString()
+            linux {
+                shortcut = true
             }
-            windows{
-
-                console=false
-                menu=true
-                shortcut=true
+            windows {
+                console = !buildTypes.release.proguard.isEnabled.getOrElse(false)
+                menu = true
+                shortcut = true
+                dirChooser = true
             }
         }
     }

@@ -84,13 +84,13 @@ suspend fun initialize(koin: Koin, consoleInterface: ConsoleInterface) {
     newUser.setHomeDir { user, group ->
         fileDSL(fileTree.home,userManager.uRoot){
             dir(user.name, user, group) {
-                file(
+                println("LOG:"+file(
                     "Readme.txt",
                     """
             やぁみんな俺だ！
             このファイルを開いてくれたんだな！
             """.trimIndent()
-                )
+                ).parent?.name)
             }
         }
     }
@@ -115,7 +115,7 @@ suspend fun initialize(koin: Koin, consoleInterface: ConsoleInterface) {
             //非同期実行
             withContext(Dispatchers.Default) {
                 expression.currentJob = launch {
-                    val result = cmd.resolve(inputArgs.drop(1))
+                    val result = cmd.execute(userManager.user,inputArgs.drop(1))
                     if (result is CommandResult.Success) {
                         //io.outputStream.println("[DEBUG] RETURN:${result.value}")
                     }

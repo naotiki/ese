@@ -18,7 +18,7 @@ value class UID(
     companion object
 }
 
-
+val rootUID=UID()
 /**
  * Virtual User Manager
  * */
@@ -30,7 +30,7 @@ class UserManager {
     val groupList get() = groups.toList()
 
     val rootGroup = Group(this,"root")
-    val uRoot = User(this,"root", rootGroup)
+    val uRoot = User(this,"root", rootGroup,rootUID)
 
 
     val nullGroup = Group(this,"null")
@@ -54,6 +54,11 @@ class UserManager {
         user = u
     }
 }
+
+/**
+ * すごいのかすごくないのか
+ * */
+fun isSugoi(user:User) = (user.id == rootUID).also { println(user.id.toString()+"=="+ rootUID) }
 
 data class User private constructor(
     override val name: String, var group: Group, override val id: UID = UID(), var dir:

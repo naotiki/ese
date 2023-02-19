@@ -4,10 +4,9 @@ import core.Variable
 import core.commands.parser.ArgType
 import core.commands.parser.CommandIllegalArgsException
 import core.commands.parser.Executable
-import core.user.UserManager
-import core.vfs.FileSystem
-import core.vfs.Permission
-import core.vfs.TextFile
+import core.user.User
+import core.utils.normalizeYesNoAnswer
+import core.vfs.*
 import core.vfs.dsl.dir
 import core.vfs.dsl.file
 import core.vfs.dsl.fileDSL
@@ -20,9 +19,9 @@ class Help : Executable<Unit>(
         役に立ちます。
 """.trimIndent()
 ) {
-    val ex by inject<Expression>()
-    override suspend fun execute(rawArgs: List<String>) {
-        val exes = ex.getExecutables().map { it.executable.get() }
+    private val ex by inject<Expression>()
+    override suspend fun execute(user: User, rawArgs: List<String>) {
+        val exes = ex.getExecutables().map { it }
         out.println("現在、以下の${exes.count()}個のコマンドが使用可能です。")
         exes.forEach {
             out.println(it.name)
@@ -41,12 +40,21 @@ class ListSegments : Executable<Unit>(
     val fs by inject<FileSystem>()
     val detail by option(ArgType.Boolean, "list", "l", "ディレクトリの内容を詳細表示します。").default(false)
     val all by option(ArgType.Boolean, "all", "a", "すべてのファイルを一覧表示します。").default(false)
-    val directory by argument(ArgType.Dir, "target", "一覧表示するディレクトリ").optional()
-    override suspend fun execute(rawArgs: List<String>) {
-        (directory ?: fs.currentDirectory).getChildren(um.user, all)?.forEach { (name, dir) ->
+    private val directory by argument(ArgType.Dir, "target", "一覧表示するディレクトリ").optional()
+    override suspend fun execute(user: User, rawArgs: List<String>) {
+        (directory ?: fs.currentDirectory).getChildren(user, all)?.forEach { (name, file) ->
             if (detail) {
-                dir.run {
-                    out.println("$permission ${owner.get().name} ${ownerGroup.get().name} ??? 1970 1 1 09:00 $name")
+                file.run {
+                    out.println(
+                        "${
+                            (if (file is Directory) {
+                                "d"
+                            } else "-") + permission.get()
+                        } ${owner.get().name} ${
+                            ownerGroup.get()
+                                .name
+                        } $name"
+                    )
                 }
             } else out.print("$name ")
         } ?: out.println("権限が足りません。")
@@ -62,21 +70,63 @@ class Remove : Executable<Unit>(
 """.trimIndent()
 ) {
     val fs by inject<FileSystem>()
-    val recursive by option(ArgType.Boolean, "recursive", "r", "ディレクトリを削除します。")
-    val force by option(ArgType.Boolean, "force", "f", "強制的に削除します。")
-    val interactive by option(ArgType.Boolean, "interactive", "i", "削除前に確認します。")
+    val recursive by option(ArgType.Boolean, "recursive", "r", "ディレクトリを削除します。").default(false)
+    val interactive by option(ArgType.Boolean, "interactive", "i", "削除前に確認します。").default(false)
 
-    val file by argument(ArgType.File, "target").vararg()
+    val files by argument(ArgType.File, "target").vararg()
 
-    override suspend fun execute(rawArgs: List<String>) {
+    suspend fun interactiveRemove(user: User,file: File): Boolean {
+        val text=if (file is Directory){
+            "ディレクトリ"
+        }else {"ファイル"}
+        val ans = io.newPrompt(console, "$text ${file.getFullPath().value}を削除しますか？ (y/N)")
+        return if (normalizeYesNoAnswer(ans) == true) {
+            file.parent?.removeChild(user,file)==true
+        } else {
+            out.println("削除しませんでした。")
+            false
+        }
+    }
+     suspend fun remove(user: User,files: List<File>){
+       files.forEach {
+            if (it is Directory) {
+                if (!recursive) {
+                    out.println("ディレクトリを削除するには--recursiveオプションが必要です。")
+                    return
+                }
+                val children = it.getChildren(user, true)
+                if (children == null) {
+                    out.println("権限不足です。")
+                    return
+                }
 
-        /* if (file is Directory) {
-             if ((file as Directory).children.isEmpty()) {
-                 if (file.parent?.removeChild(file) == true) {
-                     out.println("${file.name}が削除されました")
-                 }
-             }
-         } else file.parent?.removeChild(file)*/
+                if (children.isEmpty()){
+                    if(interactive){
+                        interactiveRemove(user,it)
+                    }else it.parent?.removeChild(user, it)
+                }else {
+                    remove(user, children.values.toList())
+
+                    if (it.getChildren(user, true)!!.isEmpty()){
+                        if(interactive){
+                            interactiveRemove(user,it)
+                        }else it.parent?.removeChild(user, it)
+                    }else{
+                        out.println("ファイルが残っているため${it.getFullPath().value}を削除できませんでした。")
+                    }
+                }
+
+            } else {
+                if(interactive){
+                    interactiveRemove(user,it)
+                }else it.parent?.removeChild(user, it)
+            }
+        }
+    }
+
+    override suspend fun execute(user: User, rawArgs: List<String>) {
+        out.println(user.name)
+        remove(user,files)
     }
 }
 
@@ -86,9 +136,9 @@ class ChangeDirectory : Executable<Unit>(
     対象のディレクトリに移動します。
 """.trimIndent()
 ) {
-    val fs by inject<FileSystem>()
+    private val fs by inject<FileSystem>()
     val directory by argument(ArgType.Dir, "target", "一覧表示するディレクトリ")
-    override suspend fun execute(rawArgs: List<String>) {
+    override suspend fun execute(user: User, rawArgs: List<String>) {
         val dir = directory//args.firstOrNull()?.let { Vfs.tryResolve(Path(it)) } as? Directory
         fs.setCurrentPath(dir)
     }
@@ -100,7 +150,7 @@ class Yes : Executable<Unit>(
 """.trimIndent()
 ) {
     val value by argument(ArgType.String, "value", "出力する文字列").optional()
-    override suspend fun execute(rawArgs: List<String>) {
+    override suspend fun execute(user: User, rawArgs: List<String>) {
         val b = value ?: "yes"
 
         while (true) {
@@ -119,37 +169,37 @@ class Cat : Executable<Unit>(
     対象のファイルを表示します。
 """.trimIndent()
 ) {
-    private val txt by argument(ArgType.File, "target")
-    override suspend fun execute(rawArgs: List<String>) {
+    private val txt by argument(ArgType.File, "target","表示するファイル")
+    override suspend fun execute(user: User, rawArgs: List<String>) {
 
         if (txt is TextFile) {
-            out.println((txt as TextFile).content)
+            out.println((txt as TextFile).content.get(user))
         } else out.println("無効なファイル")
     }
 }
 
-class Echo : Executable<Unit>("echo", "メッセージを出力します") {
-    val variable by inject<Variable>()
-    val input by argument(ArgType.String, "msg", "出力するメッセージ").vararg()
-    override suspend fun execute(rawArgs: List<String>) {
+class Echo : Executable<Unit>("echo", "メッセージを出力します。") {
+    private val variable by inject<Variable>()
+    private val input by argument(ArgType.String, "msg", "出力するメッセージ").vararg()
+    override suspend fun execute(user: User, rawArgs: List<String>) {
         input.joinToString(" ").let { out.println(variable.expandVariable(it)) }
     }
 }
 
-class Clear : Executable<Unit>("clear", "コンソールの出力を削除します") {
-    override suspend fun execute(rawArgs: List<String>) {
+class Clear : Executable<Unit>("clear", "コンソールの出力を削除します。") {
+    override suspend fun execute(user: User, rawArgs: List<String>) {
         console.clear()
     }
 }
 
 class SugoiUserDo : Executable<Unit>(
     "sudo", """Sugoi User DO
-    | すごいユーザーの権限でコマンドを実行します。""".trimMargin()
+        すごいユーザーの権限でコマンドを実行します。""".trimIndent()
 ) {
-    var isConfirm = false
-    val cmd by argument(ArgType.Executable, "command", "実行するコマンドです")
-    val targetArgs by argument(ArgType.String, "args", "commandに渡す引数です").vararg(true)
-    override suspend fun execute(rawArgs: List<String>) {
+    private var isConfirm = false
+    private val cmd by argument(ArgType.Executable, "command", "実行するコマンド")
+    private val targetArgs by argument(ArgType.String, "args", "commandに渡す引数").vararg(true)
+    override suspend fun execute(user: User, rawArgs: List<String>) {
         //by Linux
         if (!isConfirm) {
             out.println(
@@ -162,12 +212,11 @@ class SugoiUserDo : Executable<Unit>(
             )
         }
         val n = io.newPrompt(console, "実行しますか？(続行するにはあなたのユーザー名を入力) >>")
-        if (n == um.user.name) {
+        if (n == user.name) {
             isConfirm = true
-            val u = um.user
             um.setUser(um.uRoot)
-            cmd.resolve(targetArgs)
-            um.setUser(u)
+            cmd.execute(um.uRoot, targetArgs)
+            um.setUser(user)
         } else {
             out.println("残念、間違いなユーザー名")
         }
@@ -175,7 +224,7 @@ class SugoiUserDo : Executable<Unit>(
 }
 
 class Exit : Executable<Unit>("exit", "Ese Linux を終了します。") {
-    override suspend fun execute(rawArgs: List<String>) {
+    override suspend fun execute(user: User, rawArgs: List<String>) {
         out.println("終了します")
         console.exit()
     }
@@ -184,8 +233,8 @@ class Exit : Executable<Unit>("exit", "Ese Linux を終了します。") {
 class MakeDirectory : Executable<Unit>("mkdir", "ディレクトリを作成します。") {
     val fs by inject<FileSystem>()
     val dirName by argument(ArgType.String, "name", "作成するディレクトリの名前")
-    override suspend fun execute(rawArgs: List<String>) {
-        fileDSL(fs.currentDirectory,um.user){
+    override suspend fun execute(user: User, rawArgs: List<String>) {
+        fileDSL(fs.currentDirectory, um.user) {
             dir(dirName)
         }
 
@@ -195,23 +244,53 @@ class MakeDirectory : Executable<Unit>("mkdir", "ディレクトリを作成し�
 class Touch : Executable<Unit>("touch", "書き込み可能ファイルを作成します。") {
     val fs by inject<FileSystem>()
     val fileName by argument(ArgType.String, "name", "作成するファイルの名前")
-    override suspend fun execute(rawArgs: List<String>) {
-        fileDSL(fs.currentDirectory,um.user){
-            file(fileName,"")
+    override suspend fun execute(user: User, rawArgs: List<String>) {
+        fileDSL(fs.currentDirectory, um.user) {
+            file(fileName, "")
         }
     }
 }
+
 class Chmod : Executable<Unit>("chmod", "権限を変更します。") {
     val fs by inject<FileSystem>()
-    val value by argument(ArgType.String, "target", "作成するファイルの名前")
-    val file by argument(ArgType.File, "target", "作成するファイルの名前")
-    override suspend fun execute(rawArgs: List<String>) {
-        val p=value.toIntOrNull(8)
-        if (p==null||p>511){
-            throw CommandIllegalArgsException("不正な権限値",ArgType.String)
+    val value by argument(ArgType.String, "value", "権限の値(8進数9桁)")
+    val file by argument(ArgType.File, "target", "変更するファイルの名前")
+    override suspend fun execute(user: User, rawArgs: List<String>) {
+        val p = value.toIntOrNull(8)
+        if (p == null || p > 511) {
+            throw CommandIllegalArgsException("不正な権限値", ArgType.String)
         }
 
-        file.permission.set(um.user,Permission(p))
+        file.permission.set(um.user, Permission(p))
+    }
+}
+
+class WriteToFile : Executable<Unit>("wf", """テキストファイルになにかを書き込みます。
+                                    -aまたは-o オプションで書き込み方法を指定する必要があります。""".trimIndent()
+) {
+    val fs by inject<FileSystem>()
+    val value by argument(ArgType.String, "text", "書き込む内容")
+    val file by argument(ArgType.File, "file", "書き込むファイルの名前")
+
+    val overwrite by option(ArgType.Boolean, "overwrite", "o", "上書きするかどうか")
+    val append by option(ArgType.Boolean, "append", "a", "追記するかどうか")
+    override suspend fun execute(user: User, rawArgs: List<String>) {
+        val value = value.replace("\\n", "\n")
+        (file as? TextFile)?.let {
+            when {
+                overwrite == true -> {
+                    it.content.set(user, value)
+                }
+
+                append == true -> {
+                    it.content.set(user, it.content.get(user) + value)
+                }
+
+                else -> {
+                    out.println("-aまたは-o オプションで書き込み方法を指定してください。")
+                }
+            }
+        } ?: out.println("有効なファイルではありません")
     }
 }
 

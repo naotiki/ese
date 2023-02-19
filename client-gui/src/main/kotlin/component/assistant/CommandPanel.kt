@@ -2,6 +2,7 @@ package component.assistant
 import CustomKoinComponent
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -12,13 +13,14 @@ import androidx.compose.ui.window.Window
 import component.Accordion
 import core.commands.Expression
 import core.commands.parser.Executable
+import core.vfs.ExecutableFile
 import org.koin.core.component.inject
 
 class CommandPanelViewModel  : CustomKoinComponent() {
     private val ex by inject<Expression>()
-    fun getExecutablesList(): List<Executable<*>> {
+    fun getExecutablesList(): List<ExecutableFile<*>> {
         println("exe")
-        return ex.getExecutables().map { it.executable.get() }
+        return ex.getExecutables()
     }
 }
 
@@ -28,7 +30,7 @@ fun rememberCommandPanelViewModel() = remember { CommandPanelViewModel() }
 @Composable
 fun CommandPanel(){
     val viewModel= rememberCommandPanelViewModel()
-    var executables by remember { mutableStateOf(emptyList<Executable<*>>()) }
+    var executables by remember { mutableStateOf(emptyList<ExecutableFile<*>>()) }
     LaunchedEffect(Unit) {
         executables=viewModel.getExecutablesList()
     }
@@ -43,7 +45,9 @@ fun CommandPanel(){
                     val stateVertical= rememberScrollState()
                     Box(Modifier.fillMaxSize()){
                         Box(Modifier.fillMaxSize().verticalScroll(stateVertical)) {
-                            Text(it.generateHelpText(), Modifier.padding(5.dp))
+                            SelectionContainer {
+                                Text(it.generateHelpText(), Modifier.padding(5.dp))
+                            }
                         }
                         VerticalScrollbar(
                             modifier = Modifier.align(Alignment.CenterEnd)

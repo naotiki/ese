@@ -1,5 +1,9 @@
 package core.vfs
 
+import core.user.User
+import core.user.isSugoi
+import core.utils.getFlag
+import core.vfs.Permission.Companion.Operation
 import kotlinx.serialization.Serializable
 import kotlin.Boolean
 
@@ -36,6 +40,13 @@ value class Permission(val value: Int) {
 
         //rwxrwxr-x
         val dirDefault = Permission(0b111_111_101)
+
+        enum class Operation{
+            Execute,
+            Write,
+            Read
+        }
+
     }
 
     operator fun plus(target: PermissionTarget): Permission {
@@ -57,6 +68,7 @@ value class Permission(val value: Int) {
      * @param permission 対象の権限
      */
     fun has(permission: PermissionTarget): Boolean = value and permission.getFlag() != 0
+    fun has(permissionValue: Int): Boolean = value and permissionValue != 0
 
     override fun toString(): String {
         var str = ""
@@ -69,7 +81,11 @@ value class Permission(val value: Int) {
     }
 
 }
-
-fun PermissionTarget.getFlag(): Int {
-    return 1 shl this.ordinal
+private fun File.getOperatorValue(user: User) = when {
+    owner.get() == user -> 6
+    ownerGroup.get() == user.group -> 3
+    else -> 0
 }
+
+fun File.checkPermission(user: User,operation: Operation): Boolean =
+    isSugoi(user) || permission.get().has(operation.getFlag() shl getOperatorValue(user))

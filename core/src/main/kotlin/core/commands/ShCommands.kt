@@ -3,11 +3,12 @@ package core.commands
 import core.Variable
 import core.commands.Operator.*
 import core.commands.parser.Executable
+import core.user.User
 import org.koin.core.component.inject
 
 
 class If : Executable<Unit>("if") {
-    override suspend fun execute(rawArgs: List<String>) {
+    override suspend fun execute(user: User, rawArgs: List<String>) {
 
     }
 
@@ -15,7 +16,7 @@ class If : Executable<Unit>("if") {
 
 class Test : Executable<Boolean>("test") {
     val variable by inject<Variable>()
-    override suspend fun execute(rawArgs: List<String>): Boolean {
+    override suspend fun execute(user: User, rawArgs: List<String>): Boolean {
 
         if (rawArgs.isEmpty()) return false
 
