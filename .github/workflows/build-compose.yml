@@ -3,6 +3,8 @@ name: Build Compose Desktop
 on:
   push:
     branches: [ "main" ]
+    paths-ignore:
+      - '.github/**'
   workflow_dispatch:
     inputs:
       version:

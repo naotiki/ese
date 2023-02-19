@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   call-workflow-passing-data:
-    uses: /.github/workflows/build-compose.yml
+    uses: .github/workflows/build-compose.yml
     with:
       version: ${{inputs.version}}
   build:
