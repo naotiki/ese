@@ -29,8 +29,8 @@ jobs:
         with:
           arguments: packageReleaseDistributionForCurrentOS --project-prop appVersion=1.0.0
           build-root-directory: client-gui/
-      - name: Upload GitHub Pages artifact
-        uses: actions/upload-pages-artifact@v1.0.3
+      - name: Upload Package Artifact
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.os }} package
           path: client-gui/build/compose/binaries/main-release/*/*.*
