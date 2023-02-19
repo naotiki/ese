@@ -22,9 +22,6 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
         with:
-          name: ubuntu-latest-package
-      - uses: actions/download-artifact@v3
-        with:
-          name: windows-latest-package
+          path: ./out
       - name: Display structure of downloaded files
         run: ls -R
