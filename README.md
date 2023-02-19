@@ -1,4 +1,6 @@
 # Ese Linux (~~エセ~~Linux) 
+[![Build Compose Desktop](https://github.com/naotiki/EseLinux/actions/workflows/deployment.yml/badge.svg)](https://github.com/naotiki/EseLinux/actions/workflows/deployment.yml)
+
 E asy
 
 S hell

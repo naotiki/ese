@@ -1,0 +1,29 @@
+name: Create Release Draft Compose Desktop
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        required: true
+        type: string
+permissions:
+  contents: read
+#  id-token: write
+
+jobs:
+  call-workflow-passing-data:
+    uses: /.github/workflows/build-compose.yml
+    with:
+      version: ${{inputs.version}}
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: ubuntu-latest-package
+      - uses: actions/download-artifact@v3
+        with:
+          name: windows-latest-package
+      - name: Display structure of downloaded files
+        run: ls -R

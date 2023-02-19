@@ -4,11 +4,20 @@ on:
   push:
     branches: [ "main" ]
   workflow_dispatch:
-
+    inputs:
+      version:
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
 permissions:
   contents: read
 #  id-token: write
-
+env:
+  version: ${{ inputs.version || '1.0.0' }}
 jobs:
   build:
     strategy:
@@ -27,11 +36,11 @@ jobs:
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: packageReleaseDistributionForCurrentOS --project-prop appVersion=1.0.0
+          arguments: packageReleaseDistributionForCurrentOS --project-prop appVersion=${{ env.version }}
           build-root-directory: client-gui/
       - name: Upload Package Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.os }} package
+          name: ${{ matrix.os }}-package
           path: client-gui/build/compose/binaries/main-release/*/*.*
           if-no-files-found: error

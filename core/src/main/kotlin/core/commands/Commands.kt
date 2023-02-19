@@ -66,7 +66,7 @@ class ListSegments : Executable<Unit>(
 
 class Remove : Executable<Unit>(
     "rm", """
-    今いる場所のファイルを一覧表示します。
+    ファイルを削除します。
 """.trimIndent()
 ) {
     val fs by inject<FileSystem>()
