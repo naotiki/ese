@@ -11,11 +11,12 @@ permissions:
 #  id-token: write
 
 jobs:
-  call-workflow-passing-data:
+  build:
     uses: ./.github/workflows/build-compose.yml
     with:
       version: ${{inputs.version}}
-  build:
+  release:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
