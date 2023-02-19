@@ -10,10 +10,11 @@ permissions:
 #  id-token: write
 
 jobs:
-  build-linux:
-
-    runs-on: ubuntu-latest
-
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 17
@@ -21,31 +22,16 @@ jobs:
         with:
           java-version: '17'
           distribution: 'adopt'
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: packageReleaseDeb --project-prop appVersion=2.0.0
+          arguments: packageReleaseDistributionForCurrentOS --project-prop appVersion=1.0.0
+          build-root-directory: client-gui/
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v1.0.3
         with:
-          name: Debian Package
-          path: client-gui/build/compose/binaries/main-release/deb/*.deb
-          if-no-files-found: error
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'adopt'
-      - name: Build with Gradle
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: packageReleaseMsi --project-prop appVersion=2.0.0
-      - uses: actions/upload-artifact@v3
-        with:
-          name: Windows Package
-          path: client-gui/build/compose/binaries/main-release/msi/*.msi
+          name: ${{ matrix.os }} package
+          path: client-gui/build/compose/binaries/main-release/*/*.*
           if-no-files-found: error
