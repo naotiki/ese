@@ -39,4 +39,4 @@ jobs:
           draft: true
           files: |
             ./out/*/binaries/**/*.*
-            ./out/*/jar/*.jar
+            ./out/*/jars/*.jar
