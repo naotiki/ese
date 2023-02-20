@@ -8,14 +8,16 @@ plugins {
     //id("org.jetbrains.dokka") version "1.7.20"
 }
 
+val appVersion = project.properties.getOrDefault("appVersion", "0.0.0-dev").toString()
 group = "me.naotiki"
-version = "1.0-SNAPSHOT"
 
+version = appVersion
 repositories {
     google()
     mavenCentral()
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
 }
+
 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
 dependencies {
 
@@ -27,9 +29,7 @@ dependencies {
     implementation(compose.materialIconsExtended)
     implementation(project(":core"))
 }
-
 val os = System.getProperty("os.name").replace(" ", "_")
-val appVersion = project.properties.getOrDefault("appVersion", "0.0.0").toString()
 compose.desktop {
 
     application {

@@ -37,4 +37,6 @@ jobs:
         with:
           name: (Draft) Release ${{ inputs.version || github.ref_name }}
           draft: true
-          files: ./out/*/*/*.*
+          files: |
+            ./out/*/binaries/**/*.*
+            ./out/*/jar/*.jar
