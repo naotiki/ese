@@ -3,7 +3,7 @@ name: Create Release Draft Compose Desktop
 on:
   push:
     tags:
-      - v*
+      - 'v*'
   workflow_dispatch:
     inputs:
       version:
@@ -12,12 +12,12 @@ on:
         type: string
 permissions:
   contents: write
-#  id-token: write
 env:
   appVersion: ${{ inputs.version || github.ref_name }}
+
 jobs:
   build:
-    if: startsWith(env.appVersion, 'v')
+    if: startsWith( env.appVersion, 'v' )
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
