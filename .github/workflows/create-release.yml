@@ -12,12 +12,9 @@ on:
         type: string
 permissions:
   contents: write
-env:
-  appVersion: ${{ inputs.version || github.ref_name }}
-
 jobs:
   build:
-    if: startsWith( env.appVersion, 'v' )
+    if: startsWith( inputs.version || github.ref_name , 'v' )
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
@@ -38,6 +35,6 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          name: (Draft) Release ${{ env.appVersion }}
+          name: (Draft) Release ${{ inputs.version || github.ref_name }}
           draft: true
           files: ./out/*/*/*.*

@@ -8,6 +8,7 @@ on:
         type: string
       os:
         required: true
+        type: choice
         options:
           - windows-latest
           - ubuntu-latest
@@ -21,9 +22,9 @@ on:
         type: string
 permissions:
   contents: read
-#  id-token: write
+
 env:
-  version: ${{ inputs.version || '1.0.0' }}
+  version: ${{ inputs.version || '0.0.0' }}
 jobs:
   build:
     runs-on: ${{ inputs.os }}
@@ -39,7 +40,7 @@ jobs:
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: superReleaseBuild -PappVersion="${{ env.version }}"
+          arguments: superReleaseBuild -PappVersion=${{ env.version }}
           build-root-directory: client-gui/
       - name: Upload Package Artifact
         uses: actions/upload-artifact@v3

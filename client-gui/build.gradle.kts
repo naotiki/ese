@@ -28,30 +28,7 @@ dependencies {
     implementation(project(":core"))
 }
 
-tasks.withType(AbstractJPackageTask::class) {
-
-    doLast {
-
-        val artifact = this@withType.outputs.files.singleFile.listFiles()!!.single()
-        println(artifact.absolutePath)
-
-    }
-}
 val appVersion=project.properties.getOrDefault("appVersion", "0.0.0").toString()
-tasks.register("superReleaseBuild") {
-    val os=System.getProperty("os.name").replace(" ","_")
-    dependsOn(
-        "packageReleaseUberJarForCurrentOS",
-        "packageReleaseDistributionForCurrentOS",
-        "createReleaseDistributable"
-    )
-    doLast {
-        val app=file("build/compose/binaries/main-release/app")
-        val zip=file(app.toPath().resolve("EseLinux-$os-$appVersion.zip"))
-        zipTo(zip,app.listFiles()!!.single())
-    }
-}
-
 compose.desktop {
 
     application {
@@ -79,8 +56,31 @@ compose.desktop {
         }
     }
 }
-/*
-subprojects {
-    apply(plugin = "org.jetbrains.dokka")
+
+tasks.withType(AbstractJPackageTask::class) {
+    doLast {
+        val artifact = this@withType.outputs.files.singleFile.listFiles()!!.single()
+        println(artifact.absolutePath)
+    }
 }
-*/
+
+tasks.register<Delete>("removeZip"){
+    delete(fileTree("build/compose/binaries/main-release/app"){
+        include("**/*.zip")
+    })
+}
+
+tasks.register("superReleaseBuild") {
+    val os=System.getProperty("os.name").replace(" ","_")
+
+    dependsOn("removeZip",
+        "packageReleaseUberJarForCurrentOS",
+        "packageReleaseDistributionForCurrentOS",
+        "createReleaseDistributable"
+    )
+    doLast {
+        val app=file("build/compose/binaries/main-release/app")
+        val zip=file(app.toPath().resolve("EseLinux-$os-$appVersion.zip"))
+        zipTo(zip,app.listFiles()!!.single())
+    }
+}
