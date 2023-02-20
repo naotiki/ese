@@ -13,6 +13,8 @@ on:
 permissions:
   contents: write
 #  id-token: write
+env:
+  appVersion: ${{ inputs.version || github.ref_name }}
 jobs:
   build:
     if: startsWith(env.appVersion, 'v')
@@ -36,6 +38,6 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          name: (Draft) Release ${{ inputs.version || github.ref_name }}
+          name: (Draft) Release ${{ env.appVersion }}
           draft: true
           files: ./out/*/*/*.*
