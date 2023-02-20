@@ -1,5 +1,6 @@
 # Ese Linux (~~エセ~~Linux) 
-[![Build Compose Desktop](https://github.com/naotiki/EseLinux/actions/workflows/deployment.yml/badge.svg)](https://github.com/naotiki/EseLinux/actions/workflows/deployment.yml)
+[![Create Release Draft Compose Desktop](https://github.com/naotiki/EseLinux/actions/workflows/create-release.yml/badge.svg)](https://github.com/naotiki/EseLinux/actions/workflows/create-release.yml)
+
 
 E asy
 
@@ -25,8 +26,6 @@ Virtual File System
 `core`を操作するためのGUIを兼ね備えたスタンドアロンアプリです。
 Compose Multiplatformで書かれています。
 
-## `server`
-WIP
 
 ## ビルド方法
 

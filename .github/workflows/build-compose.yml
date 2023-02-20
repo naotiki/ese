@@ -48,4 +48,5 @@ jobs:
           name: ${{ inputs.os }}-package
           path: |
             client-gui/build/compose/binaries/main-release/*/*.*
+            client-gui/build/compose/jars/*.jar
           if-no-files-found: error
