@@ -12,15 +12,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import component.Accordion
 import core.commands.Expression
-import core.commands.parser.Executable
 import core.vfs.ExecutableFile
 import org.koin.core.component.inject
 
 class CommandPanelViewModel  : CustomKoinComponent() {
     private val ex by inject<Expression>()
     fun getExecutablesList(): List<ExecutableFile<*>> {
-        println("exe")
-        return ex.getExecutables()
+        return ex.getExecutables(includeHidden = false)
     }
 }
 

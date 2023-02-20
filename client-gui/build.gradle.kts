@@ -1,4 +1,4 @@
-import org.jetbrains.compose.ComposeBuildConfig
+import org.gradle.kotlin.dsl.support.zipTo
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.compose.desktop.application.tasks.AbstractJPackageTask
 
@@ -28,17 +28,29 @@ dependencies {
     implementation(project(":core"))
 }
 
-tasks.withType(AbstractJPackageTask::class){
+tasks.withType(AbstractJPackageTask::class) {
 
     doLast {
 
-        val artifact=this@withType.outputs.files.singleFile.listFiles()!!.first()
+        val artifact = this@withType.outputs.files.singleFile.listFiles()!!.single()
         println(artifact.absolutePath)
 
     }
 }
-
-
+val appVersion=project.properties.getOrDefault("appVersion", "0.0.0").toString()
+tasks.register("superReleaseBuild") {
+    val os=System.getProperty("os.name").replace(" ","_")
+    dependsOn(
+        "packageReleaseUberJarForCurrentOS",
+        "packageReleaseDistributionForCurrentOS",
+        "createReleaseDistributable"
+    )
+    doLast {
+        val app=file("build/compose/binaries/main-release/app")
+        val zip=file(app.toPath().resolve("EseLinux-$os-$appVersion.zip"))
+        zipTo(zip,app.listFiles()!!.single())
+    }
+}
 
 compose.desktop {
 
@@ -48,14 +60,17 @@ compose.desktop {
         nativeDistributions {
 
             println(this.outputBaseDir.asFile.get().absolutePath)
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Msi, TargetFormat.Deb,TargetFormat.Rpm)
             packageName = "EseLinux"
             description = "Ese Linux"
-            packageVersion = project.properties.getOrDefault("appVersion", "1.0.0").toString()
+
             linux {
+                debPackageVersion=appVersion.trimStart('v')
+                rpmPackageVersion=appVersion.replace("-","_")
                 shortcut = true
             }
             windows {
+                packageVersion=appVersion.replace("[^0-9.]".toRegex(),"")
                 console = !buildTypes.release.proguard.isEnabled.getOrElse(false)
                 menu = true
                 shortcut = true

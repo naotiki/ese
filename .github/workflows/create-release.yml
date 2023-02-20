@@ -1,20 +1,30 @@
 name: Create Release Draft Compose Desktop
 
 on:
+  push:
+    tags:
+      - v*
   workflow_dispatch:
     inputs:
       version:
+        description: 'vX.X.X'
         required: true
         type: string
+env:
+  version: ${{inputs.version || github.ref_name}}
 permissions:
   contents: write
 #  id-token: write
-
 jobs:
   build:
+    if: startsWith(env.version, 'v')
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
     uses: ./.github/workflows/build-compose.yml
     with:
-      version: ${{inputs.version}}
+      version: ${{env.version}}
+      os: ${{matrix.os}}
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -28,6 +38,6 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          name: (Draft) v${{inputs.version}}
+          name: (Draft) Release ${{env.version}}
           draft: true
           files: ./out/*/*/*.*

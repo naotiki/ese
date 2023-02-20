@@ -50,8 +50,8 @@ class FileTree(userManager: UserManager)  {
             }
             dir(".ese", hidden = true) {
                 executableEnvPaths.add(dir("bin") {
-                    executable(Parse())
-                    executable(Status())
+                    executable(Parse(), hidden = true)
+                    executable(Status(), hidden = true)
                 })
             }
             dir("mnt") {

@@ -1,18 +1,22 @@
 name: Build Compose Desktop
 
 on:
-  push:
-    branches: [ "main" ]
-    paths-ignore:
-      - '.github/**'
   workflow_dispatch:
     inputs:
       version:
         required: true
         type: string
+      os:
+        required: true
+        options:
+          - windows-latest
+          - ubuntu-latest
   workflow_call:
     inputs:
       version:
+        required: true
+        type: string
+      os:
         required: true
         type: string
 permissions:
@@ -22,10 +26,7 @@ env:
   version: ${{ inputs.version || '1.0.0' }}
 jobs:
   build:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ inputs.os }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 17
@@ -38,11 +39,12 @@ jobs:
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: packageReleaseDistributionForCurrentOS --project-prop appVersion=${{ env.version }}
+          arguments: superReleaseBuild -PappVersion="${{ env.version }}"
           build-root-directory: client-gui/
       - name: Upload Package Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.os }}-package
-          path: client-gui/build/compose/binaries/main-release/*/*.*
+          name: ${{ inputs.os }}-package
+          path: |
+            client-gui/build/compose/binaries/main-release/*/*.*
           if-no-files-found: error

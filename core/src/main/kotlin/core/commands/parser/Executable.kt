@@ -217,7 +217,7 @@ sealed class ArgType<T : Any>(val converter: Koin.(kotlin.String) -> T?) {
     object String : ArgType<kotlin.String>({ it })
     object Boolean : ArgType<kotlin.Boolean>({ it.toBooleanStrictOrNull() })
 
-    //Special Types TODO:Add Argument Suggestion
+    //Special Types
     object File : ArgType<core.vfs.File>({
         get<FileSystem>().tryResolve(Path(it))
     })

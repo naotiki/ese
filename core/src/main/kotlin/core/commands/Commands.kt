@@ -21,7 +21,7 @@ class Help : Executable<Unit>(
 ) {
     private val ex by inject<Expression>()
     override suspend fun execute(user: User, rawArgs: List<String>) {
-        val exes = ex.getExecutables().map { it }
+        val exes = ex.getExecutables(includeHidden = false).map { it }
         out.println("現在、以下の${exes.count()}個のコマンドが使用可能です。")
         exes.forEach {
             out.println(it.name)
@@ -38,22 +38,23 @@ class ListSegments : Executable<Unit>(
 """.trimIndent()
 ) {
     val fs by inject<FileSystem>()
-    val detail by option(ArgType.Boolean, "list", "l", "ディレクトリの内容を詳細表示します。").default(false)
-    val all by option(ArgType.Boolean, "all", "a", "すべてのファイルを一覧表示します。").default(false)
+    val detail by option(
+        ArgType.Boolean,
+        "list", "l", "ディレクトリの内容を詳細表示します。"
+    ).default(false)
+    val all by option(
+        ArgType.Boolean,
+        "all", "a", "すべてのファイルを一覧表示します。"
+    ).default(false)
     private val directory by argument(ArgType.Dir, "target", "一覧表示するディレクトリ").optional()
     override suspend fun execute(user: User, rawArgs: List<String>) {
         (directory ?: fs.currentDirectory).getChildren(user, all)?.forEach { (name, file) ->
             if (detail) {
                 file.run {
                     out.println(
-                        "${
-                            (if (file is Directory) {
-                                "d"
-                            } else "-") + permission.get()
-                        } ${owner.get().name} ${
-                            ownerGroup.get()
-                                .name
-                        } $name"
+                        (if (file is Directory) {
+                            "d"
+                        } else "-")+"${permission.get()} ${owner.get().name} ${ownerGroup.get().name} $name"
                     )
                 }
             } else out.print("$name ")
@@ -75,20 +76,23 @@ class Remove : Executable<Unit>(
 
     val files by argument(ArgType.File, "target").vararg()
 
-    suspend fun interactiveRemove(user: User,file: File): Boolean {
-        val text=if (file is Directory){
+    suspend fun interactiveRemove(user: User, file: File): Boolean {
+        val text = if (file is Directory) {
             "ディレクトリ"
-        }else {"ファイル"}
+        } else {
+            "ファイル"
+        }
         val ans = io.newPrompt(console, "$text ${file.getFullPath().value}を削除しますか？ (y/N)")
         return if (normalizeYesNoAnswer(ans) == true) {
-            file.parent?.removeChild(user,file)==true
+            file.parent?.removeChild(user, file) == true
         } else {
             out.println("削除しませんでした。")
             false
         }
     }
-     suspend fun remove(user: User,files: List<File>){
-       files.forEach {
+
+    suspend fun remove(user: User, files: List<File>) {
+        files.forEach {
             if (it is Directory) {
                 if (!recursive) {
                     out.println("ディレクトリを削除するには--recursiveオプションが必要です。")
@@ -100,33 +104,33 @@ class Remove : Executable<Unit>(
                     return
                 }
 
-                if (children.isEmpty()){
-                    if(interactive){
-                        interactiveRemove(user,it)
-                    }else it.parent?.removeChild(user, it)
-                }else {
+                if (children.isEmpty()) {
+                    if (interactive) {
+                        interactiveRemove(user, it)
+                    } else it.parent?.removeChild(user, it)
+                } else {
                     remove(user, children.values.toList())
 
-                    if (it.getChildren(user, true)!!.isEmpty()){
-                        if(interactive){
-                            interactiveRemove(user,it)
-                        }else it.parent?.removeChild(user, it)
-                    }else{
+                    if (it.getChildren(user, true)!!.isEmpty()) {
+                        if (interactive) {
+                            interactiveRemove(user, it)
+                        } else it.parent?.removeChild(user, it)
+                    } else {
                         out.println("ファイルが残っているため${it.getFullPath().value}を削除できませんでした。")
                     }
                 }
 
             } else {
-                if(interactive){
-                    interactiveRemove(user,it)
-                }else it.parent?.removeChild(user, it)
+                if (interactive) {
+                    interactiveRemove(user, it)
+                } else it.parent?.removeChild(user, it)
             }
         }
     }
 
     override suspend fun execute(user: User, rawArgs: List<String>) {
         out.println(user.name)
-        remove(user,files)
+        remove(user, files)
     }
 }
 
@@ -169,7 +173,7 @@ class Cat : Executable<Unit>(
     対象のファイルを表示します。
 """.trimIndent()
 ) {
-    private val txt by argument(ArgType.File, "target","表示するファイル")
+    private val txt by argument(ArgType.File, "target", "表示するファイル")
     override suspend fun execute(user: User, rawArgs: List<String>) {
 
         if (txt is TextFile) {
@@ -265,7 +269,8 @@ class Chmod : Executable<Unit>("chmod", "権限を変更します。") {
     }
 }
 
-class WriteToFile : Executable<Unit>("wf", """テキストファイルになにかを書き込みます。
+class WriteToFile : Executable<Unit>(
+    "wf", """テキストファイルになにかを書き込みます。
                                     -aまたは-o オプションで書き込み方法を指定する必要があります。""".trimIndent()
 ) {
     val fs by inject<FileSystem>()
