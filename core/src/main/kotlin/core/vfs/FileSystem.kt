@@ -62,7 +62,6 @@ class FileSystem(currentDirectory: Directory) : KoinComponent {
                     isHomeDir -> return fileTree.userDir
                 }
             }
-
             partialPath.drop(if (isHomeDir) 1 else 0)
                 .fold<String, File?>(if (isHomeDir) fileTree.userDir else fileTree.root) { dir, partial ->
                     println(partial + ":dir:" + dir?.name)
