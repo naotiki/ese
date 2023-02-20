@@ -28,7 +28,8 @@ dependencies {
     implementation(project(":core"))
 }
 
-val appVersion=project.properties.getOrDefault("appVersion", "0.0.0").toString()
+val os = System.getProperty("os.name").replace(" ", "_")
+val appVersion = project.properties.getOrDefault("appVersion", "0.0.0").toString()
 compose.desktop {
 
     application {
@@ -37,17 +38,17 @@ compose.desktop {
         nativeDistributions {
 
             println(this.outputBaseDir.asFile.get().absolutePath)
-            targetFormats(TargetFormat.Msi, TargetFormat.Deb,TargetFormat.Rpm)
+            targetFormats(TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
             packageName = "EseLinux"
             description = "Ese Linux"
 
             linux {
-                debPackageVersion=appVersion.trimStart('v')
-                rpmPackageVersion=appVersion.replace("-","_")
+                debPackageVersion = appVersion.trimStart('v')
+                rpmPackageVersion = appVersion.replace("-", "_")
                 shortcut = true
             }
             windows {
-                packageVersion=appVersion.replace("[^0-9.]".toRegex(),"")
+                packageVersion = appVersion.replace("[^0-9.]".toRegex(), "")
                 console = !buildTypes.release.proguard.isEnabled.getOrElse(false)
                 menu = true
                 shortcut = true
@@ -64,23 +65,29 @@ tasks.withType(AbstractJPackageTask::class) {
     }
 }
 
-tasks.register<Delete>("removeZip"){
-    delete(fileTree("build/compose/binaries/main-release/app"){
+
+tasks.register<Delete>("removeArchives") {
+    delete(fileTree("build/compose/binaries/main-release/app") {
         include("**/*.zip")
     })
+    delete(fileTree("build/compose/jars") {
+        include ("*.jar")
+    })
 }
-
+tasks.withType(org.gradle.jvm.tasks.Jar::class){
+    mustRunAfter("removeArchives")
+}
 tasks.register("superReleaseBuild") {
-    val os=System.getProperty("os.name").replace(" ","_")
 
-    dependsOn("removeZip",
+    dependsOn(
+        "removeArchives",
         "packageReleaseUberJarForCurrentOS",
         "packageReleaseDistributionForCurrentOS",
         "createReleaseDistributable"
     )
     doLast {
-        val app=file("build/compose/binaries/main-release/app")
-        val zip=file(app.toPath().resolve("EseLinux-$os-$appVersion.zip"))
-        zipTo(zip,app.listFiles()!!.single())
+        val app = file("build/compose/binaries/main-release/app")
+        val zip = file(app.toPath().resolve("EseLinux-$os-$appVersion.zip"))
+        zipTo(zip, app.listFiles()!!.single())
     }
 }
