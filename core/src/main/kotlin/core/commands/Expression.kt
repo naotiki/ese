@@ -3,15 +3,27 @@ package core.commands
 import core.IO
 import core.Variable
 import core.commands.parser.ArgType
-import core.commands.parser.Executable
 import core.user.User
 import core.user.UserManager
 import core.utils.splitArgs
 import core.vfs.*
 import kotlinx.coroutines.Job
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.get
 import org.koin.core.component.inject
+import kotlin.collections.List
+import kotlin.collections.drop
+import kotlin.collections.emptyList
+import kotlin.collections.filter
+import kotlin.collections.filterIsInstance
+import kotlin.collections.filterValues
+import kotlin.collections.first
+import kotlin.collections.firstOrNull
+import kotlin.collections.flatMap
+import kotlin.collections.mutableListOf
+import kotlin.collections.orEmpty
+import kotlin.collections.plus
+import kotlin.collections.set
+import kotlin.collections.toList
 
 class Expression : KoinComponent {
     private val fileSystem by inject<FileSystem>()
@@ -23,12 +35,13 @@ class Expression : KoinComponent {
 
     internal val _commandHistory = mutableListOf<String>()
     val commandHistory get() = _commandHistory.toList()
-    fun getExecutables(dir: Directory? = null): List<ExecutableFile<*>> {
+    fun getExecutables(dir: Directory? = null, includeHidden: Boolean = true): List<ExecutableFile<*>> {
         val target = if (dir != null)
             fileTree.executableEnvPaths.plus(dir)
         else fileTree.executableEnvPaths
         return target.flatMap {
-            it.getChildren(um.user)?.values.orEmpty().filterIsInstance(ExecutableFile::class.java)
+            it.getChildren(um.user,includeHidden)?.values.orEmpty()
+                .filterIsInstance(ExecutableFile::class.java)
         }
     }
 
@@ -40,21 +53,20 @@ class Expression : KoinComponent {
                 }
             }
         }*/
-        (getExecutables().firstOrNull { cmd == it.name }?:
-        fileSystem.tryResolve(Path(cmd)) as? ExecutableFile<*>
-        )?.let {
-            return it
-        }
+        (getExecutables().firstOrNull { cmd == it.name } ?: fileSystem.tryResolve(Path(cmd)) as? ExecutableFile<*>
+                )?.let {
+                return it
+            }
         return null
     }
 
-    fun suggest(user: User,targetText: String): List<String> {
+    fun suggest(user: User, targetText: String): List<String> {
         val (exe, args) = targetText.splitArgs().let {
             tryResolve(it.first()) to it.drop(1)
         }
-        if (exe==null&&targetText.isNotBlank()){
+        if (exe == null && targetText.isNotBlank()) {
             return fileTree.executableEnvPaths.flatMap {
-                it.getChildren(um.user)?.keys?: emptyList()
+                it.getChildren(um.user)?.keys ?: emptyList()
             }.filter { it.startsWith(targetText) }
         }
 
@@ -62,7 +74,7 @@ class Expression : KoinComponent {
         return (when (type) {
             is ArgType.Executable -> {
                 fileTree.executableEnvPaths.flatMap {
-                    it.getChildren(um.user)?.keys?: emptyList()
+                    it.getChildren(um.user)?.keys ?: emptyList()
                 }
             }
 

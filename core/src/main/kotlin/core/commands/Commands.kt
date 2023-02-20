@@ -21,7 +21,7 @@ class Help : Executable<Unit>(
 ) {
     private val ex by inject<Expression>()
     override suspend fun execute(user: User, rawArgs: List<String>) {
-        val exes = ex.getExecutables().map { it }
+        val exes = ex.getExecutables(includeHidden = false).map { it }
         out.println("現在、以下の${exes.count()}個のコマンドが使用可能です。")
         exes.forEach {
             out.println(it.name)
