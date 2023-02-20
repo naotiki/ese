@@ -27,7 +27,6 @@ class Help : Executable<Unit>(
             out.println(it.name)
             out.println("  " + it.description)
         }
-
     }
 }
 
@@ -54,7 +53,7 @@ class ListSegments : Executable<Unit>(
                     out.println(
                         (if (file is Directory) {
                             "d"
-                        } else "-")+"${permission.get()} ${owner.get().name} ${ownerGroup.get().name} $name"
+                        } else "-") + "${permission.get()} ${owner.get().name} ${ownerGroup.get().name} $name"
                     )
                 }
             } else out.print("$name ")

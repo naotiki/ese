@@ -6,6 +6,8 @@ import core.commands.parser.SuperArgsParser
 import core.user.Group
 import core.user.User
 import core.vfs.Permission.Companion.Operation
+import core.vfs.export.ExportableData
+import core.vfs.export.ExportableFile
 
 
 class FileValue<T>(private val file: File, private var internalValue: T) {
@@ -108,6 +110,9 @@ class ExecutableFile<R>(
             executable.out.println("実行権限が不足しています。\nls -lで確認してみましょう。")
             CommandResult.Error()
         }
+    }
+    fun exportable(): ExportableFile {
+        return ExportableFile(name, ExportableData.ExecutableData(executable::class.java))
     }
 }
 

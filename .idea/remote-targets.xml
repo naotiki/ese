@@ -14,6 +14,17 @@
           </config>
         </ContributedStateBase>
       </target>
+      <target name="WSL - Ubuntu" type="wsl" uuid="151d8fef-54a3-498f-a012-4ec1f940c6d0">
+        <config>
+          <option name="distributionMsId" value="Ubuntu" />
+          <option name="projectRootOnTarget" value="/mnt/c/Users/unity/AppData/Local/JetBrains/Toolbox/apps/IDEA-U/ch-0/223.8617.56/jbr/bin&#10;/EseLinux" />
+        </config>
+        <ContributedStateBase type="JavaLanguageRuntime">
+          <config>
+            <option name="homePath" value="/home/naotiki/.sdkman/candidates/java/17.0.6-tem" />
+          </config>
+        </ContributedStateBase>
+      </target>
     </targets>
   </component>
 </project>

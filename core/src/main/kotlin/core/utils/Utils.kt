@@ -13,3 +13,7 @@ fun normalizeYesNoAnswer(input:String): Boolean? {
         else -> null
     }
 }
+
+fun <T:Any?> T.log()= also {
+    println(it)
+}
