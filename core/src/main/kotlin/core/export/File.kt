@@ -1,30 +1,25 @@
-package core.vfs.export
+package core.export
 
 import core.commands.parser.Executable
-import core.vfs.ExecutableFile
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.modules.SerializersModule
-
-
-enum class FileType {
-    Text,
-    Executable
-}
-
 
 
 @Serializable
-data class ExportableFile(val fileName: String, val data:ExportableData)
+data class ExportableFile(val fileName: String, val data: ExportableData)
 
 
 
 
 
 
+
+/**
+ * エクスポートされるデータ
+ * */
 @Serializable
 sealed class ExportableData{
     @Serializable
-    data class ExecutableData<T : Executable<*>>(val className: String): ExportableData() {
+    data class ExeData<T : Executable<*>>(val className: String): ExportableData() {
         constructor(clazz: Class<T>) : this(clazz.name) {
 
         }
@@ -34,7 +29,8 @@ sealed class ExportableData{
     }
 
     @Serializable
-    data class TextData(val name:String):ExportableData(){
+    data class TextData(val content:String): ExportableData()
 
-    }
+    @Serializable
+    data class DirectoryData(val children:List<ExportableFile>): ExportableData()
 }

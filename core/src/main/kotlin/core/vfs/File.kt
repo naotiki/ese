@@ -6,8 +6,8 @@ import core.commands.parser.SuperArgsParser
 import core.user.Group
 import core.user.User
 import core.vfs.Permission.Companion.Operation
-import core.vfs.export.ExportableData
-import core.vfs.export.ExportableFile
+import core.export.ExportableData
+import core.export.ExportableFile
 
 
 class FileValue<T>(private val file: File, private var internalValue: T) {
@@ -39,6 +39,7 @@ class SealedFileValue<T>(private val file: File, private var internalValue: T) {
         }
         return null
     }
+
 }
 
 
@@ -52,7 +53,7 @@ fun <T> File.value(value: T) = FileValue(this, value)
  *  @param parent 親ディレクトリ、ルートの場合はnull
  *  @param hidden 属性 [Boolean]をとる
  */
-open class File(
+abstract class File(
     var name: String, val parent: Directory? = null, hidden: Boolean, owner: User, group: Group, permission: Permission,
 ) {
     val hidden = value(hidden)
@@ -68,6 +69,8 @@ open class File(
         }
         return Path(path.reversed().joinToString("/", "/"))
     }
+
+    abstract fun export(): ExportableFile
 
 }
 
@@ -91,7 +94,11 @@ class TextFile(
     permission: Permission,
     hidden: Boolean
 ) : File(name, parent, owner = owner, group = group, hidden = hidden, permission = permission) {
-    val content = sealedValue(content)
+    private val _content=content
+    val content = sealedValue(_content)
+    override fun export(): ExportableFile {
+        return ExportableFile(name, ExportableData.TextData(_content))
+    }
 }
 
 class ExecutableFile<R>(
@@ -111,8 +118,8 @@ class ExecutableFile<R>(
             CommandResult.Error()
         }
     }
-    fun exportable(): ExportableFile {
-        return ExportableFile(name, ExportableData.ExecutableData(executable::class.java))
+    override fun export(): ExportableFile {
+        return ExportableFile(name, ExportableData.ExeData(executable::class.java))
     }
 }
 
@@ -122,23 +129,28 @@ open class Directory(
 ) : File(
     name, parent = parent, owner = owner, group = group, hidden = hidden, permission = permission
 ) {
-    open val _children = sealedValue(mutableMapOf<String, File>())
+    private val _children=mutableMapOf<String, File>()
+    private  val children = sealedValue(_children)
     fun getChildren(user: User, includeHidden: Boolean = false): Map<String, File>? {
-        return _children.get(user)?.filterValues { !it.hidden.get() || includeHidden }?.toMap()
+        return children.get(user)?.filterValues { !it.hidden.get() || includeHidden }?.toMap()
     }
 
     fun addChildren(user: User, vararg childDir: File): Boolean {
-        return _children.get(user)?.putAll(childDir.associateBy { it.name }) != null
+        return children.get(user)?.putAll(childDir.associateBy { it.name }) != null
     }
 
     fun removeChild(user: User, childDir: File): Boolean {
         println("削除：${childDir.name}")
         return if (checkPermission(user,Operation.Write)) {
             println("権限許可：${childDir.name}")
-            (_children.get(user)?.remove(childDir.name)!= null).also {
+            (children.get(user)?.remove(childDir.name)!= null).also {
                 if (it) println("成功")
             }
         }else false
+    }
+
+    override fun export(): ExportableFile {
+        return ExportableFile(name, ExportableData.DirectoryData(_children.values.map { it.export() }))
     }
 }
 

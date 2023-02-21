@@ -1,55 +1,44 @@
 package core
 
-import core.commands.Cat
-import core.user.User
+import core.export.EseSave
+import core.export.ExportableFile
 import core.user.UserManager
 import core.utils.log
-import core.vfs.ExecutableFile
-import core.vfs.FileSystem
 import core.vfs.FileTree
-import core.vfs.Permission
-import core.vfs.export.ExportableData
-import core.vfs.export.ExportableFile
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.cbor.Cbor
-import kotlinx.serialization.encodeToHexString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToByteArray
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.koin.core.component.get
-import org.koin.core.context.loadKoinModules
-import org.koin.core.context.startKoin
-import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.get
+import java.io.File
 
-class SaveTest :KoinTest{
+class SaveTest : KoinTest {
     @BeforeEach
-    fun up(){
+    fun up() {
         prepareKoinInjection()
-
-
     }
+
     @OptIn(ExperimentalSerializationApi::class)
     @Test
     fun a() {
-        val um =get<UserManager>()
-        val e=Json.decodeFromString(ExportableFile.serializer(),Json.encodeToString(ExecutableFile(Cat(), parent = null,
-            owner =um
-            .uRoot, group = um
-            .rootGroup,
-            permission
-        = Permission(0),
-            hidden = false ).exportable()).log())
-        when(e.data){
-            is ExportableData.ExecutableData<*> -> {
-                (e.data as ExportableData.ExecutableData<*>).get().generateHelpText().log()
-            }
-            is ExportableData.TextData -> {
+        val um = get<UserManager>()
+        val fileTree = get<FileTree>()
 
-            }
-        }
+        val e = Cbor.encodeToByteArray(fileTree.root.export()).log()
+        File("eselinux.ex").outputStream().write(e)
+
+
+        File("eselinux.exc").outputStream().write(EseSave.compress(e))
+    }
+    @OptIn(ExperimentalSerializationApi::class)
+    @Test
+    fun `圧縮テスト`(){
+        val fileTree = get<FileTree>()
+
+        val e = Cbor.encodeToByteArray(fileTree.root.export()).log()
+        Cbor.decodeFromByteArray(ExportableFile.serializer(),EseSave.inflate(EseSave.compress(e))).log()
     }
 
 }
