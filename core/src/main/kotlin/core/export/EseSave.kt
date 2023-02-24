@@ -1,6 +1,10 @@
 package core.export
 
+import core.user.Group
+import core.user.User
 import core.utils.log
+import core.vfs.Directory
+import kotlinx.serialization.Serializable
 import java.nio.ByteBuffer
 import java.util.zip.Deflater
 import java.util.zip.Inflater
@@ -39,5 +43,37 @@ object EseSave {
         inflater.finished()
         val originalDataLength = inflater.inflate(originalData)
         return originalData.copyOfRange(0, originalDataLength)
+    }
+}
+
+@Serializable
+data class EseExportData(
+    val groups: List<Group>,
+    val users: List<ExportUser>,
+
+    val rootDir: ExportableFile
+) {
+    fun importUsers(): List<User> = users.map {
+        User(it.name, groups.single { g -> g.id == it.groupId }, it.uid)
+    }
+
+    fun generateFileTree() {
+        val users = importUsers()
+        if (rootDir.data !is ExportableData.DirectoryData) TODO()
+        val root = rootDir.run {
+            Directory(
+                fileName, null,
+                users.single {
+                    it.id == userID
+                },
+                groups.single {
+                    it.id == groupID
+                },
+                permission, hidden
+            )
+        }
+        rootDir.data.children
+
+
     }
 }

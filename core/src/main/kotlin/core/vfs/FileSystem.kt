@@ -2,9 +2,11 @@ package core.vfs
 
 import core.user.UserManager
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.serialization.Serializable
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
+@Serializable
 @JvmInline
 value class Path(val value: String) {
     fun asAbsolute(origin: Directory) {

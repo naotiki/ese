@@ -79,6 +79,7 @@ fun DSLContext.file(
     dir.addChildren(operator, it)
 }
 
+inline operator fun DSLContext.invoke(block:DSLContext.()->Unit)=block()
 
 fun <R> DSLContext.executable(
     executable: Executable<R>,

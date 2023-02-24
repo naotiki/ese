@@ -34,3 +34,5 @@ class Status : Executable<Unit>(
 
     }
 }
+
+class CommandDefineException(message:String):Exception(message)

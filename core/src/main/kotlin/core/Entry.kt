@@ -8,7 +8,6 @@ import core.user.UserManager
 import core.utils.splitArgs
 import core.vfs.FileSystem
 import core.vfs.FileTree
-import core.vfs.dsl.DSLContext
 import core.vfs.dsl.dir
 import core.vfs.dsl.file
 import core.vfs.dsl.fileDSL
@@ -61,7 +60,7 @@ suspend fun initialize(koin: Koin, consoleInterface: ConsoleInterface) {
 
     //名前設定
     while (true) {
-        userName = io.newPrompt(consoleInterface, "あなたの名前は？:", "")
+        userName = io.newPrompt(consoleInterface, "あなたの名前は？:", "a")
         println(userManager.userList)
         when {
             userName.isBlank() -> {
@@ -141,8 +140,10 @@ suspend fun initialize(koin: Koin, consoleInterface: ConsoleInterface) {
 }
 
 class IO {
-    private val inputStream = PipedInputStream()
-    val reader = inputStream.bufferedReader()
+
+    /*private*/ val inputStream = PipedInputStream()
+
+    val reader = inputStream.reader()
     internal val outputStream = PrintStream(PipedOutputStream(inputStream), true)
 
     private val consoleInput = PipedInputStream()

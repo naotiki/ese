@@ -1,5 +1,7 @@
 package core.commands.parser
 
+import core.commands.dev.CommandDefineException
+import core.utils.log
 import core.utils.nextOrNull
 
 class CommandParserException(command: Executable<*>?, s: String) : Exception("${command?.name}コマンド解析エラー:$s")
@@ -23,9 +25,9 @@ class SuperArgsParser {
         var inOption: Opt<*>? = null
         val argListIterator = sortedArgs.listIterator()
         var nextArg: Arg<*>? = null//argListIterator.nextOrNull()
-        var lastString:String=""
+        var lastString: String = ""
         argList.filter { it.isEmpty() || it.isNotBlank() }.forEach { str: String ->
-            lastString=str
+            lastString = str
             //sudoの後など引数にオプションも含めるとき
             val includeOptionInArg = nextArg?.vararg?.includeOptionInArg == true
 
@@ -73,14 +75,16 @@ class SuperArgsParser {
             }
         }
 
-        return (inOption?.type ?: nextArg?.type)?.let { it to  lastString }
+        return (inOption?.type ?: nextArg?.type)?.let { it to lastString }
     }
 
     //解析
     @Throws(CommandParserException::class)
-    fun parse(exe: Executable<*>, argList: List<String>) {
-        //初期化
-        args.forEach { it.reset() }
+    fun parse(exe: Executable<*>, argList: List<String>,subCommand: Executable<*>.SubCommand<*>?=null):
+            Pair<Executable<out
+    Any?>.SubCommand<out Any?>,
+            List<String>>? {
+        if (subCommand==null&&exe.subCommands.isNotEmpty() && args.isNotEmpty()) throw CommandDefineException("Argsはだめです")
         opts.forEach { it.reset() }
         //可変長引数は最後に持ってくる
         //オプションがあるかどうか
@@ -90,7 +94,7 @@ class SuperArgsParser {
 
         val argListIterator = sortedArgs.listIterator()
         var nextArg = argListIterator.nextOrNull()
-        normalizedArgs.forEach { str: String ->
+        normalizedArgs.forEachIndexed {  index:Int,str: String ->
             //sudoの後など引数にオプションも含めるとき
             val includeOptionInArg = nextArg?.vararg?.includeOptionInArg == true
 
@@ -128,6 +132,13 @@ class SuperArgsParser {
                         inOption = null
                     }
 
+                    subCommand ==null && exe.subCommands.isNotEmpty() -> {
+
+
+                        return exe.subCommands.single { it.name==str } to normalizedArgs.drop(index+1).log()
+
+                    }
+
                     nextArg != null -> {
                         if (nextArg!!.vararg == null) {
                             nextArg!!.updateValue(str)
@@ -136,6 +147,7 @@ class SuperArgsParser {
                             nextArg!!.vararg!!.addValue(str)
                         }
                     }
+
 
                     else -> {
                         TODO("💥")
@@ -154,5 +166,6 @@ class SuperArgsParser {
         }.forEach {
             throw CommandParserException(exe, "必須なオプション${it.name}が指定されていません")
         }
+        return null
     }
 }

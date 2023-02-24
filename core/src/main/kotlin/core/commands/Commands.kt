@@ -10,8 +10,55 @@ import core.vfs.*
 import core.vfs.dsl.dir
 import core.vfs.dsl.file
 import core.vfs.dsl.fileDSL
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.core.component.inject
+
+//  UDON is a Downloader Of Noodles
+class Udon:Executable<Unit>("udon","UDON is a Downloader Of Noodles"){
+    //さぶこまんど
+    inner class Install : SubCommand<Unit>("world","インストールします。"){
+        val pkgName by argument(ArgType.String,"packageName","パッケージ名")
+        override suspend fun execute(user: User, rawArgs: List<String>) {
+            out.println("[DEMO]Installing $pkgName ")
+            println(pkgName)
+        }
+    }
+    inner class LocalInstall : SubCommand<Unit>("local","インストールします。"){
+        val pkgName by argument(ArgType.String,"packageName","パッケージ名")
+        override suspend fun execute(user: User, rawArgs: List<String>) {
+            out.println("[DEMO]Installing $pkgName")
+            println(pkgName)
+        }
+
+    }
+    override suspend fun execute(user: User, rawArgs: List<String>) {
+        out.println("SHIT")
+    }
+}
+
+class Exec:Executable<Unit>("exec","RUN"){
+    override suspend fun execute(user: User, rawArgs: List<String>) {
+        withContext(Dispatchers.IO) {
+            val process=ProcessBuilder("medley.exe").start()
+            launch {
+                withContext(Dispatchers.IO) {
+                    process.inputStream.transferTo(io.outputStream)
+                }
+            }
+            launch {
+                withContext(Dispatchers.IO) {
+                    process.inputStream.transferTo(io.outputStream)
+                }
+            }
+            println("ssss")
+            process.waitFor()
+        }
+    }
+
+}
 
 //Man
 class Help : Executable<Unit>(

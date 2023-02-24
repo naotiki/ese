@@ -18,10 +18,11 @@ class FileTree(userManager: UserManager)  {
     val executableEnvPaths = mutableListOf<Directory>()
 
     init {
+        Int
         val initialCommands = listOf<Executable<*>>(
             ListSegments(), ChangeDirectory(), Cat(), Exit(), SugoiUserDo(),
             Yes(), Clear(), Echo(), Remove(), Test(),
-            Help(),MakeDirectory(),Touch(),Chmod(),WriteToFile()
+            Help(),MakeDirectory(),Touch(),Chmod(),WriteToFile(),Exec(),Udon()
         )
         rootDir {
 

@@ -3,6 +3,7 @@ package core.commands.parser
 import core.ConsoleInterface
 import core.IO
 import core.commands.Expression
+import core.commands.dev.CommandDefineException
 import core.user.User
 import core.user.UserManager
 import core.vfs.*
@@ -10,29 +11,9 @@ import org.koin.core.Koin
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.reflect.full.isSubclassOf
+import kotlin.reflect.full.primaryConstructor
 
-//TODO サブコマンド
-abstract class SubCommand<R>(val name: String, val regex: Regex? = null) {
-    val args = mutableListOf<Arg<*>>()
-    val opts = mutableListOf<Opt<*>>()
-    fun <T : Any> option(
-        type: ArgType<T>, name: String, shortName: String? = null, description: String? = null
-    ): Opt<T> {
-        val o = Opt(type, name, shortName, description)
-        opts.add(o)
-        return o
-    }
-
-    fun <T : Any> argument(
-        type: ArgType<T>, name: String, description: String? = null
-    ): Arg<T> {
-        val a = Arg(type, name, description)
-        args.add(a)
-        return a
-    }
-
-    abstract suspend fun execute(args: List<String>): R
-}
 
 /**
  * すべてのコマンドの基底クラス
@@ -46,6 +27,73 @@ abstract class SubCommand<R>(val name: String, val regex: Regex? = null) {
  * @param R [execute]戻り値の型、基本は[Unit]
  * */
 abstract class Executable<R>(val name: String, val description: String? = null) : KoinComponent {
+    //TODO サブコマンド
+    abstract inner class SubCommand<R>(val name: String, val description: String? = null) {
+        private val argParser: SuperArgsParser = SuperArgsParser()
+        fun <T : Any> option(
+            type: ArgType<T>, name: String, shortName: String? = null, description: String? = null
+        ): Opt<T> {
+            val o = Opt(type, name, shortName, description)
+            argParser.opts.add(o)
+            return o
+        }
+
+        fun <T : Any> argument(
+            type: ArgType<T>, name: String, description: String? = null
+        ): Arg<T> {
+            val a = Arg(type, name, description)
+            argParser.args.add(a)
+            return a
+        }
+
+        abstract suspend fun execute(user:User,rawArgs: List<String>): R
+        /**
+         * 引数を解析して[execute]を実行します
+         * @param args 解析前の引数
+         * @return 結果
+         * @throws CommandIllegalArgsException 型変換に失敗したとき
+         * @throws CommandParserException 引数の形式が定義と異なるとき
+         * */
+        @Throws(CommandIllegalArgsException::class, CommandParserException::class)
+        suspend fun resolve(user: User, args: List<String>,rawArgs: List<String>): CommandResult<Any?> {
+
+            return try {
+                //if (isHelp(args)) return outputHelp()
+                try {
+                   argParser.parse(this@Executable, args,this)
+                } catch (e: CancellationException) {
+
+                } catch (e: Exception) {
+                    if (help) {
+                        //return outputHelp()
+                    } else {
+                        throw e
+                    }
+                }
+                if (help) {
+                   // return outputHelp()
+                }
+
+                val r = execute(user, rawArgs)
+
+                CommandResult.Success(r)
+
+            } catch (e: CommandIllegalArgsException) {
+                println(e.localizedMessage)
+                out.println(e.localizedMessage)
+                CommandResult.Error()
+            } catch (e: CommandParserException) {
+                println(e.localizedMessage)
+                out.println(e.localizedMessage)
+                CommandResult.Error()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                e.printStackTrace(out)
+                CommandResult.Error()
+            }
+        }
+    }
+
     val um by inject<UserManager>()
     val io by inject<IO>()
     internal val argParser: SuperArgsParser = SuperArgsParser()
@@ -53,8 +101,10 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
     //fun isHelp(args: List<String>)=args.contains("-h")||args.contains("--help")
 
     //TODO いつかやる
-    private var subCommands: List<SubCommand<*>> = this::class.nestedClasses.map {
-        it.java.getDeclaredConstructor().newInstance()
+    val subCommands: List<SubCommand<*>> = this::class.nestedClasses.filter {
+        it.isSubclassOf(SubCommand::class) && it.isInner
+    }.map {
+        it.primaryConstructor?.call(this)
     }.filterIsInstance<SubCommand<*>>()
 
     init {
@@ -84,6 +134,8 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
     fun <T : Any> argument(
         type: ArgType<T>, name: String, description: String? = null
     ): Arg<T> {
+        if (subCommands.isNotEmpty())
+            throw CommandDefineException("Executable having SubCommand can't have Args.")
         val a = Arg(type, name, description)
         argParser.args.add(a)
         return a
@@ -167,13 +219,14 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
      * @throws CommandParserException 引数の形式が定義と異なるとき
      * */
     @Throws(CommandIllegalArgsException::class, CommandParserException::class)
-    suspend fun resolve(user:User,args: List<String>): CommandResult<R> {
+    suspend fun resolve(user: User, args: List<String>): CommandResult< out Any?> {
 
         return try {
             //if (isHelp(args)) return outputHelp()
             try {
-                argParser.parse(this, args)
-            }catch (e:CancellationException){
+                val subcommand= argParser.parse(this, args)
+                if (subcommand!=null) return subcommand.first.resolve(user,subcommand.second,args)
+            } catch (e: CancellationException) {
 
             } catch (e: Exception) {
                 if (help) {
@@ -185,7 +238,8 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
             if (help) {
                 return outputHelp()
             }
-            val r = execute(user,args)
+
+            val r = execute(user, args)
             CommandResult.Success(r)
 
         } catch (e: CommandIllegalArgsException) {

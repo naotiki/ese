@@ -1,7 +1,9 @@
 package core.user
 
+import core.export.ExportUser
 import core.vfs.Directory
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlin.random.Random
 
 interface AccessObject {
@@ -12,13 +14,13 @@ interface AccessObject {
 @Serializable
 @JvmInline
 value class UID(
-    val id: UInt = (System
-        .currentTimeMillis() * Random.nextBits(16).toLong()).toUInt()
+    val id: UInt = (System.currentTimeMillis() *
+            Random.nextBits(16).toLong()).toUInt()
 ) {
-    companion object
 }
 
-val rootUID=UID()
+val rootUID = UID()
+
 /**
  * Virtual User Manager
  * */
@@ -29,15 +31,15 @@ class UserManager {
     private val groups = mutableListOf<Group>()
     val groupList get() = groups.toList()
 
-    val rootGroup = Group(this,"root")
-    val uRoot = User(this,"root", rootGroup,rootUID)
+    val rootGroup = Group(this, "root")
+    val uRoot = User(this, "root", rootGroup, rootUID)
 
 
-    val nullGroup = Group(this,"null")
-    val uNull = User(this,"null", nullGroup)
+    val nullGroup = Group(this, "null")
+    val uNull = User(this, "null", nullGroup)
 
-    val naotikiGroup = Group(this,"naotiki")
-    val uNaotiki = User(this,"naotiki", naotikiGroup)
+    val naotikiGroup = Group(this, "naotiki")
+    val uNaotiki = User(this, "naotiki", naotikiGroup)
 
     fun addUser(user: User) {
         users.add(user)
@@ -47,7 +49,7 @@ class UserManager {
         groups.add(group)
     }
 
-     var user: User=uNull
+    var user: User = uNull
         private set
 
     fun setUser(u: User) {
@@ -58,11 +60,13 @@ class UserManager {
 /**
  * すごいのかすごくないのか
  * */
-fun isSugoi(user:User) = (user.id == rootUID).also { println(user.id.toString()+"=="+ rootUID) }
+fun isSugoi(user: User) = (user.id == rootUID).also { println(user.id.toString() + "==" + rootUID) }
 
-data class User private constructor(
-    override val name: String, var group: Group, override val id: UID = UID(), var dir:
-    Directory? = null
+
+class User internal constructor(
+    override val name: String, var group: Group, override val id: UID = UID(),
+    @Transient
+    var dir: Directory? = null
 ) : AccessObject {
     constructor(
         userManager: UserManager, name: String, group: Group, id: UID = UID(), dir:
@@ -77,17 +81,21 @@ data class User private constructor(
     fun setHomeDir(builder: (User, Group) -> Directory) {
         dir = builder(this, group)
     }
+
+    fun export() = ExportUser(name, id, group.id, dir?.getFullPath())
 }
 
 @Serializable
-data class Group private constructor(
+data class Group internal constructor(
     override val name: String, override val id: UID = UID()
 ) : AccessObject {
     constructor(
         userManager: UserManager, name: String, id: UID = UID(),
-    ) : this(name,  id, ) {
+    ) : this(name, id) {
         userManager.addGroup(this)
     }
+
+
 }
 
 
