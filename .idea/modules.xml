@@ -3,33 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/EseLinux.iml" filepath="$PROJECT_DIR$/.idea/EseLinux.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/server/EseLinux.server.iml" filepath="$PROJECT_DIR$/.idea/modules/server/EseLinux.server.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/server/EseLinux.server.main.iml" filepath="$PROJECT_DIR$/.idea/modules/server/EseLinux.server.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/server/EseLinux.server.test.iml" filepath="$PROJECT_DIR$/.idea/modules/server/EseLinux.server.test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/client-cli.iml" filepath="$PROJECT_DIR$/client-cli.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-386412896/client-cli.core.iml" filepath="$PROJECT_DIR$/.idea/modules/-386412896/client-cli.core.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-386412896/client-cli.core.main.iml" filepath="$PROJECT_DIR$/.idea/modules/-386412896/client-cli.core.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-386412896/client-cli.core.test.iml" filepath="$PROJECT_DIR$/.idea/modules/-386412896/client-cli.core.test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/client-cli.main.iml" filepath="$PROJECT_DIR$/.idea/modules/client-cli.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/client-cli.test.iml" filepath="$PROJECT_DIR$/.idea/modules/client-cli.test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-386412896/client-gui.core.iml" filepath="$PROJECT_DIR$/.idea/modules/-386412896/client-gui.core.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-386412896/client-gui.core.main.iml" filepath="$PROJECT_DIR$/.idea/modules/-386412896/client-gui.core.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-386412896/client-gui.core.test.iml" filepath="$PROJECT_DIR$/.idea/modules/-386412896/client-gui.core.test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/client-gui.main.iml" filepath="$PROJECT_DIR$/.idea/modules/client-gui.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/client-gui.test.iml" filepath="$PROJECT_DIR$/.idea/modules/client-gui.test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-386412896/core_test.iml" filepath="$PROJECT_DIR$/.idea/modules/-386412896/core_test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/ese-example.iml" filepath="$PROJECT_DIR$/ese-example.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-386412896/ese-example.core.iml" filepath="$PROJECT_DIR$/.idea/modules/-386412896/ese-example.core.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-386412896/ese-example.core.main.iml" filepath="$PROJECT_DIR$/.idea/modules/-386412896/ese-example.core.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-386412896/ese-example.core.test.iml" filepath="$PROJECT_DIR$/.idea/modules/-386412896/ese-example.core.test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/761732163/ese-example.ese-sdk.iml" filepath="$PROJECT_DIR$/.idea/modules/761732163/ese-example.ese-sdk.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/761732163/ese-example.ese-sdk.main.iml" filepath="$PROJECT_DIR$/.idea/modules/761732163/ese-example.ese-sdk.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/761732163/ese-example.ese-sdk.test.iml" filepath="$PROJECT_DIR$/.idea/modules/761732163/ese-example.ese-sdk.test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ese-example.main.iml" filepath="$PROJECT_DIR$/.idea/modules/ese-example.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ese-example.test.iml" filepath="$PROJECT_DIR$/.idea/modules/ese-example.test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/ese-sdk.iml" filepath="$PROJECT_DIR$/ese-sdk.iml" group="ese-sdk" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ese-sdk_main.iml" filepath="$PROJECT_DIR$/.idea/modules/ese-sdk_main.iml" group="ese-sdk" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ese-sdk_test.iml" filepath="$PROJECT_DIR$/.idea/modules/ese-sdk_test.iml" group="ese-sdk" />
     </modules>
   </component>
 </project>
