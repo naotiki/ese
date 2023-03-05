@@ -5,7 +5,7 @@ import org.jetbrains.compose.desktop.application.tasks.AbstractJPackageTask
 plugins {
     kotlin("jvm")
     id("org.jetbrains.compose")
-    //id("org.jetbrains.dokka") version "1.7.20"
+    id("org.jetbrains.dokka") version "1.7.20"
 }
 
 val appVersion = project.properties.getOrDefault("appVersion", "0.0.0-dev").toString()
@@ -20,14 +20,13 @@ repositories {
 
 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
 dependencies {
-
+    implementation(project(":core"))
     implementation(compose.desktop.currentOs)
-    implementation(compose.desktop.windows_x64)
+    //implementation(compose.desktop.windows_x64)
     implementation(compose.desktop.components.splitPane)
     implementation(compose.preview)
     implementation(compose.uiTooling)
     implementation(compose.materialIconsExtended)
-    implementation(project(":core"))
 }
 val os = System.getProperty("os.name").replace(" ", "_")
 compose.desktop {
@@ -41,7 +40,9 @@ compose.desktop {
             targetFormats(TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
             packageName = "EseLinux"
             description = "Ese Linux"
-
+            appResourcesRootDir.set(project.layout.projectDirectory.dir("resources").apply {
+                println(this.asFile.absolutePath)
+            })
             linux {
                 debPackageVersion = appVersion.trimStart('v')
                 rpmPackageVersion = appVersion.replace("-", "_")

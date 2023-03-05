@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="18">
-      <module name="EseLinux.server" target="17" />
-      <module name="EseLinux.server.main" target="17" />
-      <module name="EseLinux.server.test" target="17" />
-      <module name="LegendaryExecutable.main" target="17" />
-      <module name="LegendaryExecutable.server" target="17" />
-      <module name="LegendaryExecutable.server.main" target="17" />
-      <module name="LegendaryExecutable.server.test" target="17" />
-      <module name="LegendaryExecutable.test" target="17" />
+    <bytecodeTargetLevel>
+      <module name="ese-lib" target="17" />
+      <module name="ese-lib.core" target="17" />
+      <module name="ese-lib.core.main" target="17" />
+      <module name="ese-lib.core.test" target="17" />
+      <module name="ese-lib.main" target="17" />
+      <module name="ese-lib.test" target="17" />
     </bytecodeTargetLevel>
   </component>
 </project>

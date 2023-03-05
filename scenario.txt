@@ -1,0 +1,31 @@
+
+clean_build_4gb_Parallel {
+    tasks = ["createDistributable"]
+    gradle-args = ["--parallel","--max-workers=8"]
+    tooling-api {
+        action = "org.gradle.profiler.toolingapi.FetchProjectPublications"
+    }
+#    tooling-api {
+#        model = "org.gradle.tooling.model.idea.IdeaProject"
+#    }
+   clear-project-cache-before = SCENARIO
+   clear-jars-cache-before = SCENARIO
+   clear-transform-cache-before = SCENARIO
+   clear-build-cache-before = BUILD
+    jvm-args = ["-Xmx8192m","-XX:+UseParallelGC"]
+    cleanup-tasks = ["clean"]
+}
+clean_build_normal {
+    tasks = ["createDistributable"]
+      tooling-api {
+        action = "org.gradle.profiler.toolingapi.FetchProjectPublications"
+    }
+#    tooling-api {
+#            model = "org.gradle.tooling.model.idea.IdeaProject"
+#   }
+   clear-project-cache-before = SCENARIO
+   clear-jars-cache-before = SCENARIO
+   clear-transform-cache-before = SCENARIO
+   clear-build-cache-before = BUILD
+    cleanup-tasks = ["clean"]
+}
