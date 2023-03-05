@@ -162,7 +162,7 @@ open class Directory(
             (children.get(user)?.remove(childDir.name) != null).also {
                 if (it) println("成功")
             }
-        } else false
+        } else false.apply { println("権限不足❗ありえない話し❗") }
     }
 
     override fun export(): ExportableFile {

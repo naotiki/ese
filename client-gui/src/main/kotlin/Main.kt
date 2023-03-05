@@ -1,3 +1,4 @@
+
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -24,13 +25,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.MenuBar
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import core.*
-import core.commands.Expression
-import core.utils.splitArgs
 import component.assistant.CommandPanel
 import component.assistant.EasyFileView
-import core.user.User
+import core.*
+import core.commands.Expression
 import core.user.UserManager
+import core.utils.splitArgs
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
@@ -48,15 +48,25 @@ class TerminalViewModel(prompt: Prompt) : CustomKoinComponent() {
     val io by inject<IO>()
     val userManager by inject<UserManager>()
     val expression by inject<Expression>()
-    val logFlow = io.reader.lineSequence().asFlow().flowOn(Dispatchers.IO)
+
+    val logFlow = flow {
+        while (true) {
+            val char = io.reader.read()
+            println(char)
+            if (char == -1) break
+            else if (char == 13) continue // DOSのCR(\r)を除外
+            emit(char.toChar())
+        }
+    }.flowOn(Dispatchers.IO)
     val commandHistory get() = expression.commandHistory
 
-    var textLogs by mutableStateOf("")
+    var textLogs by mutableStateOf(System.getProperty("user.dir")+"\n")
     val consoleImpl = object : ConsoleInterface {
 
         override fun prompt(promptText: String, value: String) {
             prompt.newPrompt(promptText, value)
         }
+
 
         override fun exit() {
             exitProcess(0)
@@ -66,29 +76,31 @@ class TerminalViewModel(prompt: Prompt) : CustomKoinComponent() {
             textLogs = ""
         }
     }
+
     var suggestion by mutableStateOf<String?>(null)
     var suggestList by mutableStateOf(emptyList<String>())
     var count by mutableStateOf(0)
+    var previousArgsCount by mutableStateOf(0)
     fun nextSuggest(value: String): String {
-
         val target = value.splitArgs()
         val arg = target.last()
-        if (suggestion != arg) {
+        if (suggestion != arg||previousArgsCount!=target.size) {
             suggestion = arg
             suggestList = getSuggestList(value)
+            previousArgsCount = target.size
         }
         return (suggestList.ifEmpty { null }?.let {
             val a = (it.getOrNull(count) ?: run {
                 count = 0
                 suggestList.getOrNull(count)
-            } )?: return@let null
+            }) ?: return@let null
             count++
             (target.dropLast(1) + a).joinToString(" ")
         } ?: value).also { println(it) }
     }
 
     fun getSuggestList(value: String) =
-        expression.suggest(userManager.user,value).also {
+        expression.suggest(userManager.user, value).also {
             println(it)
         }
 
@@ -98,8 +110,8 @@ class TerminalViewModel(prompt: Prompt) : CustomKoinComponent() {
     }
 
     fun outln(value: String) {
-        suggestion=null
-        suggestList= emptyList()
+        suggestion = null
+        suggestList = emptyList()
         io.consoleWriter.println(value)
     }
 }
@@ -126,7 +138,7 @@ fun Terminal() {
             println("End:Init")
         }
         viewModel.logFlow.collect {
-            viewModel.textLogs += it + "\n"
+            viewModel.textLogs += it + ""
             stateVertical.scrollTo(stateVertical.maxValue)
         }
     }
@@ -153,7 +165,7 @@ fun Terminal() {
                 prompt.textFieldValue,
                 onValueChange = {
                     prompt.updateTextFieldValue(it) { value, _ ->
-                        lastInput=value
+                        lastInput = value
                         println("Debug:Updated $value")
                     }
                 },
@@ -170,10 +182,11 @@ fun Terminal() {
 
                     return@onPreviewKeyEvent if (it.key == Key.Enter && it.type == KeyEventType.KeyDown /*&& prompt
                         .isEnable*/) {
+                        println(prompt.textFieldValue.text)
                         viewModel.textLogs += prompt.textFieldValue.text + "\n"
                         viewModel.outln(prompt.getValue())
                         prompt.reset()
-                        lastInput=""
+                        lastInput = ""
                         historyIndex = -1
                         true
                     } else if ((it.key == Key.DirectionUp || it.key == Key.DirectionDown) && it.type == KeyEventType.KeyDown) {
@@ -183,7 +196,7 @@ fun Terminal() {
                             else -> -1
                         }
                         viewModel.commandHistory.getOrNull(historyIndex).let { s ->
-                            prompt.updateValue((s ?: "").also { lastInput=it })
+                            prompt.updateValue((s ?: "").also { lastInput = it })
                         }
                         true
                     } else if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {

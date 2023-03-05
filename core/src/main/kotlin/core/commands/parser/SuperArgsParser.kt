@@ -21,7 +21,7 @@ class SuperArgsParser {
             } else 0
         }
 
-    fun getNextArgTypeOrNull(argList: List<String>): Pair<ArgType<out Any>, String>? {
+    fun getNextArgTypeOrNull(argList: List<String>): Pair<ArgType<Any>, String>? {
         var inOption: Opt<*>? = null
         val argListIterator = sortedArgs.listIterator()
         var nextArg: Arg<*>? = null//argListIterator.nextOrNull()
@@ -69,7 +69,7 @@ class SuperArgsParser {
                     }
 
                     /*else -> {
-                        TODO("💥")
+                       T ODO("💥")
                     }*/
                 }
             }
@@ -150,7 +150,7 @@ class SuperArgsParser {
 
 
                     else -> {
-                        TODO("💥")
+                        throw CommandParserException(exe, "引数が定義数より多いです")
                     }
                 }
             }

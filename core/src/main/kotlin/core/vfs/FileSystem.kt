@@ -12,6 +12,9 @@ value class Path(val value: String) {
     fun asAbsolute(origin: Directory) {
         TODO("いつか実装")
     }
+    companion object{
+        fun String.toPath()=Path(this)
+    }
 }
 
 
@@ -66,7 +69,6 @@ class FileSystem(currentDirectory: Directory) : KoinComponent {
             }
             partialPath.drop(if (isHomeDir) 1 else 0)
                 .fold<String, File?>(if (isHomeDir) fileTree.userDir else fileTree.root) { dir, partial ->
-                    println(partial + ":dir:" + dir?.name)
                     dir?.toDirectoryOrNull()?.getChildren(userManager.user)?.get(partial)
                 }
         } else {

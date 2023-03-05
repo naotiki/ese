@@ -20,29 +20,29 @@ import org.koin.core.context.loadKoinModules
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
 import org.koin.dsl.module
+import java.io.File
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.io.PrintStream
 
+val dataDir= File(System.getProperty("compose.application.resources.dir") ?: "./client-gui/resources/common/")
 
 const val version = "0.0.0-dev"
-val m = module {
+private val module = module {
     single { Variable() }
     single { Expression() }
 }
 
 fun prepareKoinInjection(): KoinApplication {
-
-
-    m.apply {
+    module.apply {
         single { UserManager() }
         single { FileTree(get()) }
         single { IO() }
         single { FileSystem(get<FileTree>().root) }
     }
     return startKoin {
-        printLogger(Level.DEBUG)
-        modules(m)
+        printLogger(Level.INFO)
+        modules(module)
     }
 }
 

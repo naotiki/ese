@@ -7,7 +7,6 @@ import core.commands.dev.CommandDefineException
 import core.user.User
 import core.user.UserManager
 import core.vfs.*
-import org.koin.core.Koin
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.coroutines.cancellation.CancellationException
@@ -27,72 +26,7 @@ import kotlin.reflect.full.primaryConstructor
  * @param R [execute]戻り値の型、基本は[Unit]
  * */
 abstract class Executable<R>(val name: String, val description: String? = null) : KoinComponent {
-    //TODO サブコマンド
-    abstract inner class SubCommand<R>(val name: String, val description: String? = null) {
-        private val argParser: SuperArgsParser = SuperArgsParser()
-        fun <T : Any> option(
-            type: ArgType<T>, name: String, shortName: String? = null, description: String? = null
-        ): Opt<T> {
-            val o = Opt(type, name, shortName, description)
-            argParser.opts.add(o)
-            return o
-        }
 
-        fun <T : Any> argument(
-            type: ArgType<T>, name: String, description: String? = null
-        ): Arg<T> {
-            val a = Arg(type, name, description)
-            argParser.args.add(a)
-            return a
-        }
-
-        abstract suspend fun execute(user:User,rawArgs: List<String>): R
-        /**
-         * 引数を解析して[execute]を実行します
-         * @param args 解析前の引数
-         * @return 結果
-         * @throws CommandIllegalArgsException 型変換に失敗したとき
-         * @throws CommandParserException 引数の形式が定義と異なるとき
-         * */
-        @Throws(CommandIllegalArgsException::class, CommandParserException::class)
-        suspend fun resolve(user: User, args: List<String>,rawArgs: List<String>): CommandResult<Any?> {
-
-            return try {
-                //if (isHelp(args)) return outputHelp()
-                try {
-                   argParser.parse(this@Executable, args,this)
-                } catch (e: CancellationException) {
-
-                } catch (e: Exception) {
-                    if (help) {
-                        //return outputHelp()
-                    } else {
-                        throw e
-                    }
-                }
-                if (help) {
-                   // return outputHelp()
-                }
-
-                val r = execute(user, rawArgs)
-
-                CommandResult.Success(r)
-
-            } catch (e: CommandIllegalArgsException) {
-                println(e.localizedMessage)
-                out.println(e.localizedMessage)
-                CommandResult.Error()
-            } catch (e: CommandParserException) {
-                println(e.localizedMessage)
-                out.println(e.localizedMessage)
-                CommandResult.Error()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                e.printStackTrace(out)
-                CommandResult.Error()
-            }
-        }
-    }
 
     val um by inject<UserManager>()
     val io by inject<IO>()
@@ -100,17 +34,11 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
     val help by option(ArgType.Boolean, "help", "h", "ヘルプを表示します。").default(false)
     //fun isHelp(args: List<String>)=args.contains("-h")||args.contains("--help")
 
-    //TODO いつかやる
     val subCommands: List<SubCommand<*>> = this::class.nestedClasses.filter {
-        it.isSubclassOf(SubCommand::class) && it.isInner
+        it.isInner && it.isSubclassOf(SubCommand::class)
     }.map {
         it.primaryConstructor?.call(this)
     }.filterIsInstance<SubCommand<*>>()
-
-    init {
-        println(subCommands)
-    }
-
     /**
      * @param type 引数の型
      * @param name 指定するときの名前 呼び出すときにプレフィックス"--"を付加する必要があります
@@ -219,13 +147,13 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
      * @throws CommandParserException 引数の形式が定義と異なるとき
      * */
     @Throws(CommandIllegalArgsException::class, CommandParserException::class)
-    suspend fun resolve(user: User, args: List<String>): CommandResult< out Any?> {
+    suspend fun resolve(user: User, args: List<String>): CommandResult<out Any?> {
 
         return try {
             //if (isHelp(args)) return outputHelp()
             try {
-                val subcommand= argParser.parse(this, args)
-                if (subcommand!=null) return subcommand.first.resolve(user,subcommand.second,args)
+                val subcommand = argParser.parse(this, args)
+                if (subcommand != null) return subcommand.first.resolve(user, subcommand.second, args)
             } catch (e: CancellationException) {
 
             } catch (e: Exception) {
@@ -262,27 +190,73 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
      * @param rawArgs 生の引数
      * */
     protected abstract suspend fun execute(user: User, rawArgs: List<String>): R
-}
 
-sealed class ArgType<T : Any>(val converter: Koin.(kotlin.String) -> T?) {
+    //TODO サブコマンド
+    abstract inner class SubCommand<R>(val name: String, val description: String? = null) {
+        private val argParser: SuperArgsParser = SuperArgsParser()
+        fun <T : Any> option(
+            type: ArgType<T>, name: String, shortName: String? = null, description: String? = null
+        ): Opt<T> {
+            val o = Opt(type, name, shortName, description)
+            argParser.opts.add(o)
+            return o
+        }
 
-    //Primitive Types
-    object Int : ArgType<kotlin.Int>({ it.toIntOrNull() })
-    object String : ArgType<kotlin.String>({ it })
-    object Boolean : ArgType<kotlin.Boolean>({ it.toBooleanStrictOrNull() })
+        fun <T : Any> argument(
+            type: ArgType<T>, name: String, description: String? = null
+        ): Arg<T> {
+            val a = Arg(type, name, description)
+            argParser.args.add(a)
+            return a
+        }
 
-    //Special Types
-    object File : ArgType<core.vfs.File>({
-        get<FileSystem>().tryResolve(Path(it))
-    })
+        abstract suspend fun execute(user: User, rawArgs: List<String>): R
 
-    object Dir : ArgType<Directory>({
-        get<FileSystem>().tryResolve(Path(it))?.toDirectoryOrNull()
-    })
+        /**
+         * 引数を解析して[execute]を実行します
+         * @param args 解析前の引数
+         * @return 結果
+         * @throws CommandIllegalArgsException 型変換に失敗したとき
+         * @throws CommandParserException 引数の形式が定義と異なるとき
+         * */
+        @Throws(CommandIllegalArgsException::class, CommandParserException::class)
+        suspend fun resolve(user: User, args: List<String>, rawArgs: List<String>): CommandResult<Any?> {
 
-    object Executable : ArgType<ExecutableFile<*>>({ get<Expression>().tryResolve(it) })
+            return try {
+                try {
+                    argParser.parse(this@Executable, args, this)
+                } catch (e: CancellationException) {
 
-    class Define<T : Any>(converter: Koin.(kotlin.String) -> T?) : ArgType<T>(converter)
+                } catch (e: Exception) {
+                    if (help) {
+                        //return outputHelp()
+                    } else {
+                        throw e
+                    }
+                }
+                if (help) {
+                    // return outputHelp()
+                }
+
+                val r = execute(user, rawArgs)
+
+                CommandResult.Success(r)
+
+            } catch (e: CommandIllegalArgsException) {
+                println(e.localizedMessage)
+                out.println(e.localizedMessage)
+                CommandResult.Error()
+            } catch (e: CommandParserException) {
+                println(e.localizedMessage)
+                out.println(e.localizedMessage)
+                CommandResult.Error()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                e.printStackTrace(out)
+                CommandResult.Error()
+            }
+        }
+    }
 }
 
 

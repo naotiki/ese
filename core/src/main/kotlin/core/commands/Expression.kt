@@ -10,20 +10,7 @@ import core.vfs.*
 import kotlinx.coroutines.Job
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import kotlin.collections.List
-import kotlin.collections.drop
-import kotlin.collections.emptyList
-import kotlin.collections.filter
-import kotlin.collections.filterIsInstance
-import kotlin.collections.filterValues
-import kotlin.collections.first
-import kotlin.collections.firstOrNull
-import kotlin.collections.flatMap
-import kotlin.collections.mutableListOf
-import kotlin.collections.orEmpty
-import kotlin.collections.plus
 import kotlin.collections.set
-import kotlin.collections.toList
 
 class Expression : KoinComponent {
     private val fileSystem by inject<FileSystem>()
@@ -72,16 +59,17 @@ class Expression : KoinComponent {
 
         val (type, value) = exe?.argParser?.getNextArgTypeOrNull(args) ?: return emptyList()
         return (when (type) {
+            is ArgType.Choice->{
+                type.choices.map { it.toString() }
+            }
             is ArgType.Executable -> {
                 fileTree.executableEnvPaths.flatMap {
                     it.getChildren(um.user)?.keys ?: emptyList()
                 }
             }
-
             is ArgType.File -> {
                 fileSystem.currentDirectory.getChildren(um.user)?.keys
             }
-
             is ArgType.Dir -> {
                 fileSystem.currentDirectory.getChildren(um.user)
                     ?.filterValues { it is Directory }?.keys

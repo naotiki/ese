@@ -4,6 +4,7 @@ import core.Variable
 import core.commands.parser.ArgType
 import core.commands.parser.CommandIllegalArgsException
 import core.commands.parser.Executable
+import core.dataDir
 import core.user.User
 import core.utils.normalizeYesNoAnswer
 import core.vfs.*
@@ -15,34 +16,62 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.component.inject
+import java.net.URL
+import java.net.URLClassLoader
+import java.util.jar.JarFile
+
 
 //  UDON is a Downloader Of Noodles
-class Udon:Executable<Unit>("udon","UDON is a Downloader Of Noodles"){
+class Udon : Executable<Unit>("udon", "UDON is a Downloader Of Noodles") {
+    var agree=false
     //さぶこまんど
-    inner class Install : SubCommand<Unit>("world","インストールします。"){
-        val pkgName by argument(ArgType.String,"packageName","パッケージ名")
+    inner class Install : SubCommand<Unit>("world", "世界中からインストールします。") {
+
+        val pkgName by argument(ArgType.String, "packageName", "パッケージ名")
         override suspend fun execute(user: User, rawArgs: List<String>) {
             out.println("[DEMO]Installing $pkgName ")
             println(pkgName)
         }
     }
-    inner class LocalInstall : SubCommand<Unit>("local","インストールします。"){
-        val pkgName by argument(ArgType.String,"packageName","パッケージ名")
-        override suspend fun execute(user: User, rawArgs: List<String>) {
-            out.println("[DEMO]Installing $pkgName")
-            println(pkgName)
-        }
 
+    inner class LocalInstall : SubCommand<Unit>("local", "ローカルファイルからインストールします。") {
+        val pkgName by argument(ArgType.String, "packageName", "パッケージ名")
+        override suspend fun execute(user: User, rawArgs: List<String>) {
+            val pluginDir=java.io.File(dataDir,"plugins")
+            if(!pluginDir.exists()) {
+                out.println("pluginフォルダーが見つかりませんでした。\n${pluginDir.absolutePath}に作成してください。")
+            }
+            val jarFile=withContext(Dispatchers.IO) {
+                JarFile(java.io.File(""))
+            }
+            val targetClassName=jarFile.manifest.mainAttributes.getValue("Plugin-Class")
+            out.println("[DEMO]Installing $pkgName")
+
+            val child = URLClassLoader(
+                arrayOf<URL>(java.io.File("").toURI().toURL()),
+                this.javaClass.classLoader
+            )
+            child.loadClass("targetClassName")
+            child.getResource("")
+
+           out.println( )
+        }
     }
+
     override suspend fun execute(user: User, rawArgs: List<String>) {
-        out.println("SHIT")
+        out.println("""
+            Udon は EseLinuxのプラグインマネージャーです。
+            """.trimIndent())
+    }
+    companion object{
+        const val fileExtension="ndl"
     }
 }
 
-class Exec:Executable<Unit>("exec","RUN"){
+class Exec : Executable<Unit>("exec", "RUN") {
     override suspend fun execute(user: User, rawArgs: List<String>) {
         withContext(Dispatchers.IO) {
-            val process=ProcessBuilder("medley.exe").start()
+            val process = ProcessBuilder("medley.exe").start()
             launch {
                 withContext(Dispatchers.IO) {
                     process.inputStream.transferTo(io.outputStream)
@@ -316,8 +345,9 @@ class Chmod : Executable<Unit>("chmod", "権限を変更します。") {
 }
 
 class WriteToFile : Executable<Unit>(
-    "wf", """テキストファイルになにかを書き込みます。
-                                    -aまたは-o オプションで書き込み方法を指定する必要があります。""".trimIndent()
+    "wf", """
+        テキストファイルになにかを書き込みます。
+        -aまたは-o オプションで書き込み方法を指定する必要があります。""".trimIndent()
 ) {
     val fs by inject<FileSystem>()
     val value by argument(ArgType.String, "text", "書き込む内容")

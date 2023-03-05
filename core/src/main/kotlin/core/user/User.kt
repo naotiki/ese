@@ -60,7 +60,7 @@ class UserManager {
 /**
  * すごいのかすごくないのか
  * */
-fun isSugoi(user: User) = (user.id == rootUID).also { println(user.id.toString() + "==" + rootUID) }
+fun isSugoi(user: User) = (user.id == rootUID)
 
 
 class User internal constructor(

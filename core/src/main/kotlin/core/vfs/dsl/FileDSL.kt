@@ -6,14 +6,14 @@ import core.user.User
 import core.vfs.*
 
 
-data class DSLContext constructor(val dir: Directory, val operator: User)
+data class DSLContext  constructor(val dir: Directory, val operator: User)
 
 /**
  * FileTreeDSLを開始します
  * @param block DSLを使用し[root]にファイルを追加します
  */
 internal inline fun FileTree.rootDir(block: DSLContext.() -> Unit) {
-    DSLContext(this.root, this.userManager.uRoot).block()
+    fileDSL(this.root, this.userManager.uRoot,block)
 }
 
 inline fun <T> fileDSL(parent: Directory, operator: User, block: DSLContext.() -> T): T {
@@ -75,7 +75,6 @@ fun DSLContext.file(
     permission: Permission = Permission.fileDefault,
     hidden: Boolean = false,
 ) = TextFile(name, dir, content, owner, group, permission, hidden).also {
-    println("LOG2:${dir.name}")
     dir.addChildren(operator, it)
 }
 
