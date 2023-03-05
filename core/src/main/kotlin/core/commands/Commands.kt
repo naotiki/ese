@@ -5,6 +5,7 @@ import core.commands.parser.ArgType
 import core.commands.parser.CommandIllegalArgsException
 import core.commands.parser.Executable
 import core.dataDir
+import core.plugins.EsePlugin
 import core.user.User
 import core.utils.normalizeYesNoAnswer
 import core.vfs.*
@@ -23,7 +24,8 @@ import java.util.jar.JarFile
 
 //  UDON is a Downloader Of Noodles
 class Udon : Executable<Unit>("udon", "UDON is a Downloader Of Noodles") {
-    var agree=false
+    var agree = false
+
     //さぶこまんど
     inner class Install : SubCommand<Unit>("world", "世界中からインストールします。") {
 
@@ -37,34 +39,48 @@ class Udon : Executable<Unit>("udon", "UDON is a Downloader Of Noodles") {
     inner class LocalInstall : SubCommand<Unit>("local", "ローカルファイルからインストールします。") {
         val pkgName by argument(ArgType.String, "packageName", "パッケージ名")
         override suspend fun execute(user: User, rawArgs: List<String>) {
-            val pluginDir=java.io.File(dataDir,"plugins")
-            if(!pluginDir.exists()) {
+            val pluginDir = java.io.File(dataDir, "plugins")
+            if (!pluginDir.exists()) {
                 out.println("pluginフォルダーが見つかりませんでした。\n${pluginDir.absolutePath}に作成してください。")
             }
-            val jarFile=withContext(Dispatchers.IO) {
-                JarFile(java.io.File(""))
+            val file = pluginDir.listFiles { dir, name -> name.endsWith(".$fileExtension") }.orEmpty().singleOrNull {
+                it.nameWithoutExtension==pkgName
+            } ?: return
+            val jarFile = withContext(Dispatchers.IO) {
+                JarFile(file)
             }
-            val targetClassName=jarFile.manifest.mainAttributes.getValue("Plugin-Class")
-            out.println("[DEMO]Installing $pkgName")
+            val targetClassName = jarFile.manifest.mainAttributes.getValue("Plugin-Class")
+            var ans :Boolean?
+            do {
+                ans= normalizeYesNoAnswer(
+                    io.newPrompt(console, "プラグイン ${file.nameWithoutExtension} を本当にインストールしますか？(yes/no)")
+                )
+            }while (ans==null)
+            if (ans!=true){
+
+                return
+            }
 
             val child = URLClassLoader(
-                arrayOf<URL>(java.io.File("").toURI().toURL()),
-                this.javaClass.classLoader
+                arrayOf<URL>(file.toURI().toURL())
             )
-            child.loadClass("targetClassName")
-            child.getResource("")
+            val pluginClass=child.loadClass(targetClassName)
+            val plugin=pluginClass.getConstructor().newInstance() as EsePlugin
 
-           out.println( )
+            plugin.init(user)
         }
     }
 
     override suspend fun execute(user: User, rawArgs: List<String>) {
-        out.println("""
+        out.println(
+            """
             Udon は EseLinuxのプラグインマネージャーです。
-            """.trimIndent())
+            """.trimIndent()
+        )
     }
-    companion object{
-        const val fileExtension="ndl"
+
+    companion object {
+        const val fileExtension = "ndl"
     }
 }
 

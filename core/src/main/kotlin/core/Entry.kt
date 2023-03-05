@@ -25,7 +25,7 @@ import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.io.PrintStream
 
-val dataDir= File(System.getProperty("compose.application.resources.dir") ?: "./client-gui/resources/common/")
+val dataDir= File(System.getProperty("compose.application.resources.dir") ?: "client-gui/resources/common/")
 
 const val version = "0.0.0-dev"
 private val module = module {
@@ -144,10 +144,10 @@ class IO {
     /*private*/ val inputStream = PipedInputStream()
 
     val reader = inputStream.reader()
-    internal val outputStream = PrintStream(PipedOutputStream(inputStream), true)
+     val outputStream = PrintStream(PipedOutputStream(inputStream), true)
 
     private val consoleInput = PipedInputStream()
-    internal val consoleReader = consoleInput.bufferedReader()
+     val consoleReader = consoleInput.bufferedReader()
     val consoleWriter = PrintStream(PipedOutputStream(consoleInput), true)
     suspend fun newPrompt(consoleInterface: ConsoleInterface, promptText: String, value: String = ""): String =
         withContext(

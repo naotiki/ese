@@ -60,7 +60,7 @@ class TerminalViewModel(prompt: Prompt) : CustomKoinComponent() {
     }.flowOn(Dispatchers.IO)
     val commandHistory get() = expression.commandHistory
 
-    var textLogs by mutableStateOf(System.getProperty("user.dir")+"\n")
+    var textLogs by mutableStateOf(dataDir.absolutePath+"\n")
     val consoleImpl = object : ConsoleInterface {
 
         override fun prompt(promptText: String, value: String) {

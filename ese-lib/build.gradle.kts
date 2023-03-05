@@ -21,46 +21,52 @@ tasks.getByName<Test>("test") {
 }
 interface EseGradlePluginExtension {
     val pluginClass: Property<String>
+    val pluginName: Property<String>
 }
+
 class EseGradlePlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
         // Add the 'greeting' extension object
+
         val extension = project.extensions.create<EseGradlePluginExtension>("eseConfig")
-        //extension.pluginClass.convention("Hello from GreetingPlugin")
-        var jarFile:File?=null
-        project.tasks{
-            jar{
-                jarFile=archiveFile.get().asFile
+        var jarFile: File? = null
+        project.tasks {
+            jar {
+                jarFile = archiveFile.get().asFile
                 manifest {
                     attributes("Plugin-Class" to extension.pluginClass.get())
                 }
             }
         }
-            project.task("createEsePlugin") {
-                group="build"
-                description="Create Ese Plugin File (Noodle File)"
-                dependsOn("jar")
-                doFirst {
+        project.task("createEsePlugin") {
+            val outDir = project.file(project.buildDir).resolve("ese")
+            group = "build"
+            description = "Create Ese Plugin File (Noodle File)"
+            outputs.dir(outDir)
+            dependsOn("jar")
+
+            doLast {
+                outDir.mkdir()
+                project.copy {
+                    from(jarFile!!)
+
+                    into(outDir)
+                    rename { "${extension.pluginName.get()}.ndl" }
                 }
-                doLast {
-                    project.copy {
-                        from(jarFile!!)
-                        into(jarFile!!.parentFile)
-                        rename { it.replaceAfterLast(".","ndl") }
-                    }
-                    project.delete {
-                        delete(jarFile!!)
-                    }
-                    println(extension.pluginClass.get())
+                project.delete {
+                    delete(jarFile!!)
                 }
+                println(extension.pluginClass.get())
+            }
 
         }
 
     }
-    data class EsePluginConfig(val name:String,val description:String,val version:String)
-    companion object{
-        inline fun Project.esePlugin(block:()->Unit){
+
+    data class EsePluginConfig(val name: String, val description: String, val version: String)
+    companion object {
+        inline fun Project.esePlugin(block: () -> Unit) {
 
         }
 
@@ -71,4 +77,5 @@ apply<EseGradlePlugin>()
 
 configure<EseGradlePluginExtension> {
     pluginClass.set("Main")
+    pluginName.set("ExamplePlugin")
 }

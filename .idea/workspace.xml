@@ -29,55 +29,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ba255b9b-883e-42ad-80e9-2a07345fa356" name="変更" comment="Change Project Structure&#10;WIP:Plugin Loader">
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/settings.gradle.kts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/parser/ArgType.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/export/User.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/plugins/EsePlugin.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/src/test/kotlin/core/PluginTest.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ese-lib/build.gradle.kts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ese-lib/gradle/wrapper/gradle-wrapper.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ese-lib/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ese-lib/gradlew" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ese-lib/gradlew.bat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ese-lib/settings.gradle.kts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ese-lib/src/main/kotlin/Main.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/artifacts/client_gui_jvm_1_0_SNAPSHOT.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/kotlinc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/kotlinc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/other.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/remote-targets.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/uiDesigner.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client-gui/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/client-gui/build.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client-gui/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/client-gui/gradle.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client-gui/src/main/kotlin/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/client-gui/src/main/kotlin/Main.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/core/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/Entry.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/Entry.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/Commands.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/Commands.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/Expression.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/Expression.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/parser/Executable.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/parser/Executable.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/parser/SuperArgsParser.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/parser/SuperArgsParser.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/user/User.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/user/User.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/vfs/File.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/vfs/File.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/vfs/FileSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/vfs/FileSystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/vfs/FileTree.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/vfs/FileTree.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/vfs/dsl/FileDSL.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/vfs/dsl/FileDSL.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/test/kotlin/core/SaveTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/test/kotlin/core/SaveTest.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/test/kotlin/core/ShellScriptTest.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/Install.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradlew" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradlew.bat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/settings.gradle.kts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ese-lib/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/ese-lib/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ese-lib/src/main/kotlin/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/ese-lib/src/main/kotlin/Main.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -232,6 +190,16 @@
   <component name="GoLibraries">
     <option name="indexEntireGoPath" value="true" />
   </component>
+  <component name="GroovyConsoleState">
+    <option name="list">
+      <list>
+        <Entry>
+          <option name="moduleName" value="ese-lib.main" />
+          <option name="url" value="file://$APPLICATION_CONFIG_DIR$/consoles/groovy/groovy_console.groovy" />
+        </Entry>
+      </list>
+    </option>
+  </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-common/1.8.0/b9f7c0ec4df6575611063cf708a4567b216c26f2/kotlin-stdlib-common-1.8.0-sources.jar!/generated/_Collections.kt" root0="SKIP_INSPECTION" />
   </component>
@@ -254,38 +222,38 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary&quot;: &quot;JUnit5&quot;,
-    &quot;com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5&quot;: &quot;&quot;,
-    &quot;database.data.extractors.current.export.id&quot;: &quot;Comma-separated (CSV)_id&quot;,
-    &quot;database.data.extractors.current.id&quot;: &quot;Comma-separated (CSV)_id&quot;,
-    &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
-    &quot;jdk.selected.JAVA_MODULE&quot;: &quot;corretto-17&quot;,
-    &quot;last.edited.regexp&quot;: &quot;&quot;,
-    &quot;last_directory_selection&quot;: &quot;C:/projects/kotlin/LegendaryExecutable/core/src/test/kotlin&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/projects/kotlin/EseLinux/client-gui/resources/common/plugins&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;SDK&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.16513759&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.24473068&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pathVariables&quot;,
-    &quot;settings.editor.splitter.proportion&quot;: &quot;0.26681128&quot;,
-    &quot;typescript.add.unambiguous.imports.on.the.fly&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.go.formatter.settings.were.checked": "true",
+    "RunOnceActivity.go.migrated.go.modules.settings": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary": "JUnit5",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5": "",
+    "database.data.extractors.current.export.id": "Comma-separated (CSV)_id",
+    "database.data.extractors.current.id": "Comma-separated (CSV)_id",
+    "go.import.settings.migrated": "true",
+    "jdk.selected.JAVA_MODULE": "corretto-17",
+    "last.edited.regexp": "",
+    "last_directory_selection": "C:/projects/kotlin/LegendaryExecutable/core/src/test/kotlin",
+    "last_opened_file_path": "C:/projects/kotlin/EseLinux/client-gui/resources/common/plugins",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "プロジェクト",
+    "project.structure.proportion": "0.16513759",
+    "project.structure.side.proportion": "0.24473068",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "preferences.pathVariables",
+    "settings.editor.splitter.proportion": "0.26681128",
+    "typescript.add.unambiguous.imports.on.the.fly": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\projects\kotlin\EseLinux\client-gui\resources\common\plugins" />
@@ -310,7 +278,7 @@
       <recent name="core.commands.parser" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.PluginTest.getAttributeFromJarTest">
+  <component name="RunManager" selected="Gradle.ese-lib [createEsePlugin]">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="LegendaryExecutable" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -465,29 +433,6 @@
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
       <framework value="gotest" />
-      <method v="2" />
-    </configuration>
-    <configuration name="PluginTest.getAttributeFromJarTest (1)" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/client-gui" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value=":core:test" />
-            <option value="--tests" />
-            <option value="&quot;core.PluginTest.getAttributeFromJarTest&quot;" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <DebugAllEnabled>false</DebugAllEnabled>
       <method v="2" />
     </configuration>
     <configuration name="PluginTest.getAttributeFromJarTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
@@ -686,6 +631,27 @@
       <DebugAllEnabled>false</DebugAllEnabled>
       <method v="2" />
     </configuration>
+    <configuration name="ese-lib [clean]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/ese-lib" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="clean" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <method v="2" />
+    </configuration>
     <configuration name="ese-lib [createEsePlugin]" type="GradleRunConfiguration" factoryName="Gradle">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -707,11 +673,9 @@
       <DebugAllEnabled>false</DebugAllEnabled>
       <method v="2" />
     </configuration>
-    <configuration name="名前未設定" type="JetRunConfigurationType" nameIsGenerated="true">
+    <configuration name="MainKt" type="JetRunConfigurationType" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="MainKt" />
-      <module name="client-gui.main" />
-      <shortenClasspath name="NONE" />
-      <option name="VM_PARAMETERS" value="-Dfile.encoding=UTF-8" />
+      <module name="me.naotiki.client-gui.main" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -737,19 +701,19 @@
       <item itemvalue="Gradle.client-gui [packageReleaseUberJarForCurrentOS]" />
       <item itemvalue="Gradle.ese-lib [createEsePlugin]" />
       <item itemvalue="Gradle.client-gui [superReleaseBuild]" />
+      <item itemvalue="Gradle.ese-lib [clean]" />
       <item itemvalue="Gradle.SaveTest.a" />
       <item itemvalue="Gradle.ese-lib [build]" />
       <item itemvalue="Gradle.PluginTest.getAttributeFromJarTest" />
-      <item itemvalue="Gradle.PluginTest.getAttributeFromJarTest (1)" />
-      <item itemvalue="Kotlin.名前未設定" />
+      <item itemvalue="Kotlin.MainKt" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.ese-lib [clean]" />
         <item itemvalue="Gradle.PluginTest.getAttributeFromJarTest" />
         <item itemvalue="Gradle.client-gui [superReleaseBuild]" />
         <item itemvalue="Gradle.ese-lib [build]" />
         <item itemvalue="Gradle.SaveTest.a" />
-        <item itemvalue="Gradle.PluginTest.getAttributeFromJarTest (1)" />
       </list>
     </recent_temporary>
   </component>
@@ -890,14 +854,7 @@
       <workItem from="1677844529669" duration="6003000" />
       <workItem from="1677896660485" duration="11360000" />
       <workItem from="1677981186937" duration="6014000" />
-      <workItem from="1677993059880" duration="4379000" />
-    </task>
-    <task id="LOCAL-00006" summary="お願い、死なないでIntelliJ！あんたが今ここで倒れたら、KotlinやGradleのインデックスはどうなっちゃうの？ ライフはまだ残ってる。ここを耐えれば、エラーに勝てるんだから！&#10;&#10;次回、「IntelliJ死す」。デュエルスタンバイ！&#10;Change:Sub Project Configuration">
-      <created>1673872970468</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1673872970468</updated>
+      <workItem from="1677993059880" duration="9733000" />
     </task>
     <task id="LOCAL-00007" summary="くそでか">
       <created>1673924706222</created>
@@ -1235,7 +1192,14 @@
       <option name="project" value="LOCAL" />
       <updated>1677217324657</updated>
     </task>
-    <option name="localTasksCounter" value="55" />
+    <task id="LOCAL-00055" summary="Change Project Structure&#10;WIP:Plugin Loader">
+      <created>1677999245106</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1677999245106</updated>
+    </task>
+    <option name="localTasksCounter" value="56" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
