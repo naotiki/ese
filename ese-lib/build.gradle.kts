@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.utils.alwaysTrue
+
 plugins {
     kotlin("jvm") version "1.8.0"
     id("org.jetbrains.dokka") version "1.7.20"
@@ -18,6 +20,7 @@ dependencies {
 
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
+    jvmArgs("-Djava.security.policy")
 }
 interface EseGradlePluginExtension {
     val pluginClass: Property<String>
@@ -43,11 +46,17 @@ class EseGradlePlugin : Plugin<Project> {
             val outDir = project.file(project.buildDir).resolve("ese")
             group = "build"
             description = "Create Ese Plugin File (Noodle File)"
-            outputs.dir(outDir)
-            dependsOn("jar")
 
+            outputs.dir(outDir)
+            dependsOn("assemble")
+           /* doFirst {
+                project.delete{
+                    delete(outDir)
+                }
+            }*/
+            onlyIf(alwaysTrue<Task>())
             doLast {
-                outDir.mkdir()
+               // outDir.mkdir()
                 project.copy {
                     from(jarFile!!)
 

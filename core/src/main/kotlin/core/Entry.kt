@@ -25,6 +25,7 @@ import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.io.PrintStream
 
+//Pluginsフォルダなど
 val dataDir= File(System.getProperty("compose.application.resources.dir") ?: "client-gui/resources/common/")
 
 const val version = "0.0.0-dev"
@@ -33,6 +34,18 @@ private val module = module {
     single { Expression() }
 }
 
+object Program{
+    var debug:Boolean=false
+}
+fun programArg(args:List<String>){
+    args.forEach {
+        when(it){
+            "-D"->{
+                Program.debug=true
+            }
+        }
+    }
+}
 fun prepareKoinInjection(): KoinApplication {
     module.apply {
         single { UserManager() }

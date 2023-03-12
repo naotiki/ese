@@ -1,5 +1,7 @@
 package core.utils
 
+import org.jetbrains.annotations.Contract
+
 fun String.splitArgs()= replace(" {2,}".toRegex()," ").split(' ')
 
 fun <E : Enum<E>> Enum<E>.getFlag(): Int = 1 shl ordinal
@@ -14,6 +16,9 @@ fun normalizeYesNoAnswer(input:String): Boolean? {
     }
 }
 
-fun <T:Any?> T.log()= also {
-    println(it)
+fun <T:Any?> T.log(prefix:String?=null)= also {
+    if (prefix!=null){
+        print(prefix)
+    }
+    println("[TLog] $it")
 }

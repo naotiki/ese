@@ -30,6 +30,7 @@ import component.assistant.EasyFileView
 import core.*
 import core.commands.Expression
 import core.user.UserManager
+import core.utils.log
 import core.utils.splitArgs
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -307,7 +308,8 @@ class ApplicationViewModel : CustomKoinComponent() {
 fun rememberAppViewModel() = remember { ApplicationViewModel() }
 
 @OptIn(ExperimentalComposeUiApi::class)
-fun main() {
+fun main(vararg args:String) {
+    programArg(args.toList())
     //DIよーい！！！！！！
     MyKoinContext.koinApp = prepareKoinInjection()
 
@@ -315,7 +317,7 @@ fun main() {
     application {
         val appViewModel = rememberAppViewModel()
 
-        Window(onCloseRequest = ::exitApplication, title = "EseLinux", onPreviewKeyEvent = {
+        Window(onCloseRequest = ::exitApplication, title = "EseLinux",onPreviewKeyEvent = {
             return@Window if (it.key == Key.C && it.isCtrlPressed) {
                 appViewModel.cancelCommand()
                 true

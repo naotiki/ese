@@ -4,7 +4,6 @@
 package core.commands.parser
 
 import org.koin.core.Koin
-import org.koin.java.KoinJavaComponent.getKoin
 import kotlin.reflect.KProperty
 
 
@@ -63,6 +62,6 @@ class Arg<T : Any>(
     }
 }
 
-
+@Deprecated("dame~",level=DeprecationLevel.WARNING)
 class CommandIllegalArgsException(message: String?,val type:ArgType<*>) : Exception(message)
 

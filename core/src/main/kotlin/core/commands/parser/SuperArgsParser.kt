@@ -4,6 +4,7 @@ import core.commands.dev.CommandDefineException
 import core.utils.log
 import core.utils.nextOrNull
 
+@Deprecated("No",level=DeprecationLevel.WARNING)
 class CommandParserException(command: Executable<*>?, s: String) : Exception("${command?.name}コマンド解析エラー:$s")
 
 class SuperArgsParser {

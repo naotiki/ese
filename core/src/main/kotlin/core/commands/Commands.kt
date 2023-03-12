@@ -1,8 +1,8 @@
 package core.commands
 
+import core.EseError
 import core.Variable
 import core.commands.parser.ArgType
-import core.commands.parser.CommandIllegalArgsException
 import core.commands.parser.Executable
 import core.dataDir
 import core.plugins.EsePlugin
@@ -353,7 +353,7 @@ class Chmod : Executable<Unit>("chmod", "権限を変更します。") {
     override suspend fun execute(user: User, rawArgs: List<String>) {
         val p = value.toIntOrNull(8)
         if (p == null || p > 511) {
-            throw CommandIllegalArgsException("不正な権限値", ArgType.String)
+            throw EseError.CommandIllegalArgumentError("不正な権限値")
         }
 
         file.permission.set(um.user, Permission(p))

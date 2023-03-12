@@ -1,6 +1,7 @@
 package core.commands.parser
 
 import core.ConsoleInterface
+import core.EseError
 import core.IO
 import core.commands.Expression
 import core.commands.dev.CommandDefineException
@@ -39,6 +40,7 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
     }.map {
         it.primaryConstructor?.call(this)
     }.filterIsInstance<SubCommand<*>>()
+
     /**
      * @param type 引数の型
      * @param name 指定するときの名前 呼び出すときにプレフィックス"--"を付加する必要があります
@@ -52,6 +54,7 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
         argParser.opts.add(o)
         return o
     }
+
 
     /**
      * @param type 引数の型
@@ -78,7 +81,7 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
      * 解析情報出力用
      * */
     internal fun verbose(args: List<String>) {
-        try {
+        kotlin.runCatching {
             println(args)
             /*if (isHelp(args)) {
                 out.println("helpオプションと併用できません")
@@ -94,17 +97,9 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
             argParser.opts.forEach {
                 out.println("${it.name}/${it.type.javaClass.simpleName}:${it.multiple?.value ?: it.value}")
             }
-        } catch (e: CommandIllegalArgsException) {
-            println(e.localizedMessage)
-            out.println(e.localizedMessage)
-        } catch (e: CommandParserException) {
-            println(e.localizedMessage)
-            out.println(e.localizedMessage)
-        } catch (e: Exception) {
-            println(e.localizedMessage)
-            out.println(e.localizedMessage)
-        } finally {
-
+        }.onFailure {
+            println(it.localizedMessage)
+            out.println(it.localizedMessage)
         }
     }
 
@@ -147,43 +142,38 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
      * @throws CommandParserException 引数の形式が定義と異なるとき
      * */
     @Throws(CommandIllegalArgsException::class, CommandParserException::class)
-    suspend fun resolve(user: User, args: List<String>): CommandResult<out Any?> {
-
-        return try {
-            //if (isHelp(args)) return outputHelp()
-            try {
-                val subcommand = argParser.parse(this, args)
-                if (subcommand != null) return subcommand.first.resolve(user, subcommand.second, args)
-            } catch (e: CancellationException) {
-
-            } catch (e: Exception) {
-                if (help) {
-                    return outputHelp()
-                } else {
-                    throw e
-                }
-            }
-            if (help) {
-                return outputHelp()
-            }
-
-            val r = execute(user, args)
-            CommandResult.Success(r)
-
-        } catch (e: CommandIllegalArgsException) {
-            println(e.localizedMessage)
-            out.println(e.localizedMessage)
-            CommandResult.Error()
-        } catch (e: CommandParserException) {
-            println(e.localizedMessage)
-            out.println(e.localizedMessage)
-            CommandResult.Error()
+    suspend fun resolve(user: User, args: List<String>): CommandResult<out Any?> = kotlin.runCatching {
+        //if (isHelp(args)) return outputHelp()
+        try {
+            val subcommand = argParser.parse(this, args)
+            if (subcommand != null)
+                return subcommand.first.resolve(user, subcommand.second, args)
+        } catch (_: CancellationException) {
+            //Ctrl+Cを検知してしまうので握りつぶす
         } catch (e: Exception) {
-            e.printStackTrace()
-            e.printStackTrace(out)
+            if (help) return outputHelp()
+            throw e
+        }
+        if (help) {
+            return outputHelp()
+        }
+        return@runCatching execute(user, args)
+    }.fold(
+        onSuccess = {
+            CommandResult.Success(it)
+        },
+        onFailure = {
+            if (it is EseError) {
+                println(it.localizedMessage)
+                out.println(it.localizedMessage)
+            } else {
+                it.printStackTrace()
+                it.printStackTrace(out)
+
+            }
             CommandResult.Error()
         }
-    }
+    )
 
     /**
      * 実際に実行される関数
@@ -220,9 +210,8 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
          * @throws CommandParserException 引数の形式が定義と異なるとき
          * */
         @Throws(CommandIllegalArgsException::class, CommandParserException::class)
-        suspend fun resolve(user: User, args: List<String>, rawArgs: List<String>): CommandResult<Any?> {
-
-            return try {
+        suspend fun resolve(user: User, args: List<String>, rawArgs: List<String>): CommandResult<out Any?> =
+            kotlin.runCatching {
                 try {
                     argParser.parse(this@Executable, args, this)
                 } catch (e: CancellationException) {
@@ -238,24 +227,23 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
                     // return outputHelp()
                 }
 
-                val r = execute(user, rawArgs)
+                execute(user, rawArgs)
+            }.fold(
+                onSuccess = {
+                    CommandResult.Success(it)
+                },
+                onFailure = {
+                    if (it is EseError) {
+                        println(it.localizedMessage)
+                        out.println(it.localizedMessage)
+                    } else {
+                        it.printStackTrace()
+                        it.printStackTrace(out)
 
-                CommandResult.Success(r)
-
-            } catch (e: CommandIllegalArgsException) {
-                println(e.localizedMessage)
-                out.println(e.localizedMessage)
-                CommandResult.Error()
-            } catch (e: CommandParserException) {
-                println(e.localizedMessage)
-                out.println(e.localizedMessage)
-                CommandResult.Error()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                e.printStackTrace(out)
-                CommandResult.Error()
-            }
-        }
+                    }
+                    CommandResult.Error()
+                }
+            )
     }
 }
 

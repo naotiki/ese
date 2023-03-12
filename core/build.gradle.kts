@@ -25,4 +25,6 @@ dependencies {
 
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
+
+    jvmArgs("-Djava.security.policy")
 }

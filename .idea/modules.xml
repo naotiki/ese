@@ -3,6 +3,12 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/EseLinux.iml" filepath="$PROJECT_DIR$/.idea/EseLinux.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ese-lib.iml" filepath="$PROJECT_DIR$/.idea/modules/ese-lib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/1942174772/ese-lib.core.iml" filepath="$PROJECT_DIR$/.idea/modules/1942174772/ese-lib.core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/1942174772/ese-lib.core.main.iml" filepath="$PROJECT_DIR$/.idea/modules/1942174772/ese-lib.core.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/1942174772/ese-lib.core.test.iml" filepath="$PROJECT_DIR$/.idea/modules/1942174772/ese-lib.core.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ese-lib.main.iml" filepath="$PROJECT_DIR$/.idea/modules/ese-lib.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ese-lib.test.iml" filepath="$PROJECT_DIR$/.idea/modules/ese-lib.test.iml" />
     </modules>
   </component>
 </project>

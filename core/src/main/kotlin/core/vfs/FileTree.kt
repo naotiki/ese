@@ -9,22 +9,18 @@ import core.vfs.dsl.dir
 import core.vfs.dsl.executable
 import core.vfs.dsl.file
 import core.vfs.dsl.rootDir
-
 class FileTree(val userManager: UserManager)  {
     val userDir: Directory? get() = userManager.user.dir
     val root = Directory("", null, userManager.uRoot, userManager.rootGroup, Permission(0b111_111_111), false)
     lateinit var home: Directory
     val executableEnvPaths = mutableListOf<Directory>()
-
     init {
         val initialCommands = listOf<Executable<*>>(
             ListSegments(), ChangeDirectory(), Cat(), Exit(), SugoiUserDo(),
-            Yes(), Clear(), Echo(), Remove(), Test(),
-            Help(),MakeDirectory(),Touch(),Chmod(),WriteToFile(),Exec(),Udon()
+            Yes(), Clear(), Echo(), Remove(), Test(), Help(),MakeDirectory(),
+            Touch(),Chmod(),WriteToFile(),Exec(),Udon()
         )
         rootDir {
-
-            //動的ディレクトリ
             executableEnvPaths+= dir("bin") {
                 initialCommands.forEach {
                     executable(it)
@@ -33,7 +29,7 @@ class FileTree(val userManager: UserManager)  {
             home = dir("home") {
                 userManager.uNaotiki.dir = dir("naotiki", userManager.uNaotiki) {
                     file(
-                        "ひみつのファイル", """
+                        "ひみつのファイル", """ 
                         みるなよ
                     """.trimIndent()
                     )

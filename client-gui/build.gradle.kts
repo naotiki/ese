@@ -22,7 +22,7 @@ repositories {
 dependencies {
     implementation(project(":core"))
     implementation(compose.desktop.currentOs)
-    implementation(compose.desktop.windows_x64)
+    //implementation(compose.desktop.windows_x64)
     implementation(compose.desktop.components.splitPane)
     implementation(compose.preview)
     implementation(compose.uiTooling)
@@ -40,7 +40,9 @@ compose.desktop {
             targetFormats(TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
             packageName = "EseLinux"
             description = "Ese Linux"
-            appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
+            appResourcesRootDir.set(project.layout.projectDirectory.dir("resources").apply {
+                println(this.asFile.absolutePath)
+            })
             linux {
                 debPackageVersion = appVersion.trimStart('v')
                 rpmPackageVersion = appVersion.replace("-", "_")

@@ -5,17 +5,39 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bc8ba1b3-c0db-49df-bc62-1eb62b739367" name="変更" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/EseLinux.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/artifacts/client_gui_main_jar.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/1942174772/ese-lib.core.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/1942174772/ese-lib.core.main.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/1942174772/ese-lib.core.test.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/ese-lib.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/ese-lib.main.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/ese-lib.test.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/EseError.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/utils/SugoiString.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ese-lib/docs/FileAPI.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ese-lib/docs/HowToMakeEsePlugin.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/discord.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/discord.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/kotlinc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/kotlinc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client-gui/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/client-gui/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client-gui/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/client-gui/gradle.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client-gui/gradlew" beforeDir="false" afterPath="$PROJECT_DIR$/client-gui/gradlew" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client-gui/src/main/kotlin/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/client-gui/src/main/kotlin/Main.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/core/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/Entry.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/Entry.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/Commands.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/Commands.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/parser/Arg.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/parser/Arg.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/parser/Executable.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/parser/Executable.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/parser/SuperArgsParser.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/parser/SuperArgsParser.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/utils/Utils.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/utils/Utils.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/vfs/File.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/vfs/File.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/vfs/FileTree.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/vfs/FileTree.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/vfs/Permission.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/vfs/Permission.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/test/kotlin/core/PluginTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/test/kotlin/core/PluginTest.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ese-lib/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/ese-lib/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ese-lib/src/main/kotlin/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/ese-lib/src/main/kotlin/Main.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,6 +58,15 @@
   <component name="ExternalProjectsManager">
     <system id="GRADLE">
       <state>
+        <task path="$PROJECT_DIR$/client-gui">
+          <activation />
+        </task>
+        <task path="$PROJECT_DIR$/ese-lib">
+          <activation />
+        </task>
+        <task path="$PROJECT_DIR$">
+          <activation />
+        </task>
         <projects_view>
           <tree_state>
             <expand>
@@ -47,6 +78,38 @@
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="ese-lib" type="f1a62948:ProjectNode" />
               </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="ese-lib" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="ese-lib" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="build" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="EseLinux" type="f1a62948:ProjectNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="EseLinux" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="EseLinux" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="build setup" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="EseLinux" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="help" type="c8890929:TasksNode$1" />
+              </path>
             </expand>
             <select />
           </tree_state>
@@ -54,7 +117,19 @@
       </state>
     </system>
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Kotlin Class" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="2Mav0k2SCD6fUFKfSzXKuaBsVSH" />
@@ -71,17 +146,27 @@
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "WebServerToolWindowFactoryState": "false",
     "go.import.settings.migrated": "true",
-    "last.edited.regexp": "サンプルテキスト",
-    "last_opened_file_path": "C:/projects/kotlin/EseLinux",
-    "project.structure.last.edited": "アーティファクト",
+    "last.edited.regexp": "",
+    "last_opened_file_path": "/home/naotiki/IdeaProjects/EseLinux/ese-lib/settings.gradle.kts",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "SDK",
     "project.structure.proportion": "0.16513759",
-    "project.structure.side.proportion": "0.24473068",
-    "settings.editor.selected.configurable": "settings.sync",
+    "project.structure.side.proportion": "0.17049807",
+    "settings.editor.selected.configurable": "cn.yiiguxing.plugin.translate",
     "settings.editor.splitter.proportion": "0.26681128",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RunManager">
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/client-gui/resources/common" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Gradle.PluginTest">
     <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
       <module name="EseLinux" />
       <working_directory value="$PROJECT_DIR$" />
@@ -101,6 +186,121 @@
       <framework value="gotest" />
       <method v="2" />
     </configuration>
+    <configuration name="PermissionTest.parsersssss" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/client-gui" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":core:test" />
+            <option value="--tests" />
+            <option value="&quot;core.PermissionTest.parsersssss&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="PermissionTest.splitTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/client-gui" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":core:test" />
+            <option value="--tests" />
+            <option value="&quot;core.PermissionTest.splitTest&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="PluginTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/client-gui" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":core:test" />
+            <option value="--tests" />
+            <option value="&quot;core.PluginTest&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" value="-Djava.security.policy" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="ese-lib [createEsePlugin]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/ese-lib" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="createEsePlugin" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="FileKt" type="JetRunConfigurationType" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="core.vfs.FileKt" />
+      <module name="client-gui.core.main" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="MainKt" type="JetRunConfigurationType" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="MainKt" />
+      <module name="client-gui.main" />
+      <option name="PROGRAM_PARAMETERS" value="sss" />
+      <shortenClasspath name="NONE" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Gradle.PluginTest" />
+        <item itemvalue="Gradle.ese-lib [createEsePlugin]" />
+        <item itemvalue="Gradle.PermissionTest.splitTest" />
+        <item itemvalue="Gradle.PermissionTest.parsersssss" />
+        <item itemvalue="Kotlin.FileKt" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="アプリケーションレベル" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -114,13 +314,60 @@
       <workItem from="1678018438445" duration="107000" />
       <workItem from="1678018559818" duration="10000" />
       <workItem from="1678018590125" duration="239000" />
+      <workItem from="1678029257759" duration="647000" />
+      <workItem from="1678030268983" duration="17000" />
+      <workItem from="1678030294483" duration="1846000" />
+      <workItem from="1678067748223" duration="2775000" />
+      <workItem from="1678109237109" duration="2232000" />
+      <workItem from="1678111478969" duration="73000" />
+      <workItem from="1678111573670" duration="53000" />
+      <workItem from="1678111666536" duration="4195000" />
+      <workItem from="1678165586859" duration="3948000" />
+      <workItem from="1678181513519" duration="4910000" />
+      <workItem from="1678194745555" duration="2729000" />
+      <workItem from="1678242538944" duration="7500000" />
+      <workItem from="1678286219336" duration="2219000" />
+      <workItem from="1678289113901" duration="1904000" />
+      <workItem from="1678337182274" duration="82000" />
+      <workItem from="1678337527698" duration="727000" />
+      <workItem from="1678355634398" duration="2746000" />
+      <workItem from="1678370593873" duration="4199000" />
+      <workItem from="1678414410095" duration="9077000" />
+      <workItem from="1678512557047" duration="599000" />
+      <workItem from="1678596602819" duration="777000" />
+      <workItem from="1678600575429" duration="5432000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+  <component name="regexState">
+    <option name="map">
+      <map>
+        <entry key="flags" value="0" />
+        <entry key="mode" value="1" />
+        <entry key="regex" value="[ugoa]*([-+=]([rwxXst]*||[ugo]))+||[-+=][0-7]+" />
+        <entry key="text" value="ugoa+r" />
+      </map>
+    </option>
   </component>
 </project>

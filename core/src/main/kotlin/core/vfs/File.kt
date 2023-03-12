@@ -19,9 +19,7 @@ class FileValue<T>(private val file: File, private var internalValue: T) {
         return false
     }
 
-    fun get(): T {
-        return internalValue
-    }
+    fun get(): T = internalValue
 }
 
 class SealedFileValue<T>(private val file: File, private var internalValue: T) {
@@ -121,6 +119,7 @@ class ExecutableFile<R>(
     fun generateHelpText() = executable.generateHelpText()
     fun verbose(args: List<String>) = executable.verbose(args)
     suspend fun execute(user: User, args: List<String>): CommandResult<out Any?> {
+
         return if (checkPermission(user, Permission.Companion.Operation.Execute)) {
             executable.resolve(user, args)
         } else {
@@ -158,11 +157,8 @@ open class Directory(
     fun removeChild(user: User, childDir: File): Boolean {
         println("削除：${childDir.name}")
         return if (checkPermission(user, Operation.Write)) {
-            println("権限許可：${childDir.name}")
-            (children.get(user)?.remove(childDir.name) != null).also {
-                if (it) println("成功")
-            }
-        } else false.apply { println("権限不足❗ありえない話し❗") }
+            children.get(user)?.remove(childDir.name) != null
+        } else false
     }
 
     override fun export(): ExportableFile {
