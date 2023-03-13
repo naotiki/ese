@@ -1,18 +1,20 @@
 package core
 
+import core.api.EsePlugin
 import core.commands.Udon.Companion.fileExtension
-import core.plugins.EsePlugin
 import core.user.UserManager
 import core.utils.log
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.koin.test.KoinTest
 import org.koin.test.get
+import secure.EseClassLoader
 import java.io.File
-import java.io.FilePermission
 import java.net.URL
 import java.net.URLClassLoader
-import java.security.*
+import java.security.CodeSource
+import java.security.Permission
+import java.security.PermissionCollection
 import java.util.*
 import java.util.jar.JarFile
 
@@ -25,6 +27,15 @@ class PluginTest : KoinTest {
         prepareKoinInjection()
     }
 
+    @Test
+    fun a(){
+        ServiceLoader.load(EsePlugin::class.java)
+        val um = get<UserManager>()
+        val file = dir.listFiles { dir, name -> name.endsWith(".$fileExtension") }.orEmpty().first()
+        EsePlugin::class.java.getMethod("")
+        val plugin = EseClassLoader(file).loadClass("Main").getConstructor().newInstance() as EsePlugin
+        plugin.init(um.uRoot)
+    }
     @Test
     fun getAttributeFromJarTest() {
         val um = get<UserManager>()

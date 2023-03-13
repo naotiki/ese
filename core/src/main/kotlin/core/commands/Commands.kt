@@ -2,10 +2,10 @@ package core.commands
 
 import core.EseError
 import core.Variable
+import core.api.EsePlugin
 import core.commands.parser.ArgType
 import core.commands.parser.Executable
 import core.dataDir
-import core.plugins.EsePlugin
 import core.user.User
 import core.utils.normalizeYesNoAnswer
 import core.vfs.*
