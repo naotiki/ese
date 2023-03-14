@@ -14,6 +14,20 @@ import kotlin.coroutines.cancellation.CancellationException
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.primaryConstructor
 
+abstract class CommandDefine<R>(val name: String,val description: String?=null):KoinComponent{
+    val args= mutableListOf<Arg<*>>()
+    val opts= mutableListOf<Opt<*>>()
+
+    val subCommands: List<SubCommandDefine<*>> = this::class.nestedClasses.filter {
+        it.isInner && it.isSubclassOf(SubCommandDefine::class)
+    }.map {
+        it.primaryConstructor?.call(this)
+    }.filterIsInstance<SubCommandDefine<*>>()
+    abstract inner class SubCommandDefine<R>(name: String,description: String?){
+        val args= mutableListOf<Arg<*>>()
+        val opts= mutableListOf<Opt<*>>()
+    }
+}
 
 /**
  * すべてのコマンドの基底クラス
@@ -27,14 +41,12 @@ import kotlin.reflect.full.primaryConstructor
  * @param R [execute]戻り値の型、基本は[Unit]
  * */
 abstract class Executable<R>(val name: String, val description: String? = null) : KoinComponent {
-
-
     val um by inject<UserManager>()
     val io by inject<IO>()
     internal val argParser: SuperArgsParser = SuperArgsParser()
     val help by option(ArgType.Boolean, "help", "h", "ヘルプを表示します。").default(false)
-    //fun isHelp(args: List<String>)=args.contains("-h")||args.contains("--help")
 
+    //サブコマンド
     val subCommands: List<SubCommand<*>> = this::class.nestedClasses.filter {
         it.isInner && it.isSubclassOf(SubCommand::class)
     }.map {
@@ -83,10 +95,6 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
     internal fun verbose(args: List<String>) {
         kotlin.runCatching {
             println(args)
-            /*if (isHelp(args)) {
-                out.println("helpオプションと併用できません")
-                return
-            }*/
             argParser.parse(this, args)
 
             out.println("引数")
@@ -214,7 +222,7 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
             kotlin.runCatching {
                 try {
                     argParser.parse(this@Executable, args, this)
-                } catch (e: CancellationException) {
+                } catch (_: CancellationException) {
 
                 } catch (e: Exception) {
                     if (help) {

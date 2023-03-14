@@ -1,0 +1,65 @@
+{
+  "FileAccess": [
+    {
+      "type": "secure.InspectValue.OwnerPackage",
+      "pacName": "java/nio/file"
+    },
+    {
+      "type": "secure.InspectValue.Owner",
+      "internalName": "java/io/File"
+    },
+    {
+      "type": "secure.InspectValue.Owner",
+      "internalName": "java/nio/file/Files"
+    },
+    {
+      "type": "secure.InspectValue.Owner",
+      "internalName": "java/nio/file/FileVisitor"
+    },
+    {
+      "type": "secure.InspectValue.Owner",
+      "internalName": "java/nio/file/FileSystem"
+    }
+  ],
+  "Reflection": [
+    {
+      "type": "secure.InspectValue.OwnerPackage",
+      "pacName": "kotlin/reflect"
+    },
+    {
+      "type": "secure.InspectValue.OwnerPackage",
+      "pacName": "java/lang/reflect"
+    }
+  ],
+  "ClassLoad": [
+    {
+      "type": "secure.InspectValue.SuperClass",
+      "internalName": "java/lang/ClassLoader"
+    },
+    {
+      "type": "secure.InspectValue.Owner",
+      "internalName": "java/lang/ClassLoader"
+    }
+  ],
+  "ExternalExecute": [
+    {
+      "type": "secure.InspectValue.Owner",
+      "internalName": "java/lang/ProcessBuilder"
+    },
+    {
+      "type": "secure.InspectValue.FuncCall",
+      "owner": {
+        "internalName": "java/lang/Runtime"
+      },
+      "funcName": "exec",
+      "descriptor": null
+    }
+  ],
+  "NativeCall": [
+    {
+      "type": "secure.InspectValue.AccessFlag",
+      "flag": 256
+    }
+  ]
+}
+

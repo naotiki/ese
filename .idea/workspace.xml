@@ -4,15 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bc8ba1b3-c0db-49df-bc62-1eb62b739367" name="変更" comment="">
+    <list default="true" id="bc8ba1b3-c0db-49df-bc62-1eb62b739367" name="変更" comment="Add:EseClassLoader">
       <change afterPath="$PROJECT_DIR$/core/src/main/resources/inspection.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/core/build.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/Commands.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/Commands.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/Expression.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/Expression.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client-gui/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/client-gui/gradle.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/parser/Executable.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/parser/Executable.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/plugins/EsePlugin.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/api/EsePlugin.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/user/User.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/user/User.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/test/kotlin/core/PluginTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/test/kotlin/core/PluginTest.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/secure/EseClassLoader.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/secure/EseClassLoader.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/secure/EsePermission.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/secure/EsePermission.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/secure/SecureClassChecker.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/secure/SecureClassChecker.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ese-lib/src/main/kotlin/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/ese-lib/src/main/kotlin/Main.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -122,7 +120,7 @@
       <recent name="core.api" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.PluginTest.a">
+  <component name="RunManager" selected="Kotlin.EsePermissionKt">
     <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
       <module name="EseLinux" />
       <working_directory value="$PROJECT_DIR$" />
@@ -255,6 +253,13 @@
       <DebugAllEnabled>false</DebugAllEnabled>
       <method v="2" />
     </configuration>
+    <configuration name="EsePermissionKt" type="JetRunConfigurationType" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="secure.EsePermissionKt" />
+      <module name="client-gui.core.main" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="FileKt" type="JetRunConfigurationType" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="core.vfs.FileKt" />
       <module name="client-gui.core.main" />
@@ -278,10 +283,12 @@
       <item itemvalue="Gradle.PermissionTest.parsersssss" />
       <item itemvalue="Gradle.PermissionTest.splitTest" />
       <item itemvalue="Kotlin.MainKt" />
+      <item itemvalue="Kotlin.EsePermissionKt" />
       <item itemvalue="Kotlin.FileKt" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Kotlin.EsePermissionKt" />
         <item itemvalue="Gradle.PluginTest.a" />
         <item itemvalue="Gradle.PermissionTest.splitTest" />
         <item itemvalue="Gradle.PermissionTest.parsersssss" />
@@ -323,7 +330,16 @@
       <workItem from="1678512557047" duration="599000" />
       <workItem from="1678596602819" duration="777000" />
       <workItem from="1678600575429" duration="5432000" />
+      <workItem from="1678682861198" duration="22730000" />
     </task>
+    <task id="LOCAL-00001" summary="Add:EseClassLoader">
+      <created>1678686197039</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1678686197039</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -340,6 +356,10 @@
       </map>
     </option>
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Add:EseClassLoader" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add:EseClassLoader" />
+  </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
   </component>
@@ -352,8 +372,8 @@
       <map>
         <entry key="flags" value="0" />
         <entry key="mode" value="1" />
-        <entry key="regex" value="[ugoa]*([-+=]([rwxXst]*||[ugo]))+||[-+=][0-7]+" />
-        <entry key="text" value="ugoa+r" />
+        <entry key="regex" value="なおち*き" />
+        <entry key="text" value="なおき" />
       </map>
     </option>
   </component>

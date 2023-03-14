@@ -35,6 +35,7 @@ class PluginTest : KoinTest {
         EsePlugin::class.java.getMethod("")
         val plugin = EseClassLoader(file).loadClass("Main").getConstructor().newInstance() as EsePlugin
         plugin.init(um.uRoot)
+
     }
     @Test
     fun getAttributeFromJarTest() {

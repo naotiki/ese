@@ -2,40 +2,104 @@ package secure
 
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.MethodVisitor
-import org.objectweb.asm.Opcodes
-import org.objectweb.asm.Opcodes.ACC_NATIVE
-import org.objectweb.asm.Type
-import java.io.File
+import org.objectweb.asm.Opcodes.*
+import secure.InspectValue.*
 
-class SecureClassChecker : ClassVisitor(Opcodes.ASM5) {
-    var fileAccess = false
+class SecureClassChecker(map: PermissionMap) : ClassVisitor(ASM5) {
+    var file=false
         private set
-    var nativeCall = false
+    var native=false
         private set
-    var execute = false
-        private set
-    var reflection = false
-        private set
+    private val acc: MutableMap<AccessFlag, Permissions> = mutableMapOf()
+    private val fie: MutableMap<Field, Permissions> = mutableMapOf()
+    private val func: MutableMap<FuncCall, Permissions> = mutableMapOf()
+    private val own: MutableMap<Owner, Permissions> = mutableMapOf()
+    private val pac: MutableMap<OwnerPackage, Permissions> = mutableMapOf()
+    private val sup: MutableMap<SuperClass, Permissions> = mutableMapOf()
+
+    private val _requirePermissions= mutableSetOf<Permissions>()
+    val requirePermissions:Set<Permissions> get() = _requirePermissions
+    init {
+        map.forEach { (k, v) ->
+            v.forEach {
+                when (it) {
+                    is AccessFlag -> acc[it] = k
+                    is Field -> fie[it] = k
+                    is FuncCall -> func[it] = k
+                    is Owner -> own[it] = k
+                    is OwnerPackage -> pac[it] = k
+                    is SuperClass -> sup[it] = k
+                }
+            }
+        }
+    }
+
+    override fun visit(
+        version: Int,
+        access: Int,
+        name: String?,
+        signature: String?,
+        superName: String?,
+        interfaces: Array<out String>?
+    ) {
+        sup.forEach { (t, u) ->
+            if (t.internalName==superName){
+                _requirePermissions.add(u)
+            }
+        }
+        super.visit(version, access, name, signature, superName, interfaces)
+    }
 
     override fun visitMethod(
         access: Int, name: String?, descriptor: String?, signature: String?, exceptions: Array<out String>?
     ): MethodVisitor {
-        //ネイティブ呼び出し
-        if (access and ACC_NATIVE > 0) {
-            nativeCall = true
+        acc.forEach { (t, u) ->
+            if (access and t.flag > 0) {
+                _requirePermissions.add(u)
+            }
         }
-        return object : MethodVisitor(Opcodes.ASM5) {
+        return object : MethodVisitor(ASM5) {
+            override fun visitFieldInsn(opcode: Int, owner: String, name: String?, descriptor: String?) {
+
+                fie.forEach { (t, u) ->
+                    if (t.owner.internalName == owner && t.name == name &&
+                        t.descriptor?.equals(descriptor) != false
+                        && (opcode and PUTSTATIC > 0 || opcode and PUTFIELD > 0 ||
+                                (opcode and GETSTATIC > 0 || opcode and GETFIELD > 0) && !t.putOnly)
+                    ) {
+                        _requirePermissions.add(u)
+                    }
+                }
+                own.forEach { (t, u) ->
+                    if (t.internalName == owner) {
+                        _requirePermissions.add(u)
+                    }
+                }
+                pac.forEach {(t,u)->
+                    if (owner.startsWith(t.pacName)) {
+                        _requirePermissions.add(u)
+                    }
+                }
+                super.visitFieldInsn(opcode, owner, name, descriptor)
+            }
+
             override fun visitMethodInsn(
                 opcode: Int, owner: String, name: String?, descriptor: String?, isInterface: Boolean
             ) {
-                if (owner == Type.getInternalName(File::class.java)) {
-                    fileAccess = true
+                func.forEach {(t,u)->
+                    if (t.owner.internalName==owner&&t.funcName==name&&t.descriptor?.equals(descriptor)!=false){
+                        _requirePermissions.add(u)
+                    }
                 }
-                if (owner.startsWith("kotlin/reflect") || owner.startsWith("java/lang/reflect")) {
-                    reflection = true
+                own.forEach { (t, u) ->
+                    if (t.internalName == owner) {
+                        _requirePermissions.add(u)
+                    }
                 }
-                if (owner == Type.getInternalName(Runtime::class.java)&& name == "exec") {
-                    execute = true
+                pac.forEach {(t,u)->
+                    if (owner.startsWith(t.pacName)) {
+                        _requirePermissions.add(u)
+                    }
                 }
                 super.visitMethodInsn(opcode, owner, name, descriptor, isInterface)
             }

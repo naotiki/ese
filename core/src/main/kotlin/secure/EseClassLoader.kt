@@ -5,24 +5,26 @@ import java.io.File
 import java.io.IOException
 import java.net.URL
 
-class EseClassLoader(val jarFile: File, parent: ClassLoader = getSystemClassLoader()) : ClassLoader(parent) {
+class EseClassLoader(private val jarFile: File,private val permissionMap:PermissionMap= defaultPermissions, parent: ClassLoader =
+    getSystemClassLoader()) :
+    ClassLoader(parent) {
     @Throws(ClassNotFoundException::class)
     override fun findClass(name: String): Class<*> {
         try {
-            val path = name.replace('.', '/') + ".class";
-            val jarURL = URL("jar:" + jarFile.toURI().toURL() + "!/" + path).openStream()
-            val allClassBytes: ByteArray = jarURL.readAllBytes()
-                ?: throw ClassNotFoundException("Error finding and opening class")
+            val path = name.replace('.', '/') + ".class"
+            val jarInputStream = URL("jar:" + jarFile.toURI().toURL() + "!/" + path).openStream()
+            val allClassBytes: ByteArray = jarInputStream.readAllBytes()
             val classReader = ClassReader(allClassBytes)
-            val classVisitor = SecureClassChecker()
+            val secureClassChecker = SecureClassChecker(permissionMap)
             // クラスにデバッグ情報がある場合、
             // それを無視する
             classReader.accept(
-                classVisitor, ClassReader.SKIP_DEBUG
+                secureClassChecker, ClassReader.SKIP_DEBUG
             )
-            if (classVisitor.execute) {
+
+            if (secureClassChecker.requirePermissions.isNotEmpty()) {
                 throw ClassNotFoundException(
-                    "Class cannot be loaded - contains native code"
+                    "Class cannot be loaded - contains illegal code"
                 )
             } else {
                 return defineClass(
@@ -35,5 +37,8 @@ class EseClassLoader(val jarFile: File, parent: ClassLoader = getSystemClassLoad
                 "Error finding and opening class", e
             )
         }
+    }
+    companion object{
+     //   val defaultPermission=
     }
 }

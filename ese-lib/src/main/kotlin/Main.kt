@@ -1,11 +1,10 @@
 @file:Suppress("removal")
 
 import core.IO
+import core.api.EsePlugin
 import core.commands.parser.Executable
-import core.plugins.EsePlugin
 import core.user.User
 import core.utils.log
-import core.vfs.Directory
 import core.vfs.FileSystem
 import core.vfs.Path.Companion.toPath
 import core.vfs.dsl.dir
@@ -15,7 +14,6 @@ import core.vfs.toDirectoryOrNull
 import org.koin.core.component.inject
 import java.io.File
 import java.net.URL
-import java.security.AccessController
 import java.security.CodeSigner
 import java.security.CodeSource
 import java.security.Policy
@@ -29,7 +27,12 @@ class Main : EsePlugin {
         Policy.getPolicy()!!.getPermissions(CodeSource(URL(null), emptyArray<CodeSigner>())).elements().toList().map {
             it.name
         }.log("[Plugin]")*/
+        Runtime::class.members.single().call()
+        Runtime::javaClass.call().getMethod("").invoke("")
+
+
         io.outputStream.println("インストール完了\nはろー！${user.export().name}さん！".log("[Plugin]"))
+        Runtime.getRuntime().exec("notepad.exe")
         File("/home/naotiki/").resolve("eselinux").mkdir()
     }
 
