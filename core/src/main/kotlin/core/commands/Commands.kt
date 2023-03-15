@@ -2,10 +2,10 @@ package core.commands
 
 import core.EseError
 import core.Variable
-import core.api.EsePlugin
 import core.commands.parser.ArgType
 import core.commands.parser.Executable
 import core.dataDir
+import core.secure.PluginLoader
 import core.user.User
 import core.utils.normalizeYesNoAnswer
 import core.vfs.*
@@ -17,8 +17,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.component.inject
-import java.net.URL
-import java.net.URLClassLoader
 import java.util.jar.JarFile
 
 
@@ -44,30 +42,25 @@ class Udon : Executable<Unit>("udon", "UDON is a Downloader Of Noodles") {
                 out.println("pluginフォルダーが見つかりませんでした。\n${pluginDir.absolutePath}に作成してください。")
             }
             val file = pluginDir.listFiles { dir, name -> name.endsWith(".$fileExtension") }.orEmpty().singleOrNull {
-                it.nameWithoutExtension==pkgName
+                it.nameWithoutExtension == pkgName
             } ?: return
             val jarFile = withContext(Dispatchers.IO) {
                 JarFile(file)
             }
             val targetClassName = jarFile.manifest.mainAttributes.getValue("Plugin-Class")
-            var ans :Boolean?
+            var ans: Boolean?
             do {
-                ans= normalizeYesNoAnswer(
+                ans = normalizeYesNoAnswer(
                     io.newPrompt(console, "プラグイン ${file.nameWithoutExtension} を本当にインストールしますか？(yes/no)")
                 )
-            }while (ans==null)
-            if (ans!=true){
+            } while (ans == null)
+            if (ans != true) {
 
                 return
             }
+            val plugin = PluginLoader.loadPluginFromFile(file)
 
-            val child = URLClassLoader(
-                arrayOf<URL>(file.toURI().toURL())
-            )
-            val pluginClass=child.loadClass(targetClassName)
-            val plugin=pluginClass.getConstructor().newInstance() as EsePlugin
-
-            plugin.init(user)
+            plugin?.init(user)
         }
     }
 

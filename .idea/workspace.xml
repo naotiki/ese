@@ -4,14 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bc8ba1b3-c0db-49df-bc62-1eb62b739367" name="変更" comment="Add:EseClassLoader">
-      <change afterPath="$PROJECT_DIR$/core/src/main/resources/inspection.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client-gui/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/client-gui/gradle.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/parser/Executable.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/commands/parser/Executable.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/secure/EseClassLoader.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/secure/EseClassLoader.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/secure/EsePermission.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/secure/EsePermission.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/secure/SecureClassChecker.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/secure/SecureClassChecker.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ese-lib/src/main/kotlin/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/ese-lib/src/main/kotlin/Main.kt" afterDir="false" />
+    <list default="true" id="bc8ba1b3-c0db-49df-bc62-1eb62b739367" name="変更" comment="SAFETY NI NATTA YO">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/vfs/FileTree.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/vfs/FileTree.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/core/vfs/dsl/FileDSL.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/vfs/dsl/FileDSL.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/secure/EseClassLoader.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/secure/EseClassLoader.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/secure/EsePermission.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/secure/EsePermission.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/secure/SecureClassChecker.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/core/secure/SecureClassChecker.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/src/test/kotlin/core/PluginTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/test/kotlin/core/PluginTest.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -104,6 +104,11 @@
     &quot;settings.editor.selected.configurable&quot;: &quot;cn.yiiguxing.plugin.translate&quot;,
     &quot;settings.editor.splitter.proportion&quot;: &quot;0.26681128&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  },
+  &quot;keyToStringList&quot;: {
+    &quot;com.intellij.ide.scratch.ScratchImplUtil$2/新規スクラッチファイル&quot;: [
+      &quot;kotlin&quot;
+    ]
   }
 }</component>
   <component name="RecentsManager">
@@ -120,7 +125,7 @@
       <recent name="core.api" />
     </key>
   </component>
-  <component name="RunManager" selected="Kotlin.EsePermissionKt">
+  <component name="RunManager" selected="Gradle.PluginTest.a">
     <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
       <module name="EseLinux" />
       <working_directory value="$PROJECT_DIR$" />
@@ -288,8 +293,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Kotlin.EsePermissionKt" />
         <item itemvalue="Gradle.PluginTest.a" />
+        <item itemvalue="Kotlin.EsePermissionKt" />
         <item itemvalue="Gradle.PermissionTest.splitTest" />
         <item itemvalue="Gradle.PermissionTest.parsersssss" />
         <item itemvalue="Kotlin.FileKt" />
@@ -331,6 +336,9 @@
       <workItem from="1678596602819" duration="777000" />
       <workItem from="1678600575429" duration="5432000" />
       <workItem from="1678682861198" duration="22730000" />
+      <workItem from="1678795867578" duration="6039000" />
+      <workItem from="1678859658585" duration="3089000" />
+      <workItem from="1678865163603" duration="2943000" />
     </task>
     <task id="LOCAL-00001" summary="Add:EseClassLoader">
       <created>1678686197039</created>
@@ -339,7 +347,14 @@
       <option name="project" value="LOCAL" />
       <updated>1678686197039</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="SAFETY NI NATTA YO">
+      <created>1678804371522</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1678804371522</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -358,7 +373,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Add:EseClassLoader" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add:EseClassLoader" />
+    <MESSAGE value="SAFETY NI NATTA YO" />
+    <option name="LAST_COMMIT_MESSAGE" value="SAFETY NI NATTA YO" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>

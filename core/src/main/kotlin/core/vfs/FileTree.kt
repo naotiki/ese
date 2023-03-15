@@ -5,10 +5,9 @@ import core.commands.dev.Parse
 import core.commands.dev.Status
 import core.commands.parser.Executable
 import core.user.UserManager
-import core.vfs.dsl.dir
-import core.vfs.dsl.executable
-import core.vfs.dsl.file
+import core.vfs.dsl.*
 import core.vfs.dsl.rootDir
+
 class FileTree(val userManager: UserManager)  {
     val userDir: Directory? get() = userManager.user.dir
     val root = Directory("", null, userManager.uRoot, userManager.rootGroup, Permission(0b111_111_111), false)

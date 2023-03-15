@@ -1,15 +1,11 @@
-package secure
+package core.secure
 
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes.*
-import secure.InspectValue.*
+import core.secure.InspectValue.*
 
 class SecureClassChecker(map: PermissionMap) : ClassVisitor(ASM5) {
-    var file=false
-        private set
-    var native=false
-        private set
     private val acc: MutableMap<AccessFlag, Permissions> = mutableMapOf()
     private val fie: MutableMap<Field, Permissions> = mutableMapOf()
     private val func: MutableMap<FuncCall, Permissions> = mutableMapOf()
@@ -44,6 +40,7 @@ class SecureClassChecker(map: PermissionMap) : ClassVisitor(ASM5) {
     ) {
         sup.forEach { (t, u) ->
             if (t.internalName==superName){
+                println("$name:$superName")
                 _requirePermissions.add(u)
             }
         }
@@ -56,6 +53,7 @@ class SecureClassChecker(map: PermissionMap) : ClassVisitor(ASM5) {
         acc.forEach { (t, u) ->
             if (access and t.flag > 0) {
                 _requirePermissions.add(u)
+                println("$name:$descriptor")
             }
         }
         return object : MethodVisitor(ASM5) {
@@ -67,16 +65,19 @@ class SecureClassChecker(map: PermissionMap) : ClassVisitor(ASM5) {
                         && (opcode and PUTSTATIC > 0 || opcode and PUTFIELD > 0 ||
                                 (opcode and GETSTATIC > 0 || opcode and GETFIELD > 0) && !t.putOnly)
                     ) {
+                        println("$owner.$name:$descriptor")
                         _requirePermissions.add(u)
                     }
                 }
                 own.forEach { (t, u) ->
                     if (t.internalName == owner) {
+                        println("$owner.$name:$descriptor")
                         _requirePermissions.add(u)
                     }
                 }
                 pac.forEach {(t,u)->
                     if (owner.startsWith(t.pacName)) {
+                        println("$owner.$name:$descriptor")
                         _requirePermissions.add(u)
                     }
                 }
@@ -88,16 +89,19 @@ class SecureClassChecker(map: PermissionMap) : ClassVisitor(ASM5) {
             ) {
                 func.forEach {(t,u)->
                     if (t.owner.internalName==owner&&t.funcName==name&&t.descriptor?.equals(descriptor)!=false){
+                        println("$owner.$name:$descriptor")
                         _requirePermissions.add(u)
                     }
                 }
                 own.forEach { (t, u) ->
                     if (t.internalName == owner) {
+                        println("$owner.$name:$descriptor")
                         _requirePermissions.add(u)
                     }
                 }
                 pac.forEach {(t,u)->
                     if (owner.startsWith(t.pacName)) {
+                        println("$owner.$name:$descriptor")
                         _requirePermissions.add(u)
                     }
                 }

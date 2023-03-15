@@ -5,8 +5,10 @@ import core.user.Group
 import core.user.User
 import core.vfs.*
 
-
-data class DSLContext  constructor(val dir: Directory, val operator: User)
+@DslMarker
+internal annotation class FileDSLMarker
+@FileDSLMarker
+data class DSLContext @PublishedApi internal constructor(val dir: Directory, val operator: User)
 
 /**
  * FileTreeDSLを開始します

@@ -1,15 +1,16 @@
-package secure
+package core.secure
 
+import core.secure.Permissions.*
 import core.utils.log
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
-import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.*
 import org.objectweb.asm.Opcodes.ACC_NATIVE
 import org.objectweb.asm.Type
-import secure.Permissions.*
 import java.io.File
+import java.nio.file.FileSystem
 import java.nio.file.FileVisitor
 import java.nio.file.Files
 
@@ -42,13 +43,14 @@ enum class Permissions {
     ExternalExecute,
     NativeCall,
 }
-internal val defaultPermissions=permissionDSL {
+
+internal val defaultPermissions = permissionDSL {
     permission(FileAccess) {
         inspectOwnerPackage("java.nio.file")
         inspectOwner(File::class.java)
         inspectOwner(Files::class.java)
         inspectOwner(FileVisitor::class.java)
-        inspectOwner(java.nio.file.FileSystem::class.java)
+        inspectOwner(FileSystem::class.java)
     }
     permission(Reflection) {
         inspectOwnerPackage("kotlin.reflect")
@@ -66,9 +68,20 @@ internal val defaultPermissions=permissionDSL {
         inspectAccFlag(ACC_NATIVE)
     }
 }
+
 private fun main() {
+    buildJsonObject {
+        put("", "")
+        putJsonObject("") {
+
+        }
+        putJsonArray("") {
+
+        }
+
+    }
     val map = defaultPermissions
-    json.encodeToString(inspectSerializer,map).log()
+    json.encodeToString(inspectSerializer, map).log()
 }
 
 
@@ -77,55 +90,66 @@ val json = Json {
     prettyPrint = true
     prettyPrintIndent = "  "
 }
-typealias PermissionMap=Map<Permissions,List<InspectValue>>
+typealias PermissionMap = Map<Permissions, List<InspectValue>>
+
 val inspectSerializer = MapSerializer(Permissions.serializer(), ListSerializer(InspectValue.serializer()))
+
+@PermissionDslMarker
 fun permissionDSL(block: PermissionDSL.() -> Unit): PermissionMap {
     val p = PermissionDSL()
     p.block()
     return p.createMap()
 }
 
-class PermissionContext(val list: MutableList<InspectValue>)
-class PermissionDSL {
-    private val maps: Map<Permissions, MutableList<InspectValue>> = Permissions.values().associateWith {
+@PermissionDslMarker
+class PermissionContext @PublishedApi internal constructor(val list: MutableList<InspectValue>) {
+
+    fun inspectAccFlag(opcode: Int) {
+        list += InspectValue.AccessFlag(opcode)
+    }
+
+    fun inspectOwner(clazz: Class<*>) {
+        list += InspectValue.Owner(Type.getInternalName(clazz))
+    }
+
+    fun inspectOwnerPackage(packageName: String) {
+        list += InspectValue.OwnerPackage(packageName.replace(".", "/"))
+    }
+
+    fun inspectFuncCall(clazz: Class<*>, name: String, descriptor: String? = null) {
+        list += InspectValue.FuncCall(InspectValue.Owner(Type.getInternalName(clazz)), name, descriptor)
+    }
+
+    fun inspectSuperClass(clazz: Class<*>) {
+        list += InspectValue.SuperClass(Type.getInternalName(clazz))
+    }
+
+    /**
+     * @param writeOnly 格納のみを制限する場合はtrue
+     */
+    fun inspectField(
+        clazz: Class<*>,
+        name: String,
+        writeOnly: Boolean = false,
+        descriptor: String? = null
+    ) {
+        list += InspectValue.Field(InspectValue.Owner(Type.getInternalName(clazz)), name, writeOnly, descriptor)
+    }
+}
+
+@PermissionDslMarker
+class PermissionDSL @PublishedApi internal constructor() {
+    @PublishedApi internal val maps: Map<Permissions, MutableList<InspectValue>> = Permissions.values().associateWith {
         mutableListOf()
     }
 
-    fun permission(permission: Permissions, block: PermissionContext.() -> Unit) {
+    inline fun permission(permission: Permissions, block: PermissionContext.() -> Unit) {
         PermissionContext(maps.getValue(permission)).block()
     }
 
     fun createMap(): PermissionMap = maps
 }
 
-fun PermissionContext.inspectAccFlag(opcode: Int) {
-    list += InspectValue.AccessFlag(opcode)
-}
 
-fun PermissionContext.inspectOwner(clazz: Class<*>) {
-    list += InspectValue.Owner(Type.getInternalName(clazz))
-}
-
-fun PermissionContext.inspectOwnerPackage(packageName: String) {
-    list += InspectValue.OwnerPackage(packageName.replace(".", "/"))
-}
-
-fun PermissionContext.inspectFuncCall(clazz: Class<*>, name: String, descriptor: String? = null) {
-    list += InspectValue.FuncCall(InspectValue.Owner(Type.getInternalName(clazz)), name, descriptor)
-}
-
-fun PermissionContext.inspectSuperClass(clazz: Class<*>) {
-    list += InspectValue.SuperClass(Type.getInternalName(clazz))
-}
-
-/**
- * @param writeOnly 格納のみを制限する場合はtrue
- */
-fun PermissionContext.inspectField(
-    clazz: Class<*>,
-    name: String,
-    writeOnly: Boolean = false,
-    descriptor: String? = null
-) {
-    list += InspectValue.Field(InspectValue.Owner(Type.getInternalName(clazz)), name, writeOnly, descriptor)
-}
+@DslMarker
+internal annotation class PermissionDslMarker

@@ -1,21 +1,38 @@
-package secure
+package core.secure
 
+import core.api.EsePlugin
 import org.objectweb.asm.ClassReader
 import java.io.File
 import java.io.IOException
 import java.net.URL
+import java.util.jar.JarFile
 
-class EseClassLoader(private val jarFile: File,private val permissionMap:PermissionMap= defaultPermissions, parent: ClassLoader =
-    getSystemClassLoader()) :
+object PluginLoader {
+    fun loadPluginFromFile(file: File): EsePlugin? {
+        val jarFile = JarFile(file)
+        val className = jarFile.manifest.mainAttributes.getValue("Plugin-Class")
+        return EseClassLoader(file).loadClass(className).getConstructor().newInstance() as? EsePlugin
+    }
+}
+
+private class EseClassLoader(
+    private val pluginFile: File,
+    permissionMap: PermissionMap = defaultPermissions,
+    parent: ClassLoader = getSystemClassLoader()
+) :
     ClassLoader(parent) {
+
+
+    private val secureClassChecker = SecureClassChecker(permissionMap)
+
     @Throws(ClassNotFoundException::class)
     override fun findClass(name: String): Class<*> {
         try {
             val path = name.replace('.', '/') + ".class"
-            val jarInputStream = URL("jar:" + jarFile.toURI().toURL() + "!/" + path).openStream()
+            val jarInputStream = URL("jar:" + pluginFile.toURI().toURL() + "!/" + path).openStream()
             val allClassBytes: ByteArray = jarInputStream.readAllBytes()
             val classReader = ClassReader(allClassBytes)
-            val secureClassChecker = SecureClassChecker(permissionMap)
+
             // クラスにデバッグ情報がある場合、
             // それを無視する
             classReader.accept(
@@ -24,7 +41,7 @@ class EseClassLoader(private val jarFile: File,private val permissionMap:Permiss
 
             if (secureClassChecker.requirePermissions.isNotEmpty()) {
                 throw ClassNotFoundException(
-                    "Class cannot be loaded - contains illegal code"
+                    "許可されていない権限:${secureClassChecker.requirePermissions}"
                 )
             } else {
                 return defineClass(
@@ -38,7 +55,8 @@ class EseClassLoader(private val jarFile: File,private val permissionMap:Permiss
             )
         }
     }
-    companion object{
-     //   val defaultPermission=
+
+    companion object {
+        //   val defaultPermission=
     }
 }
