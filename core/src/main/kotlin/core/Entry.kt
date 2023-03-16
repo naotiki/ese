@@ -26,41 +26,44 @@ import java.io.PipedOutputStream
 import java.io.PrintStream
 
 //Pluginsフォルダなど
-val dataDir= File(System.getProperty("compose.application.resources.dir") ?: "client-gui/resources/common/")
+val dataDir = File(System.getProperty("compose.application.resources.dir") ?: "client-gui/resources/common/")
 
 const val version = "0.0.0-dev"
 private val module = module {
     single { Variable() }
     single { Expression() }
+    single { UserManager() }
+    single { FileTree(get()) }
+    single { IO() }
+    single { FileSystem(get<FileTree>().root) }
 }
 
-object Program{
-    var debug:Boolean=false
+object Program {
+    var debug: Boolean = false
 }
-fun programArg(args:List<String>){
+
+fun programArg(args: List<String>) {
     args.forEach {
-        when(it){
-            "-D"->{
-                Program.debug=true
+        when (it) {
+            "-D" -> {
+                Program.debug = true
             }
         }
     }
 }
+
 fun prepareKoinInjection(): KoinApplication {
-    module.apply {
-        single { UserManager() }
-        single { FileTree(get()) }
-        single { IO() }
-        single { FileSystem(get<FileTree>().root) }
-    }
+
     return startKoin {
         printLogger(Level.INFO)
         modules(module)
+        allowOverride(false)
     }
 }
 
+private var initialized = false
 suspend fun initialize(koin: Koin, consoleInterface: ConsoleInterface) {
-
+    if (initialized) return
     val io = koin.get<IO>()
     val userManager = koin.get<UserManager>()
     val fileTree = koin.get<FileTree>()
@@ -92,17 +95,19 @@ suspend fun initialize(koin: Koin, consoleInterface: ConsoleInterface) {
         }
     }
 
-    val newUser = User(userManager,userName, Group(userManager,userName))
+    val newUser = User(userManager, userName, Group(userManager, userName))
     newUser.setHomeDir { user, group ->
-        fileDSL(fileTree.home,userManager.uRoot){
+        fileDSL(fileTree.home, userManager.uRoot) {
             dir(user.name, user, group) {
-                println("LOG:"+file(
-                    "Readme.txt",
-                    """
+                println(
+                    "LOG:" + file(
+                        "Readme.txt",
+                        """
             やぁみんな俺だ！
             このファイルを開いてくれたんだな！
             """.trimIndent()
-                ).parent?.name)
+                    ).parent?.name
+                )
             }
         }
     }
@@ -115,6 +120,7 @@ suspend fun initialize(koin: Koin, consoleInterface: ConsoleInterface) {
         single { consoleInterface }
         single { expression }
     })
+    initialized = true
     while (true/*TODO 終了機能*/) {
         val input = io.newPrompt(consoleInterface, "${userManager.user.name}:${fileSystem.currentPath.value}>")
             .ifBlank {
@@ -127,7 +133,7 @@ suspend fun initialize(koin: Koin, consoleInterface: ConsoleInterface) {
             //非同期実行
             withContext(Dispatchers.Default) {
                 expression.currentJob = launch {
-                    val result = cmd.execute(userManager.user,inputArgs.drop(1))
+                    val result = cmd.execute(userManager.user, inputArgs.drop(1))
                     if (result is CommandResult.Success) {
                         //io.outputStream.println("[DEBUG] RETURN:${result.value}")
                     }
@@ -157,10 +163,10 @@ class IO {
     /*private*/ val inputStream = PipedInputStream()
 
     val reader = inputStream.reader()
-     val outputStream = PrintStream(PipedOutputStream(inputStream), true)
+    val outputStream = PrintStream(PipedOutputStream(inputStream), true)
 
     private val consoleInput = PipedInputStream()
-     val consoleReader = consoleInput.bufferedReader()
+    val consoleReader = consoleInput.bufferedReader()
     val consoleWriter = PrintStream(PipedOutputStream(consoleInput), true)
     suspend fun newPrompt(consoleInterface: ConsoleInterface, promptText: String, value: String = ""): String =
         withContext(
@@ -171,7 +177,6 @@ class IO {
             return@withContext consoleReader.readLine()
         }
 }
-
 
 
 class Variable {

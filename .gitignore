@@ -1,4 +1,4 @@
 # プロジェクトの除外パス
 **/.gradle/
 **/build/
-
+.idea/workspace.xml
