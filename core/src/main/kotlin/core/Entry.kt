@@ -40,6 +40,7 @@ private val module = module {
 
 object Program {
     var debug: Boolean = false
+        internal set
 }
 
 fun programArg(args: List<String>) {
@@ -52,17 +53,14 @@ fun programArg(args: List<String>) {
     }
 }
 
-fun prepareKoinInjection(): KoinApplication {
-
-    return startKoin {
-        printLogger(Level.INFO)
-        modules(module)
-        allowOverride(false)
-    }
+fun prepareKoinInjection(): KoinApplication = startKoin {
+    printLogger(Level.INFO)
+    modules(module)
+    allowOverride(false)
 }
 
 private var initialized = false
-suspend fun initialize(koin: Koin, consoleInterface: ConsoleInterface) {
+suspend fun initialize(koin: Koin, clientImpl: ClientImpl) {
     if (initialized) return
     val io = koin.get<IO>()
     val userManager = koin.get<UserManager>()
@@ -76,7 +74,7 @@ suspend fun initialize(koin: Koin, consoleInterface: ConsoleInterface) {
 
     //名前設定
     while (true) {
-        userName = io.newPrompt(consoleInterface, "あなたの名前は？:", "a")
+        userName = io.newPrompt(clientImpl, "あなたの名前は？:", "a")
         println(userManager.userList)
         when {
             userName.isBlank() -> {
@@ -103,8 +101,7 @@ suspend fun initialize(koin: Koin, consoleInterface: ConsoleInterface) {
                     "LOG:" + file(
                         "Readme.txt",
                         """
-            やぁみんな俺だ！
-            このファイルを開いてくれたんだな！
+            TODO:なんか書く
             """.trimIndent()
                     ).parent?.name
                 )
@@ -117,12 +114,12 @@ suspend fun initialize(koin: Koin, consoleInterface: ConsoleInterface) {
     val expression = koin.get<Expression>()
 
     loadKoinModules(module {
-        single { consoleInterface }
+        single { clientImpl }
         single { expression }
     })
     initialized = true
     while (true/*TODO 終了機能*/) {
-        val input = io.newPrompt(consoleInterface, "${userManager.user.name}:${fileSystem.currentPath.value}>")
+        val input = io.newPrompt(clientImpl, "${userManager.user.name}:${fileSystem.currentPath.value}>")
             .ifBlank {
                 null
             } ?: continue
@@ -168,12 +165,12 @@ class IO {
     private val consoleInput = PipedInputStream()
     val consoleReader = consoleInput.bufferedReader()
     val consoleWriter = PrintStream(PipedOutputStream(consoleInput), true)
-    suspend fun newPrompt(consoleInterface: ConsoleInterface, promptText: String, value: String = ""): String =
+    suspend fun newPrompt(clientImpl: ClientImpl, promptText: String, value: String = ""): String =
         withContext(
             Dispatchers
                 .IO
         ) {
-            consoleInterface.prompt(promptText, value)
+            clientImpl.prompt(promptText, value)
             return@withContext consoleReader.readLine()
         }
 }

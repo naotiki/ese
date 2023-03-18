@@ -1,4 +1,3 @@
-
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -30,13 +29,13 @@ import component.assistant.EasyFileView
 import core.*
 import core.commands.Expression
 import core.user.UserManager
-import core.utils.log
 import core.utils.splitArgs
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
 import org.jetbrains.compose.splitpane.SplitPaneState
+import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.system.exitProcess
 
@@ -45,7 +44,7 @@ val handler = CoroutineExceptionHandler { _, exception ->
     throw exception
 }
 
-class TerminalViewModel(prompt: Prompt) : CustomKoinComponent() {
+class TerminalViewModel(prompt: Prompt) : KoinComponent {
     val io by inject<IO>()
     val userManager by inject<UserManager>()
     val expression by inject<Expression>()
@@ -53,7 +52,6 @@ class TerminalViewModel(prompt: Prompt) : CustomKoinComponent() {
     val logFlow = flow {
         while (true) {
             val char = io.reader.read()
-            println(char)
             if (char == -1) break
             else if (char == 13) continue // DOSのCR(\r)を除外
             emit(char.toChar())
@@ -61,8 +59,8 @@ class TerminalViewModel(prompt: Prompt) : CustomKoinComponent() {
     }.flowOn(Dispatchers.IO)
     val commandHistory get() = expression.commandHistory
 
-    var textLogs by mutableStateOf(dataDir.absolutePath+"\n")
-    val consoleImpl = object : ConsoleInterface {
+    var textLogs by mutableStateOf(dataDir.absolutePath + "\n")
+    private val clientImpl = object : ClientImpl {
 
         override fun prompt(promptText: String, value: String) {
             prompt.newPrompt(promptText, value)
@@ -85,7 +83,7 @@ class TerminalViewModel(prompt: Prompt) : CustomKoinComponent() {
     fun nextSuggest(value: String): String {
         val target = value.splitArgs()
         val arg = target.last()
-        if (suggestion != arg||previousArgsCount!=target.size) {
+        if (suggestion != arg || previousArgsCount != target.size) {
             suggestion = arg
             suggestList = getSuggestList(value)
             previousArgsCount = target.size
@@ -107,7 +105,7 @@ class TerminalViewModel(prompt: Prompt) : CustomKoinComponent() {
 
 
     suspend fun initialize() {
-        core.initialize(getKoin(), consoleImpl)
+        core.initialize(getKoin(), clientImpl)
     }
 
     fun outln(value: String) {
@@ -296,7 +294,7 @@ fun App(isAssistExtended: Boolean) {
     }
 }
 
-class ApplicationViewModel : CustomKoinComponent() {
+class ApplicationViewModel : KoinComponent {
     val expression by inject<Expression>()
     fun cancelCommand() {
         expression.cancelJob()
@@ -308,16 +306,16 @@ class ApplicationViewModel : CustomKoinComponent() {
 fun rememberAppViewModel() = remember { ApplicationViewModel() }
 
 @OptIn(ExperimentalComposeUiApi::class)
-fun main(vararg args:String) {
+fun main(vararg args: String) {
     programArg(args.toList())
     //DIよーい！！！！！！
-    MyKoinContext.koinApp = prepareKoinInjection()
+    prepareKoinInjection()
 
     //以下からCompose(UI部分)
     application {
         val appViewModel = rememberAppViewModel()
 
-        Window(onCloseRequest = ::exitApplication, title = "EseLinux",onPreviewKeyEvent = {
+        Window(onCloseRequest = ::exitApplication, title = "EseLinux", onPreviewKeyEvent = {
             return@Window if (it.key == Key.C && it.isCtrlPressed) {
                 appViewModel.cancelCommand()
                 true

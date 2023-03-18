@@ -1,5 +1,4 @@
 package component.assistant
-import CustomKoinComponent
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -13,9 +12,10 @@ import androidx.compose.ui.window.Window
 import component.Accordion
 import core.commands.Expression
 import core.vfs.ExecutableFile
+import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-class CommandPanelViewModel  : CustomKoinComponent() {
+class CommandPanelViewModel  : KoinComponent {
     private val ex by inject<Expression>()
     fun getExecutablesList(): List<ExecutableFile<*>> {
         return ex.getExecutables(includeHidden = false)

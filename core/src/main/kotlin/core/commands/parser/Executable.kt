@@ -1,6 +1,6 @@
 package core.commands.parser
 
-import core.ConsoleInterface
+import core.ClientImpl
 import core.EseError
 import core.IO
 import core.commands.Expression
@@ -86,7 +86,7 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
 
     val out get() = io.outputStream
     val reader get() = io.reader
-    val console by inject<ConsoleInterface>()
+    val console by inject<ClientImpl>()
 
     /**
      * For Development
@@ -172,8 +172,8 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
         },
         onFailure = {
             if (it is EseError) {
-                println(it.localizedMessage)
-                out.println(it.localizedMessage)
+                println(it.errorName)
+                out.println(it.errorName)
             } else {
                 it.printStackTrace()
                 it.printStackTrace(out)
@@ -242,8 +242,8 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
                 },
                 onFailure = {
                     if (it is EseError) {
-                        println(it.localizedMessage)
-                        out.println(it.localizedMessage)
+                        println(it.errorName)
+                        out.println(it.errorName)
                     } else {
                         it.printStackTrace()
                         it.printStackTrace(out)

@@ -1,6 +1,6 @@
 package core
-
-interface ConsoleInterface {
+//クライアントアプリの実装
+interface ClientImpl {
     fun prompt(promptText:String,value:String="")
     fun exit()
 
