@@ -2,16 +2,16 @@
 ## 基本
 ```kotlin
 
-import core.IO
-import core.commands.parser.Executable
-import core.plugins.EsePlugin
-import core.user.User
-import core.vfs.Directory
-import core.vfs.FileSystem
-import core.vfs.Path.Companion.toPath
-import core.vfs.dsl.dir
-import core.vfs.dsl.executable
-import core.vfs.dsl.fileDSL
+import me.naotiki.ese.core.IO
+import me.naotiki.ese.core.commands.parser.Executable
+import me.naotiki.ese.core.plugins.EsePlugin
+import me.naotiki.ese.core.user.User
+import me.naotiki.ese.core.vfs.Directory
+import me.naotiki.ese.core.vfs.FileSystem
+import me.naotiki.ese.core.vfs.Path.Companion.toPath
+import me.naotiki.ese.core.vfs.dsl.dir
+import me.naotiki.ese.core.vfs.dsl.executable
+import me.naotiki.ese.core.vfs.dsl.fileDSL
 import org.koin.core.component.inject
 
 class Main : EsePlugin {

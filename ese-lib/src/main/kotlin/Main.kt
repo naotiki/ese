@@ -1,16 +1,16 @@
 @file:Suppress("removal")
 
-import core.IO
-import core.api.EsePlugin
-import core.commands.parser.Executable
-import core.user.User
-import core.utils.log
-import core.vfs.FileSystem
-import core.vfs.Path.Companion.toPath
-import core.vfs.dsl.dir
-import core.vfs.dsl.executable
-import core.vfs.dsl.fileDSL
-import core.vfs.toDirectoryOrNull
+import me.naotiki.ese.core.IO
+import me.naotiki.ese.core.api.EsePlugin
+import me.naotiki.ese.core.commands.parser.Executable
+import me.naotiki.ese.core.user.User
+import me.naotiki.ese.core.utils.log
+import me.naotiki.ese.core.vfs.FileSystem
+import me.naotiki.ese.core.vfs.Path.Companion.toPath
+import me.naotiki.ese.core.vfs.dsl.dir
+import me.naotiki.ese.core.vfs.dsl.executable
+import me.naotiki.ese.core.vfs.dsl.fileDSL
+import me.naotiki.ese.core.vfs.toDirectoryOrNull
 import org.koin.core.component.inject
 import java.io.File
 import java.net.URL
