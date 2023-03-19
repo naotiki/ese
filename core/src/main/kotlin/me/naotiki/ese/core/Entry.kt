@@ -21,9 +21,6 @@ import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
 import org.koin.dsl.module
 import java.io.File
-import java.io.PipedInputStream
-import java.io.PipedOutputStream
-import java.io.PrintStream
 
 //Pluginsフォルダなど
 val dataDir = File(System.getProperty("compose.application.resources.dir") ?: "client-gui/resources/common/")
@@ -155,35 +152,4 @@ suspend fun initialize(koin: Koin, clientImpl: ClientImpl) {
 
 }
 
-class IO {
-
-    /*private*/ val inputStream = PipedInputStream()
-
-    val reader = inputStream.reader()
-    val outputStream = PrintStream(PipedOutputStream(inputStream), true)
-
-    private val consoleInput = PipedInputStream()
-    val consoleReader = consoleInput.bufferedReader()
-    val consoleWriter = PrintStream(PipedOutputStream(consoleInput), true)
-    suspend fun newPrompt(clientImpl: ClientImpl, promptText: String, value: String = ""): String =
-        withContext(
-            Dispatchers.IO
-        ) {
-            clientImpl.prompt(promptText, value)
-            return@withContext consoleReader.readLine()
-        }
-}
-
-
-class Variable {
-    val nameRule = Regex("[A-z]+")
-    val map = mutableMapOf<String, String>()
-
-    fun expandVariable(string: String): String {
-        println(string)
-        return Regex("\\$$nameRule").replace(string) {
-            map.getOrDefault(it.value.trimStart('$'), "")
-        }
-    }
-}
 
