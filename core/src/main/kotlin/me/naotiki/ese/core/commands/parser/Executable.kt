@@ -12,18 +12,19 @@ import kotlin.coroutines.cancellation.CancellationException
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.primaryConstructor
 
-abstract class CommandDefine<R>(val name: String,val description: String?=null):KoinComponent{
-    val args= mutableListOf<Arg<*>>()
-    val opts= mutableListOf<Opt<*>>()
+abstract class CommandDefine<R>(val name: String, val description: String? = null) : KoinComponent {
+    val args = mutableListOf<Arg<*>>()
+    val opts = mutableListOf<Opt<*>>()
 
     val subCommands: List<SubCommandDefine<*>> = this::class.nestedClasses.filter {
         it.isInner && it.isSubclassOf(SubCommandDefine::class)
     }.map {
         it.primaryConstructor?.call(this)
     }.filterIsInstance<SubCommandDefine<*>>()
-    abstract inner class SubCommandDefine<R>(name: String,description: String?){
-        val args= mutableListOf<Arg<*>>()
-        val opts= mutableListOf<Opt<*>>()
+
+    abstract inner class SubCommandDefine<R>(name: String, description: String?) {
+        val args = mutableListOf<Arg<*>>()
+        val opts = mutableListOf<Opt<*>>()
     }
 }
 
@@ -254,8 +255,16 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
 }
 
 
-sealed class CommandResult<T> {
-    class Nothing<T> : CommandResult<T>()
-    class Success<T>(val value: T) : CommandResult<T>()
-    class Error<T> : CommandResult<T>()
+sealed interface CommandResult<T> {
+    class Nothing<T> : CommandResult<T>
+    class Success<T>(val value: T) : CommandResult<T>
+    class Error<T> private constructor() : CommandResult<T>
+    companion object {
+        private val err = Error<Any?>()
+
+        fun <T> Error(): Error<T> {
+            @Suppress("UNCHECKED_CAST")
+            return err as Error<T>
+        }
+    }
 }

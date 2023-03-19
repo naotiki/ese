@@ -167,8 +167,7 @@ class IO {
     val consoleWriter = PrintStream(PipedOutputStream(consoleInput), true)
     suspend fun newPrompt(clientImpl: ClientImpl, promptText: String, value: String = ""): String =
         withContext(
-            Dispatchers
-                .IO
+            Dispatchers.IO
         ) {
             clientImpl.prompt(promptText, value)
             return@withContext consoleReader.readLine()

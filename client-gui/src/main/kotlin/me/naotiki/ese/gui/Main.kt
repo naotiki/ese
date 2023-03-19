@@ -26,14 +26,14 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.MenuBar
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import me.naotiki.ese.gui.component.assistant.CommandPanel
-import me.naotiki.ese.gui.component.assistant.EasyFileView
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import me.naotiki.ese.core.*
 import me.naotiki.ese.core.commands.Expression
 import me.naotiki.ese.core.user.UserManager
 import me.naotiki.ese.core.utils.splitArgs
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import me.naotiki.ese.gui.component.assistant.CommandPanel
+import me.naotiki.ese.gui.component.assistant.EasyFileView
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
 import org.jetbrains.compose.splitpane.SplitPaneState
@@ -101,7 +101,7 @@ class TerminalViewModel(prompt: Prompt) : KoinComponent {
     }
 
     fun getSuggestList(value: String) =
-        expression.suggest(userManager.user, value).also {
+        expression.suggest(value).also {
             println(it)
         }
 

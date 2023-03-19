@@ -5,7 +5,6 @@ import kotlinx.coroutines.Job
 import me.naotiki.ese.core.IO
 import me.naotiki.ese.core.Variable
 import me.naotiki.ese.core.commands.parser.ArgType
-import me.naotiki.ese.core.user.User
 import me.naotiki.ese.core.user.UserManager
 import me.naotiki.ese.core.utils.splitArgs
 import me.naotiki.ese.core.vfs.*
@@ -48,7 +47,7 @@ class Expression : KoinComponent {
         return null
     }
 
-    fun suggest(user: User, targetText: String): List<String> {
+    fun suggest(targetText: String): List<String> {
         val (exe, args) = targetText.splitArgs().let {
             tryResolve(it.first()) to it.drop(1)
         }
