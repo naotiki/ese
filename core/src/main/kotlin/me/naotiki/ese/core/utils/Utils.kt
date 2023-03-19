@@ -1,5 +1,7 @@
 package me.naotiki.ese.core.utils
 
+import kotlinx.coroutines.yield
+
 fun String.splitArgs()= replace(" {2,}".toRegex()," ").split(' ')
 
 fun <E : Enum<E>> Enum<E>.getFlag(): Int = 1 shl ordinal
@@ -19,4 +21,11 @@ fun <T:Any?> T.log(prefix:String?=null)= also {
         print(prefix)
     }
     println("[TLog] $it")
+}
+
+suspend inline fun loop(block:()->Unit){
+    while (true) {
+        block()
+        yield()
+    }
 }

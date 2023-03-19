@@ -21,7 +21,7 @@ class FileTree(val userManager: UserManager)  {
         val initialCommands = listOf<Executable<*>>(
             ListSegments(), ChangeDirectory(), Cat(), Exit(), SugoiUserDo(),
             Yes(), Clear(), Echo(), Remove(), Test(), Help(),MakeDirectory(),
-            Touch(),Chmod(),WriteToFile(),Exec(),Udon()
+            Touch(),Chmod(),WriteToFile(),Udon()
         )
         rootDir {
             executableEnvPaths+= dir("bin") {

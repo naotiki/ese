@@ -27,6 +27,7 @@ import androidx.compose.ui.window.MenuBar
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.*
 import me.naotiki.ese.core.*
 import me.naotiki.ese.core.commands.Expression
@@ -59,6 +60,8 @@ class TerminalViewModel(prompt: Prompt) : KoinComponent {
             emit(char.toChar())
         }
     }.flowOn(Dispatchers.IO)
+
+    val channnel = io.readChannel
     val commandHistory get() = expression.commandHistory
 
     var textLogs by mutableStateOf(dataDir.absolutePath + "\n")
@@ -138,10 +141,19 @@ fun Terminal() {
             }
             println("End:Init")
         }
-        viewModel.logFlow.collect {
+
+        viewModel.channnel.consumeEach {
+            viewModel.textLogs += it
+            // Scroll to bottom
+            stateVertical.scrollTo(stateVertical.maxValue)
+            yield()
+        }
+
+
+        /*viewModel.logFlow.collect {
             viewModel.textLogs += it + ""
             stateVertical.scrollTo(stateVertical.maxValue)
-        }
+        }*/
     }
     Box(modifier = Modifier.fillMaxSize().background(Color.DarkGray)) {
         Column(

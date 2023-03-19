@@ -83,7 +83,7 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
         return a
     }
 
-    val out get() = io.outputStream
+    val out get() = io.printChannel
     val reader get() = io.reader
     val console by inject<me.naotiki.ese.core.ClientImpl>()
 
@@ -96,17 +96,17 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
             println(args)
             argParser.parse(this, args)
 
-            out.println("引数")
+            out.tryPrintln("引数")
             argParser.args.forEach {
-                out.println("${it.name}/${it.type.javaClass.simpleName}:${it.vararg?.value ?: it.value}")
+                out.tryPrintln("${it.name}/${it.type.javaClass.simpleName}:${it.vararg?.value ?: it.value}")
             }
-            out.println("オプション")
+            out.tryPrintln("オプション")
             argParser.opts.forEach {
-                out.println("${it.name}/${it.type.javaClass.simpleName}:${it.multiple?.value ?: it.value}")
+                out.tryPrintln("${it.name}/${it.type.javaClass.simpleName}:${it.multiple?.value ?: it.value}")
             }
         }.onFailure {
             println(it.localizedMessage)
-            out.println(it.localizedMessage)
+            out.tryPrintln(it.localizedMessage)
         }
     }
 
@@ -135,7 +135,7 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
      * ヘルプを出力します。
      * */
     open fun outputHelp(): CommandResult.Nothing<R> {
-        out.println(
+        out.tryPrintln(
             generateHelpText()
         )
         return CommandResult.Nothing()
@@ -175,7 +175,8 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
                 out.println(it.errorName)
             } else {
                 it.printStackTrace()
-                it.printStackTrace(out)
+                io.printChannel.tryPrintln(it.stackTraceToString())
+
 
             }
             CommandResult.Error()
@@ -245,7 +246,7 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
                         out.println(it.errorName)
                     } else {
                         it.printStackTrace()
-                        it.printStackTrace(out)
+                        io.printChannel.tryPrintln(it.stackTraceToString())
 
                     }
                     CommandResult.Error()
@@ -258,13 +259,6 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
 sealed interface CommandResult<T> {
     class Nothing<T> : CommandResult<T>
     class Success<T>(val value: T) : CommandResult<T>
-    class Error<T> private constructor() : CommandResult<T>
-    companion object {
-        private val err = Error<Any?>()
+    class Error<T> : CommandResult<T>
 
-        fun <T> Error(): Error<T> {
-            @Suppress("UNCHECKED_CAST")
-            return err as Error<T>
-        }
-    }
 }

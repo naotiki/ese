@@ -1,8 +1,6 @@
 package me.naotiki.ese.core
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import me.naotiki.ese.core.commands.Expression
 import me.naotiki.ese.core.commands.parser.CommandResult
 import me.naotiki.ese.core.user.Group
@@ -63,7 +61,7 @@ suspend fun initialize(koin: Koin, clientImpl: ClientImpl) {
     val userManager = koin.get<UserManager>()
     val fileTree = koin.get<FileTree>()
     var userName: String
-    io.outputStream.println(
+    io.printChannel.println(
         """
         Ese Linux ver.$version
         """.trimIndent()
@@ -75,15 +73,15 @@ suspend fun initialize(koin: Koin, clientImpl: ClientImpl) {
         println(userManager.userList)
         when {
             userName.isBlank() -> {
-                io.outputStream.println("空白は使用できません")
+                io.printChannel.println("空白は使用できません")
             }
 
             !userName.matches(Regex("[0-9A-z]+")) -> {
-                io.outputStream.println("使用できる文字は0~9の数字とアルファベットと一部記号です")
+                io.printChannel.println("使用できる文字は0~9の数字とアルファベットと一部記号です")
             }
 
             userManager.userList.any { it.name == userName } -> {
-                io.outputStream.println("既にあるユーザー名です")
+                io.printChannel.println("既にあるユーザー名です")
             }
 
             else -> break
@@ -122,11 +120,11 @@ suspend fun initialize(koin: Koin, clientImpl: ClientImpl) {
             } ?: continue
         val inputArgs = input.splitArgs()
         val cmd = expression.tryResolve(inputArgs.first())
-        expression._commandHistory.add(0, input)
+        expression.addHistory(input)
         if (cmd != null) {
             //非同期実行
             withContext(Dispatchers.Default) {
-                expression.currentJob = launch {
+                expression.currentJob = launch(executeContext) {
                     val result = cmd.execute(userManager.user, inputArgs.drop(1))
                     if (result is CommandResult.Success) {
                         //io.outputStream.println("[DEBUG] RETURN:${result.value}")
@@ -138,7 +136,7 @@ suspend fun initialize(koin: Koin, clientImpl: ClientImpl) {
             }
         } else {
             if (!expression.expressionParser(input)) {
-                io.outputStream.println(
+                io.printChannel.println(
                     """
             そのようなコマンドはありません。
             help と入力するとヒントが得られるかも・・・？
@@ -151,5 +149,7 @@ suspend fun initialize(koin: Koin, clientImpl: ClientImpl) {
 
 
 }
+@OptIn(DelicateCoroutinesApi::class)
+val executeContext = newSingleThreadContext("ExecuteContext")
 
 

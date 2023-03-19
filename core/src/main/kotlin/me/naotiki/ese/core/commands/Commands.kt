@@ -2,9 +2,8 @@ package me.naotiki.ese.core.commands
 
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 import me.naotiki.ese.core.EseError
 import me.naotiki.ese.core.Variable
 import me.naotiki.ese.core.commands.parser.ArgType
@@ -12,6 +11,7 @@ import me.naotiki.ese.core.commands.parser.Executable
 import me.naotiki.ese.core.dataDir
 import me.naotiki.ese.core.secure.PluginLoader
 import me.naotiki.ese.core.user.User
+import me.naotiki.ese.core.utils.loop
 import me.naotiki.ese.core.utils.normalizeYesNoAnswer
 import me.naotiki.ese.core.vfs.*
 import me.naotiki.ese.core.vfs.dsl.dir
@@ -78,18 +78,18 @@ class Udon : Executable<Unit>("udon", "UDON is a Downloader Of Noodles") {
     }
 }
 
-class Exec : Executable<Unit>("exec", "RUN") {
+/*class Exec : Executable<Unit>("exec", "RUN") {
     override suspend fun execute(user: User, rawArgs: List<String>) {
         withContext(Dispatchers.IO) {
             val process = ProcessBuilder("medley.exe").start()
             launch {
                 withContext(Dispatchers.IO) {
-                    process.inputStream.transferTo(io.outputStream)
+                    process.inputStream.transferTo(io.printChannel)
                 }
             }
             launch {
                 withContext(Dispatchers.IO) {
-                    process.inputStream.transferTo(io.outputStream)
+                    process.inputStream.transferTo(io.printChannel)
                 }
             }
             println("ssss")
@@ -97,7 +97,7 @@ class Exec : Executable<Unit>("exec", "RUN") {
         }
     }
 
-}
+}*/
 
 //Man
 class Help : Executable<Unit>(
@@ -240,12 +240,10 @@ class Yes : Executable<Unit>(
 ) {
     val value by argument(ArgType.String, "value", "出力する文字列").optional()
     override suspend fun execute(user: User, rawArgs: List<String>) {
-        val b = value ?: "yes"
-
-        while (true) {
-            out.println(b)
-            //yield()にすると ASSERT: 51.500000 != 51.750000 って出るから適度な休憩をあげましょう
-            delay(10)
+        val v = value ?: "yes"
+        loop {
+            out.println(v)
+            yield()
         }
     }
 }
