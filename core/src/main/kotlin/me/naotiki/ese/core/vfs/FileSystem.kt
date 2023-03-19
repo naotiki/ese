@@ -1,8 +1,8 @@
 package me.naotiki.ese.core.vfs
 
-import me.naotiki.ese.core.user.UserManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.Serializable
+import me.naotiki.ese.core.user.UserManager
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -22,8 +22,8 @@ value class Path(val value: String) {
  * ぼくのかんがえたさいきょうのVirtual File System
  */
 class FileSystem(currentDirectory: Directory) : KoinComponent {
-    val fileTree by inject<FileTree>()
-    val userManager by inject<UserManager>()
+    private val fileTree by inject<FileTree>()
+    private val userManager by inject<UserManager>()
     var currentDirectory: Directory = currentDirectory
         private set
     var currentPath: Path = currentDirectory.getFullPath()

@@ -1,5 +1,6 @@
 package me.naotiki.ese.core.vfs
 
+import me.naotiki.ese.core.EseError
 import me.naotiki.ese.core.commands.parser.CommandResult
 import me.naotiki.ese.core.commands.parser.Executable
 import me.naotiki.ese.core.commands.parser.SuperArgsParser
@@ -10,16 +11,16 @@ import me.naotiki.ese.core.user.User
 import me.naotiki.ese.core.vfs.Permission.Companion.Operation
 
 
-class FileValue<T>(private val file: File, private var internalValue: T) {
+class FileValue<T>(private val file: File, private var value: T) {
     fun set(user: User, value: T): Boolean {
         if (file.checkPermission(user, Operation.Write)) {
-            internalValue = value
+            this.value = value
             return true
         }
         return false
     }
 
-    fun get(): T = internalValue
+    fun get(): T = value
 }
 
 class SealedFileValue<T>(private val file: File, private var internalValue: T) {
@@ -31,11 +32,18 @@ class SealedFileValue<T>(private val file: File, private var internalValue: T) {
         return false
     }
 
-    fun get(user: User): T? {
+    fun getOrNull(user: User): T? {
         if (file.checkPermission(user, Operation.Read)) {
             return internalValue
         }
         return null
+    }
+
+    fun get(user: User):T{
+        if (file.checkPermission(user, Operation.Read)) {
+            return internalValue
+        }
+        throw EseError.FilePermissionError("${user.name}")
     }
 
 }
@@ -147,17 +155,30 @@ open class Directory(
     private val _children = mutableMapOf<String, File>()
     private val children = sealedValue(_children)
     fun getChildren(user: User, includeHidden: Boolean = false): Map<String, File>? {
-        return children.get(user)?.filterValues { !it.hidden.get() || includeHidden }?.toMap()
+        return children.getOrNull(user)?.filterValues { !it.hidden.get() || includeHidden }?.toMap()
     }
 
-    fun addChildren(user: User, vararg childDir: File): Boolean {
-        return children.get(user)?.putAll(childDir.associateBy { it.name }) != null
+    fun exists(user: User,name: String)=children.getOrNull(user)?.get(name)
+
+    fun addChild(user:User,child: File): Boolean {
+        val children=this.children.getOrNull(user)?: return false
+        children.put(child.name,child)?:return false
+        return true
     }
 
-    fun removeChild(user: User, childDir: File): Boolean {
-        println("削除：${childDir.name}")
+    @Deprecated("addChild", replaceWith = ReplaceWith("this.addChild(user,childFile.single())"))
+    fun addChildren(user: User, vararg childFile: File): Boolean {
+        val children=this.children.getOrNull(user)?:return false
+        childFile.forEach{ f ->
+            children.put(f.name,f)?:return false
+        }
+        return true
+    }
+
+    fun removeChild(user: User, child: File): Boolean {
+        println("削除：${child.name}")
         return if (checkPermission(user, Operation.Write)) {
-            children.get(user)?.remove(childDir.name) != null
+            children.getOrNull(user)?.remove(child.name) != null
         } else false
     }
 

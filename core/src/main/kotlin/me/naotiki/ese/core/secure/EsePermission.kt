@@ -1,12 +1,12 @@
 package me.naotiki.ese.core.secure
 
-import me.naotiki.ese.core.secure.Permissions.*
-import me.naotiki.ese.core.utils.log
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.json.*
+import me.naotiki.ese.core.secure.Permissions.*
+import me.naotiki.ese.core.utils.log
 import org.objectweb.asm.Opcodes.ACC_NATIVE
 import org.objectweb.asm.Type
 import java.io.File
@@ -44,7 +44,7 @@ enum class Permissions {
     NativeCall,
 }
 
-internal val defaultPermissions = permissionDSL {
+internal val defaultPermissions = permissions {
     permission(FileAccess) {
         inspectOwnerPackage("java.nio.file")
         inspectOwner(File::class.java)
@@ -70,16 +70,6 @@ internal val defaultPermissions = permissionDSL {
 }
 
 private fun main() {
-    buildJsonObject {
-        put("", "")
-        putJsonObject("") {
-
-        }
-        putJsonArray("") {
-
-        }
-
-    }
     val map = defaultPermissions
     json.encodeToString(inspectSerializer, map).log()
 }
@@ -95,7 +85,7 @@ typealias PermissionMap = Map<Permissions, List<InspectValue>>
 val inspectSerializer = MapSerializer(Permissions.serializer(), ListSerializer(InspectValue.serializer()))
 
 @PermissionDslMarker
-fun permissionDSL(block: PermissionDSL.() -> Unit): PermissionMap {
+fun permissions(block: PermissionDSL.() -> Unit): PermissionMap {
     val p = PermissionDSL()
     p.block()
     return p.createMap()

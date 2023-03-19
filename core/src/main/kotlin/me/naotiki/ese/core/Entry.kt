@@ -1,5 +1,8 @@
 package me.naotiki.ese.core
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.naotiki.ese.core.commands.Expression
 import me.naotiki.ese.core.commands.parser.CommandResult
 import me.naotiki.ese.core.user.Group
@@ -9,11 +12,8 @@ import me.naotiki.ese.core.utils.splitArgs
 import me.naotiki.ese.core.vfs.FileSystem
 import me.naotiki.ese.core.vfs.FileTree
 import me.naotiki.ese.core.vfs.dsl.dir
-import me.naotiki.ese.core.vfs.dsl.file
 import me.naotiki.ese.core.vfs.dsl.fileDSL
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import me.naotiki.ese.core.vfs.dsl.textFile
 import org.koin.core.Koin
 import org.koin.core.KoinApplication
 import org.koin.core.context.loadKoinModules
@@ -98,7 +98,7 @@ suspend fun initialize(koin: Koin, clientImpl: ClientImpl) {
         fileDSL(fileTree.home, userManager.uRoot) {
             dir(user.name, user, group) {
                 println(
-                    "LOG:" + file(
+                    "LOG:" + textFile(
                         "Readme.txt",
                         """
             TODO:なんか書く

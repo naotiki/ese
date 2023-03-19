@@ -15,8 +15,8 @@ import me.naotiki.ese.core.user.User
 import me.naotiki.ese.core.utils.normalizeYesNoAnswer
 import me.naotiki.ese.core.vfs.*
 import me.naotiki.ese.core.vfs.dsl.dir
-import me.naotiki.ese.core.vfs.dsl.file
 import me.naotiki.ese.core.vfs.dsl.fileDSL
+import me.naotiki.ese.core.vfs.dsl.textFile
 import org.koin.core.component.inject
 import java.util.jar.JarFile
 
@@ -262,7 +262,7 @@ class Cat : Executable<Unit>(
     override suspend fun execute(user: User, rawArgs: List<String>) {
 
         if (txt is TextFile) {
-            out.println((txt as TextFile).content.get(user))
+            out.println((txt as TextFile).content.getOrNull(user))
         } else out.println("無効なファイル")
     }
 }
@@ -335,7 +335,7 @@ class Touch : Executable<Unit>("touch", "書き込み可能ファイルを作成
     val fileName by argument(ArgType.String, "name", "作成するファイルの名前")
     override suspend fun execute(user: User, rawArgs: List<String>) {
         fileDSL(fs.currentDirectory, um.user) {
-            file(fileName, "")
+            textFile(fileName, "")
         }
     }
 }
@@ -374,7 +374,7 @@ class WriteToFile : Executable<Unit>(
                 }
 
                 append == true -> {
-                    it.content.set(user, it.content.get(user) + value)
+                    it.content.set(user, it.content.getOrNull(user) + value)
                 }
 
                 else -> {

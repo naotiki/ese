@@ -15,7 +15,7 @@ sealed class EseError(msg: String?,val errorName:String) : Throwable(msg) {
 
     class CommandExecutionError(msg: String?) : EseError(msg,"コマンド実行時エラー")
 
-    class FileOperationDenyError internal constructor(msg: String?) : EseError(msg,"ファイル操作拒否エラー")
+    class FilePermissionError internal constructor(msg: String?) : EseError(msg,"ファイル操作拒否エラー")
 
     class FileNotFoundError internal constructor(msg: String?) : EseError(msg,"ファイル参照エラー")
 
