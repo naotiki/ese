@@ -40,7 +40,7 @@ class Prompt(prompt: String, value: String) {
         prompt = promptText
         value = defaultValue
         textFieldValue = textFieldValue.copy(text = prompt + value, selection = TextRange((prompt + value).length))
-        println("Done $promptText")
+
     }
 
     fun reset() {

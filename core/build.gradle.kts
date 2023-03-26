@@ -19,6 +19,9 @@ dependencies {
     implementation("org.ow2.asm:asm:9.4")
 
     api("io.insert-koin:koin-core:3.3.2")
+    implementation("io.github.oshai:kotlin-logging-jvm:4.0.0-beta-23")
+    implementation("org.slf4j:slf4j-simple:2.0.5")
+
     testApi("org.junit.jupiter:junit-jupiter:5.9.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
     testApi("io.insert-koin:koin-test-junit5:3.3.2")

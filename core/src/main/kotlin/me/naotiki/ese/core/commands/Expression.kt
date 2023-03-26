@@ -98,7 +98,6 @@ class Expression : KoinComponent {
 
             else -> return false
         }
-        println(variable.map)
         return true
     }
 

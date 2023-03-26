@@ -71,7 +71,7 @@ internal val defaultPermissions = permissions {
 
 private fun main() {
     val map = defaultPermissions
-    json.encodeToString(inspectSerializer, map).log()
+    json.encodeToString(inspectSerializer, map)
 }
 
 

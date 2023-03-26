@@ -93,7 +93,6 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
      * */
     internal fun verbose(args: List<String>) {
         kotlin.runCatching {
-            println(args)
             argParser.parse(this, args)
 
             out.tryPrintln("引数")
@@ -105,7 +104,6 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
                 out.tryPrintln("${it.name}/${it.type.javaClass.simpleName}:${it.multiple?.value ?: it.value}")
             }
         }.onFailure {
-            println(it.localizedMessage)
             out.tryPrintln(it.localizedMessage)
         }
     }
@@ -171,10 +169,8 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
         },
         onFailure = {
             if (it is EseError) {
-                println(it.errorName)
                 out.println(it.errorName)
             } else {
-                it.printStackTrace()
                 io.printChannel.tryPrintln(it.stackTraceToString())
 
 
@@ -242,10 +238,8 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
                 },
                 onFailure = {
                     if (it is EseError) {
-                        println(it.errorName)
                         out.println(it.errorName)
                     } else {
-                        it.printStackTrace()
                         io.printChannel.tryPrintln(it.stackTraceToString())
 
                     }

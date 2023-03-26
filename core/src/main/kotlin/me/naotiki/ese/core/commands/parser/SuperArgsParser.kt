@@ -141,7 +141,7 @@ class SuperArgsParser {
                     subCommand ==null && exe.subCommands.isNotEmpty() -> {
 
 
-                        return exe.subCommands.single { it.name==str } to normalizedArgs.drop(index+1).log()
+                        return exe.subCommands.single { it.name==str } to normalizedArgs.drop(index+1)
 
                     }
 

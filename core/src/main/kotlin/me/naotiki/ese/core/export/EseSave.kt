@@ -23,7 +23,7 @@ object EseSave {
         compressor.finish()
         val compressedDataLength = compressor.deflate(compressedData)
 
-        return ByteBuffer.allocate(Int.SIZE_BYTES + compressedDataLength).putInt(byteArray.size.log()).put(
+        return ByteBuffer.allocate(Int.SIZE_BYTES + compressedDataLength).putInt(byteArray.size).put(
             compressedData.copyOfRange(
                 0,
                 compressedDataLength
@@ -36,7 +36,7 @@ object EseSave {
      */
     fun inflate(compressedData: ByteArray): ByteArray {
         val a = ByteBuffer.wrap(compressedData)
-        val originalDataSize = a.int.log()
+        val originalDataSize = a.int
         val originalData = ByteArray(originalDataSize)
         val inflater = Inflater()
         inflater.setInput(a.array().copyOfRange(Int.SIZE_BYTES, compressedData.size))

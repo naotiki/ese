@@ -72,8 +72,8 @@ suspend fun initialize(koin: Koin, clientImpl: ClientImpl) {
 
     //名前設定
     while (true) {
-        userName = io.newPrompt(clientImpl, "あなたの名前は？:", "a")
-        println(userManager.userList)
+        userName = io.newPromptAsync(clientImpl, "あなたの名前は？:", "a")
+
         when {
             userName.isBlank() -> {
                 io.printChannel.println("空白は使用できません")
@@ -95,14 +95,14 @@ suspend fun initialize(koin: Koin, clientImpl: ClientImpl) {
     newUser.setHomeDir { user, group ->
         fileDSL(fileTree.home, userManager.uRoot) {
             dir(user.name, user, group) {
-                println(
+
                     "LOG:" + textFile(
                         "Readme.txt",
                         """
             TODO:なんか書く
             """.trimIndent()
                     ).parent?.name
-                )
+
             }
         }
     }
@@ -117,7 +117,7 @@ suspend fun initialize(koin: Koin, clientImpl: ClientImpl) {
     })
     initialized = true
     while (true/*TODO 終了機能*/) {
-        val input = io.newPrompt(clientImpl, "${userManager.user.name}:${fileSystem.currentPath.value}>")
+        val input = io.newPromptAsync(clientImpl, "${userManager.user.name}:${fileSystem.currentPath.value}>")
             .ifBlank {
                 null
             } ?: continue

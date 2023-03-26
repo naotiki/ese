@@ -176,7 +176,6 @@ open class Directory(
     }
 
     fun removeChild(user: User, child: File): Boolean {
-        println("削除：${child.name}")
         return if (checkPermission(user, Operation.Write)) {
             children.getOrNull(user)?.remove(child.name) != null
         } else false

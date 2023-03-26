@@ -42,7 +42,7 @@ import org.koin.core.component.inject
 import kotlin.system.exitProcess
 
 val handler = CoroutineExceptionHandler { _, exception ->
-    println("CoroutineExceptionHandler got $exception")
+
     throw exception
 }
 
@@ -57,7 +57,7 @@ class TerminalViewModel(prompt: Prompt) : KoinComponent {
     var textLogs by mutableStateOf(dataDir.absolutePath + "\n")
     private val clientImpl = object : ClientImpl {
 
-        override fun prompt(promptText: String, value: String) {
+        override suspend fun prompt(promptText: String, value: String) {
             prompt.newPrompt(promptText, value)
         }
 
@@ -90,13 +90,11 @@ class TerminalViewModel(prompt: Prompt) : KoinComponent {
             }) ?: return@let null
             count++
             (target.dropLast(1) + a).joinToString(" ")
-        } ?: value).also { println(it) }
+        } ?: value)
     }
 
     fun getSuggestList(value: String) =
-        expression.suggest(value).also {
-            println(it)
-        }
+        expression.suggest(value)
 
 
     suspend fun initialize() {
@@ -132,14 +130,14 @@ fun Terminal() {
                 e.printStackTrace()
                 throw e
             }
-            println("End:Init")
         }
+        withContext(Dispatchers.Default){
 
-        viewModel.channnel.consumeEach {
-            viewModel.textLogs += it
-            // Scroll to bottom
-            stateVertical.scrollTo(stateVertical.maxValue)
-            //yield()
+            viewModel.channnel.consumeEach {
+                viewModel.textLogs += it
+                // Scroll to bottom
+                stateVertical.scrollTo(stateVertical.maxValue)
+            }
         }
 
 
@@ -187,7 +185,7 @@ fun Terminal() {
                     return@onPreviewKeyEvent if ((it.key == Key.Enter || it.key == Key.NumPadEnter) && it.type == KeyEventType
                             .KeyDown
                     ) {
-                        println(prompt.textFieldValue.text)
+
                         viewModel.textLogs += prompt.textFieldValue.text + "\n"
                         with(viewModel) { coroutine.outln(prompt.getValue()) }
                         prompt.reset()

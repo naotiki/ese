@@ -61,7 +61,7 @@ value class Permission(val value: Int) {
             }?.let {
                 return //Permission(it)
             }
-            val (target,other)=str.splitPair('u','g','o','a').log()
+            val (target,other)=str.splitPair('u','g','o','a')
 
 
 

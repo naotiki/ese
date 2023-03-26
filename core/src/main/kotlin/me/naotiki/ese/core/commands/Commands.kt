@@ -31,7 +31,7 @@ class Udon : Executable<Unit>("udon", "UDON is a Downloader Of Noodles") {
         val pkgName by argument(ArgType.String, "packageName", "パッケージ名")
         override suspend fun execute(user: User, rawArgs: List<String>) {
             out.println("[DEMO]Installing $pkgName ")
-            println(pkgName)
+
         }
     }
 
@@ -92,7 +92,6 @@ class Udon : Executable<Unit>("udon", "UDON is a Downloader Of Noodles") {
                     process.inputStream.transferTo(io.printChannel)
                 }
             }
-            println("ssss")
             process.waitFor()
         }
     }
@@ -247,10 +246,12 @@ class Yes : Executable<Unit>(
         "benchmark",
         "b",
         "一秒間のyes数を計測します。\n実行するとコンソールの内容は削除されます。"
-    ).default(0)
+    ).validation {
+        it>=0
+    }.default(0)
 
     val delay by option(ArgType.Int, "delay", "d", "出力間隔(ms)").validation {
-        it > 0
+        it >= 0
     }.default(10)
 
     val value by argument(ArgType.String, "value", "出力する文字列").optional()

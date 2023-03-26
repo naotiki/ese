@@ -1,7 +1,7 @@
 package me.naotiki.ese.core
 //クライアントアプリの実装
 interface ClientImpl {
-    fun prompt(promptText:String,value:String="")
+    suspend fun prompt(promptText:String,value:String="")
     fun exit()
 
     fun clear()
