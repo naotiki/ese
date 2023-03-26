@@ -9,6 +9,9 @@ import me.naotiki.ese.core.utils.nextOrNull
 class CommandParserException(command: Executable<*>?, s: String) : Exception("${command?.name}コマンド解析エラー:$s")
 
 class SuperArgsParser {
+    companion object{
+        val isOption="-{1,2}[A-Za-z][A-Za-z-]*".toRegex()
+    }
     //定義
     internal val args = mutableListOf<Arg<*>>()
     internal val opts = mutableListOf<Opt<*>>()
@@ -39,7 +42,7 @@ class SuperArgsParser {
                 nextArg!!.vararg!!.addValue(str)
             } else {
                 when {
-                    str.startsWith("-") -> {
+                    str.matches(isOption) -> {
                         val name = str.trimStart('-')
                         val o = opts.filter { opt: Opt<*> ->
                             if (str.startsWith("--")) {
@@ -105,8 +108,9 @@ class SuperArgsParser {
                 //nextArgはNonNull確定
                 nextArg!!.vararg!!.addValue(str)
             } else {
+
                 when {
-                    str.startsWith("-") -> {
+                    str.matches(isOption)-> {
                         val name = str.trimStart('-')
                         val o = opts.filter { opt: Opt<*> ->
                             if (str.startsWith("--")) {

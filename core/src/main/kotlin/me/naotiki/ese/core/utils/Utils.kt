@@ -23,7 +23,7 @@ fun <T:Any?> T.log(prefix:String?=null)= also {
     println("[TLog] $it")
 }
 
-suspend inline fun loop(block:()->Unit){
+suspend inline fun loop( block: ()->Unit){
     while (true) {
         block()
         yield()

@@ -1,6 +1,8 @@
 package me.naotiki.ese.core
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.naotiki.ese.core.commands.Expression
 import me.naotiki.ese.core.commands.parser.CommandResult
 import me.naotiki.ese.core.user.Group
@@ -48,11 +50,12 @@ fun programArg(args: List<String>) {
     }
 }
 
-fun prepareKoinInjection(): KoinApplication = startKoin {
-    printLogger(Level.INFO)
-    modules(module)
-    allowOverride(false)
-}
+fun prepareKoinInjection(level:Level=Level.INFO): KoinApplication =
+    startKoin {
+        printLogger(level)
+        modules(module)
+        allowOverride(false)
+    }
 
 private var initialized = false
 suspend fun initialize(koin: Koin, clientImpl: ClientImpl) {
@@ -124,7 +127,7 @@ suspend fun initialize(koin: Koin, clientImpl: ClientImpl) {
         if (cmd != null) {
             //非同期実行
             withContext(Dispatchers.Default) {
-                expression.currentJob = launch(executeContext) {
+                expression.currentJob = launch {
                     val result = cmd.execute(userManager.user, inputArgs.drop(1))
                     if (result is CommandResult.Success) {
                         //io.outputStream.println("[DEBUG] RETURN:${result.value}")
@@ -149,7 +152,5 @@ suspend fun initialize(koin: Koin, clientImpl: ClientImpl) {
 
 
 }
-@OptIn(DelicateCoroutinesApi::class)
-val executeContext = newSingleThreadContext("ExecuteContext")
 
 

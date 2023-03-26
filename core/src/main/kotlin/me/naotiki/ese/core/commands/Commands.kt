@@ -1,9 +1,7 @@
 package me.naotiki.ese.core.commands
 
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.yield
+import kotlinx.coroutines.*
 import me.naotiki.ese.core.EseError
 import me.naotiki.ese.core.Variable
 import me.naotiki.ese.core.commands.parser.ArgType
@@ -11,14 +9,16 @@ import me.naotiki.ese.core.commands.parser.Executable
 import me.naotiki.ese.core.dataDir
 import me.naotiki.ese.core.secure.PluginLoader
 import me.naotiki.ese.core.user.User
-import me.naotiki.ese.core.utils.loop
 import me.naotiki.ese.core.utils.normalizeYesNoAnswer
+import me.naotiki.ese.core.version
 import me.naotiki.ese.core.vfs.*
 import me.naotiki.ese.core.vfs.dsl.dir
 import me.naotiki.ese.core.vfs.dsl.fileDSL
 import me.naotiki.ese.core.vfs.dsl.textFile
 import org.koin.core.component.inject
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.jar.JarFile
+import kotlin.math.roundToInt
 
 
 //  UDON is a Downloader Of Noodles
@@ -52,7 +52,7 @@ class Udon : Executable<Unit>("udon", "UDON is a Downloader Of Noodles") {
             var ans: Boolean?
             do {
                 ans = normalizeYesNoAnswer(
-                    io.newPrompt(console, "プラグイン ${file.nameWithoutExtension} を本当にインストールしますか？(yes/no)")
+                    io.newPrompt(client, "プラグイン ${file.nameWithoutExtension} を本当にインストールしますか？(yes/no)")
                 )
             } while (ans == null)
             if (ans != true) {
@@ -167,7 +167,7 @@ class Remove : Executable<Unit>(
         } else {
             "ファイル"
         }
-        val ans = io.newPrompt(console, "$text ${file.getFullPath().value}を削除しますか？ (y/N)")
+        val ans = io.newPrompt(client, "$text ${file.getFullPath().value}を削除しますか？ (y/N)")
         return if (normalizeYesNoAnswer(ans) == true) {
             file.parent?.removeChild(user, file) == true
         } else {
@@ -238,13 +238,68 @@ class Yes : Executable<Unit>(
     YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES YES
 """.trimIndent()
 ) {
+    val noClean by option(
+        ArgType.Boolean, "no-clean",
+        description = "ベンチマーク開始前にコンソールをクリアしません。\n--benchmarkと併用します。"
+    ).default(false)
+    val benchmark by option(
+        ArgType.Int,
+        "benchmark",
+        "b",
+        "一秒間のyes数を計測します。\n実行するとコンソールの内容は削除されます。"
+    ).default(0)
+
+    val delay by option(ArgType.Int, "delay", "d", "出力間隔(ms)").validation {
+        it > 0
+    }.default(10)
+
     val value by argument(ArgType.String, "value", "出力する文字列").optional()
     override suspend fun execute(user: User, rawArgs: List<String>) {
         val v = value ?: "yes"
-        loop {
-            out.println(v)
+        val rest = if (delay != 0) suspend {
+            delay(delay.toLong())
+        } else suspend {
             yield()
         }
+        if (benchmark > 0) {
+            val results = mutableListOf<Int>()
+            repeat(benchmark) {
+                if (!noClean) client.clear()
+                val c = AtomicInteger()
+
+                withTimeoutOrNull(1000) {
+                    while (true) {
+                        out.println(v)
+                        c.incrementAndGet()
+                        rest()
+                    }
+                }
+                results += c.get()
+            }
+            if (!noClean) client.clear()
+            out.println()
+            out.println(
+                """
+                |
+                |Yes Benchmark ($version)
+                |Executed by ${user.name}
+                |Output : "$v"
+                |Args : $rawArgs
+                |--- Result ---
+                |${results.mapIndexed { index, i -> "%3d : %5d yps".format(index + 1, i) }.joinToString("\n")}
+                |
+                |Min :  ${results.min()} yps
+                |Max :  ${results.max()} yps
+                |Avg :  ${results.average().roundToInt()} yps
+            """.trimMargin()
+            )
+        } else {
+            while (true) {
+                out.println(v)
+                rest()
+            }
+        }
+
     }
 }
 
@@ -275,7 +330,7 @@ class Echo : Executable<Unit>("echo", "メッセージを出力します。") {
 
 class Clear : Executable<Unit>("clear", "コンソールの出力を削除します。") {
     override suspend fun execute(user: User, rawArgs: List<String>) {
-        console.clear()
+        client.clear()
     }
 }
 
@@ -298,7 +353,7 @@ class SugoiUserDo : Executable<Unit>(
         #3) 大いなる力には大いなる責任が伴うこと。"""
             )
         }
-        val n = io.newPrompt(console, "実行しますか？(続行するにはあなたのユーザー名を入力) >>")
+        val n = io.newPrompt(client, "実行しますか？(続行するにはあなたのユーザー名を入力) >>")
         if (n == user.name) {
             isConfirm = true
             um.setUser(um.uRoot)
@@ -313,7 +368,7 @@ class SugoiUserDo : Executable<Unit>(
 class Exit : Executable<Unit>("exit", "Ese Linux を終了します。") {
     override suspend fun execute(user: User, rawArgs: List<String>) {
         out.println("終了します")
-        console.exit()
+        client.exit()
     }
 }
 

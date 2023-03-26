@@ -5,7 +5,8 @@ import kotlin.reflect.KProperty
 
 class MultipleOpt<T : Any>(
     val type: ArgType<T>,
-    val name: String,val koin: Koin
+    val name: String,val koin: Koin,
+    var validator:((T)->Boolean)?
 ) {
     var value: MutableList<T> = mutableListOf()
     operator fun getValue(thisRef: Any?, property: KProperty<*>): List<T> {
@@ -20,8 +21,18 @@ class MultipleOpt<T : Any>(
             }
         }
     }
+    fun validation(validator: (T) -> Boolean): MultipleOpt<T> {
+        this.validator = validator
+        return this
+    }
     fun addValue(str: String) {
-        type.converter(koin,str)?.let { value.add(it) }?:throw CommandIllegalArgsException("$name が無効な数値です。",type)
+        val casted=type.converter(koin,str)?:throw CommandIllegalArgsException("$name が無効な数値です。",
+            type)
+        if (validator?.invoke(casted) != false) {
+            value += casted
+        } else {
+            TODO("Fire!!!!!")
+        }
     }
 }
 
@@ -35,7 +46,7 @@ class Opt<T : Any>(
     val shortName: String? = null, override val description: String? = null
 ) : CommandElement<T> {
     init {
-        if (name.isBlank() || shortName?.isBlank() == true || shortName?.length != 1) {
+        if (name.isBlank() || shortName?.isBlank() == true || (shortName?.length ?: 1) != 1) {
             throw IllegalArgumentException("コマンド定義エラー")
         }
     }
@@ -52,26 +63,36 @@ class Opt<T : Any>(
         }
     }
     override fun updateValue(str: String) {
-        value = type.converter(getKoin(),str)?:throw CommandIllegalArgsException("$name が無効な数値です。",type)
+
+        val casted = type.converter(getKoin(),str)?:throw CommandIllegalArgsException("$name が無効な数値です。",type)
+        if (validator?.invoke(casted) != false) {
+            value = casted
+        } else {
+            TODO("Fire!!!!!")
+        }
     }
 
     var required = false
     fun required(): GetWrapper<T> {
         required = true
-        return object :GetWrapper<T>{
+        return   object :GetWrapper<T>{
             override operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
                 return value!!
             }
         }
     }
-
+    var validator: ((T) -> Boolean)? = null
+    fun validation(validator: (T) -> Boolean): Opt<T> {
+        this.validator = validator
+        return this
+    }
     var multiple: MultipleOpt<T>? = null
     /**
      * オプションを複数渡せるようになります。
      * */
     fun multiple(): MultipleOpt<T> {
         multiple = MultipleOpt(
-            type,name,getKoin()
+            type,name,getKoin(),validator
         )
         return multiple as MultipleOpt<T>
     }

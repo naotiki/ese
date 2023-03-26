@@ -85,7 +85,7 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
 
     val out get() = io.printChannel
     val reader get() = io.reader
-    val console by inject<me.naotiki.ese.core.ClientImpl>()
+    val client by inject<me.naotiki.ese.core.ClientImpl>()
 
     /**
      * For Development

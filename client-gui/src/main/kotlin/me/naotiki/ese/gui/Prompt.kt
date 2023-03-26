@@ -15,8 +15,11 @@ class Prompt(prompt: String, value: String) {
      * @param newValue 新しい[TextFieldValue]
      * @param onValueChanged [newValue]が有効で値が更新されたときに呼ばれる。
      */
-    fun updateTextFieldValue(newValue: TextFieldValue, onValueChanged: ((value: String, prompt: String) -> Unit)? = null) {
-        if (newValue.text.startsWith(prompt)&&isEnable) {
+    fun updateTextFieldValue(
+        newValue: TextFieldValue,
+        onValueChanged: ((value: String, prompt: String) -> Unit)? = null
+    ) {
+        if (newValue.text.startsWith(prompt) && isEnable) {
             textFieldValue = newValue
             onValueChanged?.invoke(getValue(), prompt)
         } else {
@@ -24,19 +27,19 @@ class Prompt(prompt: String, value: String) {
         }
     }
 
-    fun updateValue(newValue: String, onValueChanged: ((value: String, prompt: String) -> Unit)? = null) {
+    fun updateValue(newValue: String) {
         value = newValue
-        textFieldValue = textFieldValue.copy(text = prompt + value,selection = TextRange((prompt + value).length))
+        textFieldValue = textFieldValue.copy(text = prompt + value, selection = TextRange((prompt + value).length))
     }
 
     fun newPrompt(promptText: String, defaultValue: String = ""/*onValue:(String)->Unit={}*/) {
         /*//Event消化
         callback?.invoke("")
         callback=null*/
-        isEnable=true
+        isEnable = true
         prompt = promptText
         value = defaultValue
-        textFieldValue = textFieldValue.copy(text = prompt + value,selection = TextRange((prompt + value).length))
+        textFieldValue = textFieldValue.copy(text = prompt + value, selection = TextRange((prompt + value).length))
         println("Done $promptText")
     }
 
@@ -44,8 +47,9 @@ class Prompt(prompt: String, value: String) {
         prompt = ""
         value = ""
         textFieldValue = textFieldValue.copy(text = prompt + value)
-        isEnable=false
+        isEnable = false
     }
+
     //valueのgetterと名前が被るので回避
     @JvmName("getValueWithoutPrompt")
     fun getValue(): String = textFieldValue.text.removePrefix(prompt)

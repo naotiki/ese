@@ -16,8 +16,6 @@ sealed class ArgType<out T : Any> constructor(inline val converter: Koin.(kotlin
     object File : ArgType<me.naotiki.ese.core.vfs.File>({
         get<FileSystem>().tryResolve(Path(it))
     })
-
-
     object Dir : ArgType<Directory>({
         get<FileSystem>().tryResolve(Path(it))?.toDirectoryOrNull()
     })

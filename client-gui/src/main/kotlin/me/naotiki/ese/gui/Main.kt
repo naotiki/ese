@@ -31,7 +31,6 @@ import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.*
 import me.naotiki.ese.core.*
 import me.naotiki.ese.core.commands.Expression
-import me.naotiki.ese.core.user.UserManager
 import me.naotiki.ese.core.utils.splitArgs
 import me.naotiki.ese.gui.component.assistant.CommandPanel
 import me.naotiki.ese.gui.component.assistant.EasyFileView
@@ -47,19 +46,10 @@ val handler = CoroutineExceptionHandler { _, exception ->
     throw exception
 }
 
+
 class TerminalViewModel(prompt: Prompt) : KoinComponent {
     val io by inject<IO>()
-    val userManager by inject<UserManager>()
     val expression by inject<Expression>()
-
-    val logFlow = flow {
-        while (true) {
-            val char = io.reader.read()
-            if (char == -1) break
-            else if (char == 13) continue // DOSのCR(\r)を除外
-            emit(char.toChar())
-        }
-    }.flowOn(Dispatchers.IO)
 
     val channnel = io.readChannel
     val commandHistory get() = expression.commandHistory
@@ -113,10 +103,13 @@ class TerminalViewModel(prompt: Prompt) : KoinComponent {
         initialize(getKoin(), clientImpl)
     }
 
-    fun outln(value: String) {
+    fun CoroutineScope.outln(value: String) {
         suggestion = null
         suggestList = emptyList()
-        io.consoleWriter.println(value)
+        runBlocking {
+            this@outln.launch { io.clientChannel.println(value) }
+        }
+
     }
 }
 
@@ -146,7 +139,7 @@ fun Terminal() {
             viewModel.textLogs += it
             // Scroll to bottom
             stateVertical.scrollTo(stateVertical.maxValue)
-            yield()
+            //yield()
         }
 
 
@@ -179,7 +172,6 @@ fun Terminal() {
                 onValueChange = {
                     prompt.updateTextFieldValue(it) { value, _ ->
                         lastInput = value
-                        println("Debug:Updated $value")
                     }
                 },
                 textStyle =
@@ -192,12 +184,12 @@ fun Terminal() {
                 cursorBrush = SolidColor(Color.White),
                 modifier = Modifier.fillMaxWidth().onPreviewKeyEvent {
                     if (!prompt.isEnable) return@onPreviewKeyEvent false
-
-                    return@onPreviewKeyEvent if (it.key == Key.Enter && it.type == KeyEventType.KeyDown /*&& prompt
-                        .isEnable*/) {
+                    return@onPreviewKeyEvent if ((it.key == Key.Enter || it.key == Key.NumPadEnter) && it.type == KeyEventType
+                            .KeyDown
+                    ) {
                         println(prompt.textFieldValue.text)
                         viewModel.textLogs += prompt.textFieldValue.text + "\n"
-                        viewModel.outln(prompt.getValue())
+                        with(viewModel) { coroutine.outln(prompt.getValue()) }
                         prompt.reset()
                         lastInput = ""
                         historyIndex = -1
