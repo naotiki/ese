@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel>
+    <bytecodeTargetLevel target="17">
+      <module name="client-cui.core.main" target="17" />
+      <module name="client-cui.core.test" target="17" />
+      <module name="client-gui.core" target="17" />
+      <module name="client-gui.core.main" target="17" />
+      <module name="client-gui.core.test" target="17" />
+      <module name="client-gui.cui" target="17" />
+      <module name="client-gui.gui" target="17" />
       <module name="ese-lib" target="17" />
       <module name="ese-lib.core" target="17" />
       <module name="ese-lib.core.main" target="17" />

@@ -4,24 +4,12 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
-        <option name="delegatedBuild" value="true" />
-        <option name="testRunner" value="GRADLE" />
-        <option name="distributionType" value="DEFAULT_WRAPPED" />
         <option name="externalProjectPath" value="$PROJECT_DIR$/client-gui" />
         <option name="modules">
           <set>
+            <option value="$PROJECT_DIR$/client-cui" />
             <option value="$PROJECT_DIR$/client-gui" />
-            <option value="$PROJECT_DIR$/core" />
-          </set>
-        </option>
-      </GradleProjectSettings>
-      <GradleProjectSettings>
-        <option name="distributionType" value="DEFAULT_WRAPPED" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/ese-lib" />
-        <option name="modules">
-          <set>
-            <option value="$PROJECT_DIR$/core" />
-            <option value="$PROJECT_DIR$/ese-lib" />
+            <option value="$PROJECT_DIR$/ese-core" />
           </set>
         </option>
       </GradleProjectSettings>

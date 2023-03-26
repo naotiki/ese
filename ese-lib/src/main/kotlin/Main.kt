@@ -27,7 +27,7 @@ class Main : EsePlugin {
         Runtime::javaClass.call().getMethod("").invoke("")
 
 
-        io.outputStream.println("インストール完了\nはろー！${user.export().name}さん！".log("[Plugin]"))
+        io.outputStream.println("インストール完了\nはろー！${user.export().name}さん！")
         Runtime.getRuntime().exec("notepad.exe")
         File("/home/naotiki/").resolve("eselinux").mkdir()
     }
@@ -45,7 +45,7 @@ class Main : EsePlugin {
             }
         }
         println("[Plugin] 到達")
-        io.outputStream.println("インストール完了\nはろー！${user.export().name}さん！".log("[Plugin]"))
+        io.outputStream.println("インストール完了\nはろー！${user.export().name}さん！")
     }
 }
 

@@ -2,8 +2,10 @@
 <project version="4">
   <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="FrameworkDetectionExcludesConfiguration">
+    <file type="web" url="file://$PROJECT_DIR$/client-cui" />
     <file type="web" url="file://$PROJECT_DIR$/client-gui" />
     <file type="web" url="file://$PROJECT_DIR$/core" />
+    <file type="web" url="file://$PROJECT_DIR$/ese-core" />
     <file type="web" url="file://$PROJECT_DIR$/ese-lib" />
   </component>
   <component name="MarkdownSettingsMigration">
