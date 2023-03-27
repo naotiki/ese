@@ -32,8 +32,11 @@ import kotlinx.coroutines.flow.*
 import me.naotiki.ese.core.*
 import me.naotiki.ese.core.commands.Expression
 import me.naotiki.ese.core.utils.splitArgs
+import me.naotiki.ese.gui.component.TextLog
+import me.naotiki.ese.gui.component.TextLogState
 import me.naotiki.ese.gui.component.assistant.CommandPanel
 import me.naotiki.ese.gui.component.assistant.EasyFileView
+import me.naotiki.ese.gui.component.rememberTextLogState
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
 import org.jetbrains.compose.splitpane.SplitPaneState
@@ -47,7 +50,7 @@ val handler = CoroutineExceptionHandler { _, exception ->
 }
 
 
-class TerminalViewModel(prompt: Prompt) : KoinComponent {
+class TerminalViewModel(prompt: Prompt, logState: TextLogState) : KoinComponent {
     val io by inject<IO>()
     val expression by inject<Expression>()
 
@@ -67,7 +70,9 @@ class TerminalViewModel(prompt: Prompt) : KoinComponent {
         }
 
         override fun clear() {
-            textLogs = ""
+            //textLogs = ""
+            logState.clear()
+
         }
     }
 
@@ -112,16 +117,18 @@ class TerminalViewModel(prompt: Prompt) : KoinComponent {
 }
 
 @Composable
-fun rememberTerminalViewModel(prompt: Prompt) = remember { TerminalViewModel(prompt) }
+fun rememberTerminalViewModel(prompt: Prompt, logState: TextLogState) =
+    remember { TerminalViewModel(prompt, logState) }
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun Terminal() {
     val prompt by rememberPrompt("", "")
-    val viewModel = rememberTerminalViewModel(prompt)
+    val textLogState = rememberTextLogState(4000)
+    val viewModel = rememberTerminalViewModel(prompt,textLogState)
     var historyIndex by remember { mutableStateOf(-1) }
     val coroutine = rememberCoroutineScope()
-    val stateVertical = rememberScrollState(0)
+    //  val stateVertical = rememberScrollState(0)
     LaunchedEffect(Unit) {
         launch(handler) {
             try {
@@ -131,12 +138,12 @@ fun Terminal() {
                 throw e
             }
         }
-        withContext(Dispatchers.Default){
+        withContext(Dispatchers.Default) {
 
             viewModel.channnel.consumeEach {
-                viewModel.textLogs += it
+                textLogState.addChar(it)
                 // Scroll to bottom
-                stateVertical.scrollTo(stateVertical.maxValue)
+                //stateVertical.scrollTo(stateVertical.maxValue)
             }
         }
 
@@ -150,20 +157,14 @@ fun Terminal() {
         Column(
             modifier = Modifier.fillMaxSize().onSizeChanged {
                 coroutine.launch {
-                    stateVertical.scrollTo(stateVertical.maxValue)
+                    // stateVertical.scrollTo(stateVertical.maxValue)
                 }
-            }.verticalScroll(stateVertical).padding(5.dp),
+            }.padding(5.dp)
+            //.verticalScroll(stateVertical)
+            ,
             verticalArrangement = Arrangement.spacedBy((-5).dp, Alignment.Top)
         ) {
-            SelectionContainer {
-                Text(
-                    viewModel.textLogs,
-                    overflow = TextOverflow.Visible,
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontFamily = FontFamily.Monospace
-                )
-            }
+            TextLog(textLogState, modifier = Modifier.weight(1f), fontSize = 20.sp)
             var lastInput by remember { mutableStateOf("") }
             BasicTextField(
                 prompt.textFieldValue,
@@ -180,13 +181,13 @@ fun Terminal() {
                     fontFamily = FontFamily.Monospace
                 ),
                 cursorBrush = SolidColor(Color.White),
-                modifier = Modifier.fillMaxWidth().onPreviewKeyEvent {
+                modifier = Modifier.fillMaxWidth().weight(1f).onPreviewKeyEvent {
                     if (!prompt.isEnable) return@onPreviewKeyEvent false
                     return@onPreviewKeyEvent if ((it.key == Key.Enter || it.key == Key.NumPadEnter) && it.type == KeyEventType
                             .KeyDown
                     ) {
 
-                        viewModel.textLogs += prompt.textFieldValue.text + "\n"
+                        textLogState.addString(prompt.textFieldValue.text + "\n")
                         with(viewModel) { coroutine.outln(prompt.getValue()) }
                         prompt.reset()
                         lastInput = ""
@@ -209,12 +210,12 @@ fun Terminal() {
                 },
             )
         }
-        VerticalScrollbar(
+        /*VerticalScrollbar(
             modifier = Modifier.align(Alignment.CenterEnd)
                 .fillMaxHeight(),
             adapter = rememberScrollbarAdapter(stateVertical), style = LocalScrollbarStyle.current.copy
                 (hoverColor = Color.LightGray, unhoverColor = Color.Gray, thickness = 5.dp)
-        )
+        )*/
     }
 }
 
