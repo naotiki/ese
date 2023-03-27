@@ -97,11 +97,11 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
 
             out.tryPrintln("引数")
             argParser.args.forEach {
-                out.tryPrintln("${it.name}/${it.type.javaClass.simpleName}:${it.vararg?.value ?: it.value}")
+                out.tryPrintln("${it.name} / ${it.type.javaClass.simpleName}:${it.vararg?.value ?: it.value}")
             }
             out.tryPrintln("オプション")
             argParser.opts.forEach {
-                out.tryPrintln("${it.name}/${it.type.javaClass.simpleName}:${it.multiple?.value ?: it.value}")
+                out.tryPrintln("${it.name} / ${it.type.javaClass.simpleName}:${it.multiple?.value ?: it.value}")
             }
         }.onFailure {
             out.tryPrintln(it.localizedMessage)
@@ -113,18 +113,23 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
             appendLine("$name コマンドヘルプ")
             appendLine("構文")
             appendLine(
-                "$name ${argParser.opts.joinToString(" ") { "[-${it.shortName}|--${it.name}]" }} " +
+                "$name ${argParser.opts.joinToString(" ") {
+                    if (it.shortName!=null) {
+                        "[-${it.shortName}|--${it.name}]"
+                    }else "[--${it.name}]"
+                     
+                }} " +
                         argParser.args.joinToString(" ") { it.name + if (it.vararg != null) "..." else "" }
             )
             appendLine("説明：$description")
             appendLine("引数")
             argParser.args.forEach {
-                appendLine("${it.name}/${it.type.javaClass.simpleName}")
+                appendLine("${it.name} / ${it.type.javaClass.simpleName}")
                 appendLine(it.description)
             }
             appendLine("オプション")
             argParser.opts.forEach {
-                appendLine("${it.name}/${it.type.javaClass.simpleName}")
+                appendLine("${it.name} / ${it.type.javaClass.simpleName}")
                 appendLine(it.description)
             }
         }

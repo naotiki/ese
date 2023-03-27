@@ -282,7 +282,7 @@ class Yes : Executable<Unit>(
             out.println(
                 """
                 |
-                |Yes Benchmark ($version)
+                |Yes Benchmark ($version) - ${client.getClientName()}
                 |Executed by ${user.name}
                 |Output : "$v"
                 |Args : $rawArgs

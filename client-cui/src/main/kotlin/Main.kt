@@ -64,6 +64,7 @@ suspend fun main(args: Array<String>) {
 
     val io = koin.get<IO>()
     val impl = object : ClientImpl {
+        override fun getClientName(): String = "EseLinux Client-CUI"
         override suspend fun prompt(promptText: String, value: String) {
             withContext(Dispatchers.Default) {
                 val str = reader.readLine(promptText)

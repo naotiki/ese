@@ -56,7 +56,7 @@ class TerminalViewModel(prompt: Prompt) : KoinComponent {
 
     var textLogs by mutableStateOf(dataDir.absolutePath + "\n")
     private val clientImpl = object : ClientImpl {
-
+        override fun getClientName(): String = "EseLinux Client-GUI"
         override suspend fun prompt(promptText: String, value: String) {
             prompt.newPrompt(promptText, value)
         }

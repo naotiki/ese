@@ -66,7 +66,7 @@ suspend fun initialize(koin: Koin, clientImpl: ClientImpl) {
     var userName: String
     io.printChannel.println(
         """
-        Ese Linux ver.$version
+        Ese Linux ver.$version - ${clientImpl.getClientName()}
         """.trimIndent()
     )
 
