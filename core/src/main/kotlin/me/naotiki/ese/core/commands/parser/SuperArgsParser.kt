@@ -1,7 +1,6 @@
 package me.naotiki.ese.core.commands.parser
 
 import me.naotiki.ese.core.commands.dev.CommandDefineException
-import me.naotiki.ese.core.utils.log
 import me.naotiki.ese.core.utils.nextOrNull
 
 
@@ -27,6 +26,8 @@ class SuperArgsParser {
         }
 
     fun getNextArgTypeOrNull(argList: List<String>): Pair<ArgType<Any>, String>? {
+        /*args.forEach { it.reset() }
+        opts.forEach { it.reset() }*/
         var inOption: Opt<*>? = null
         val argListIterator = sortedArgs.listIterator()
         var nextArg: Arg<*>? = null//argListIterator.nextOrNull()
@@ -90,6 +91,7 @@ class SuperArgsParser {
     Any?>.SubCommand<out Any?>,
             List<String>>? {
         if (subCommand==null&&exe.subCommands.isNotEmpty() && args.isNotEmpty()) throw CommandDefineException("Argsはだめです")
+        args.forEach { it.reset() }
         opts.forEach { it.reset() }
         //可変長引数は最後に持ってくる
         //オプションがあるかどうか
