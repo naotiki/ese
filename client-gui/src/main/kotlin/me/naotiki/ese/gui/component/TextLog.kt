@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -32,9 +33,9 @@ val lineSeparator = '\n'
 class TextLogState(maxLineCount: Int) {
     val maxLineCount by mutableStateOf(maxLineCount)
 
-    val lines = mutableStateListOf<String>("")
+    val lines = mutableStateListOf("")
     private fun newLine() {
-        lastLine+= lineSeparator
+        //lastLine+= lineSeparator
         lines.add("")
         //Overflow時 TODO ログファイル的なのに書き込む？
         if (lines.size > maxLineCount) lines.removeAt(0)
@@ -81,11 +82,12 @@ fun TextLog(state: TextLogState,modifier: Modifier=Modifier, fontSize: TextUnit 
     val lazyListState = rememberLazyListState()
     LaunchedEffect(state.lines.toList()){
 
-        //lazyListState.scrollToItem(index = (state.lines.lastIndex).coerceIn(0,3999))
+        lazyListState.scrollToItem(index = (state.lines.lastIndex).coerceIn(0,3999))
     }
     SelectionContainer(Modifier.fillMaxWidth().then(modifier)) {
         LazyColumn(Modifier.fillMaxWidth(), state = lazyListState) {
             items(state.lines) {
+                BasicText()
                 Text(
                     it,
                     Modifier.fillMaxWidth(),
@@ -94,7 +96,7 @@ fun TextLog(state: TextLogState,modifier: Modifier=Modifier, fontSize: TextUnit 
                     fontSize = fontSize,
 
                     fontFamily = FontFamily.Monospace,
-                    maxLines = 1
+                   // maxLines = 1
                 )
             }
         }

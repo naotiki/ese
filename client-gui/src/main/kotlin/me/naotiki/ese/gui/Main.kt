@@ -187,7 +187,7 @@ fun Terminal() {
                             .KeyDown
                     ) {
 
-                        textLogState.addString(prompt.textFieldValue.text + "\n")
+                        textLogState.addString(prompt.textFieldValue.text)
                         with(viewModel) { coroutine.outln(prompt.getValue()) }
                         prompt.reset()
                         lastInput = ""
