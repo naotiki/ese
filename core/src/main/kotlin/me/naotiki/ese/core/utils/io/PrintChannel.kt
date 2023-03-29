@@ -5,22 +5,18 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.channels.trySendBlocking
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.yield
-import me.naotiki.ese.core.utils.log
 
 
 
 
 class PrintChannel(
-    val lineSeparator: String="\n"
+    val lineSeparator: String="\n",
+    val buffer:Int=Channel.BUFFERED
 ):ReadChannel {
-    private val channel = Channel<Char>(Channel.BUFFERED)
+    private val channel = Channel<Char>(buffer)
     val receiveChannel: ReceiveChannel<Char> get() = channel
     @OptIn(ExperimentalCoroutinesApi::class)
     val isClosed get() = channel.isClosedForReceive

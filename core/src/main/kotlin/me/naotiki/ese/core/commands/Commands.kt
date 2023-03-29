@@ -112,6 +112,8 @@ class Help : Executable<Unit>(
             out.println(it.name)
             out.println("  " + it.description)
         }
+        out.println()
+        out.println("詳細はコマンドに--helpを付けると確認できます。")
     }
 }
 
@@ -284,14 +286,15 @@ class Yes : Executable<Unit>(
                 |
                 |Yes Benchmark ($version) - ${client.getClientName()}
                 |Executed by ${user.name}
+                |Input  : yes ${rawArgs.joinToString(" ")}
                 |Output : "$v"
-                |Args : $rawArgs
+                |
                 |--- Result ---
                 |${results.mapIndexed { index, i -> "%3d : %5d yps".format(index + 1, i) }.joinToString("\n")}
                 |
-                |Min :  ${results.min()} yps
-                |Max :  ${results.max()} yps
-                |Avg :  ${results.average().roundToInt()} yps
+                |Min : ${"%5d yps".format(results.min())}
+                |Max : ${"%5d yps".format(results.max())}
+                |Avg : ${"%5d yps".format(results.average().roundToInt())}
             """.trimMargin()
             )
         } else {

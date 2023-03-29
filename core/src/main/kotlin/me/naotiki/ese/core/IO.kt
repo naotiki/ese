@@ -11,7 +11,7 @@ import java.io.PrintStream
 
 class IO {
 
-    val printChannel = PrintChannel()
+    val printChannel = PrintChannel(buffer = 64)
     val readChannel = printChannel.receiveChannel
 
 
@@ -25,7 +25,7 @@ class IO {
     val outputStream = PrintStream(PipedOutputStream(inputStream), true)
 
 
-    val clientChannel = PrintChannel()
+    val clientChannel = PrintChannel(buffer = 64)
     internal val clientReadChannel = clientChannel.receiveChannel
     @Deprecated("migrate channel")
     private val consoleInput = PipedInputStream()
