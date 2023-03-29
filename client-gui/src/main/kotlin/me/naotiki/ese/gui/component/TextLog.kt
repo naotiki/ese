@@ -1,11 +1,9 @@
 package me.naotiki.ese.gui.component
 
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -25,6 +23,8 @@ import androidx.compose.ui.window.application
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.yield
 import kotlin.text.Regex.Companion.fromLiteral
 
@@ -33,23 +33,26 @@ val lineSeparator = '\n'
 class TextLogState(maxLineCount: Int) {
     val maxLineCount by mutableStateOf(maxLineCount)
 
-    val lines = mutableStateListOf("")
+    var lines by mutableStateOf(listOf(""))
     private fun newLine() {
         //lastLine+= lineSeparator
-        lines.add("")
+        lines= if (lines.size > maxLineCount) lines.plus("").drop(1) else lines.plus("")
+       /* lines.add("")
         //Overflow時 TODO ログファイル的なのに書き込む？
-        if (lines.size > maxLineCount) lines.removeAt(0)
+        if (lines.size > maxLineCount) lines.removeAt(0)*/
     }
 
     private var lastLine
         get() = lines[lines.lastIndex]
         set(value) {
-            lines[lines.lastIndex] = value
+            lines=lines.toMutableList() .apply{ set(lines.lastIndex, value) }
+            //lines[lines.lastIndex] = value
         }
 
+    val mutex= Mutex()
     fun addString(line: CharSequence) {
         arrayOfNulls<String>(50).indexOfLast { it != null }
-        val separatedString = line.split(lineSeparator)
+        val separatedString = line.lines()
         lastLine += separatedString.first()
         newLine()
         separatedString.drop(1).forEach {
@@ -58,7 +61,7 @@ class TextLogState(maxLineCount: Int) {
         }
     }
 
-    fun addChar(char: Char) {
+    suspend fun addChar(char: Char) =mutex.withLock{
         if (char == lineSeparator) {
             newLine()
             return
@@ -67,7 +70,8 @@ class TextLogState(maxLineCount: Int) {
     }
 
     fun clear() {
-        lines.clear()
+        lines= emptyList()
+        //lines.clear()
         newLine()
     }
 }
@@ -80,14 +84,17 @@ fun rememberTextLogState(initialLineCount: Int) = remember {
 @Composable
 fun TextLog(state: TextLogState,modifier: Modifier=Modifier, fontSize: TextUnit = TextUnit.Unspecified,) {
     val lazyListState = rememberLazyListState()
-    LaunchedEffect(state.lines.toList()){
-
-        lazyListState.scrollToItem(index = (state.lines.lastIndex).coerceIn(0,3999))
+    val lastItemIndex by remember {
+        derivedStateOf {
+            lazyListState.layoutInfo.totalItemsCount -1
+        }
+    }
+    LaunchedEffect(state.lines){
+        lazyListState.scrollToItem(index = state.lines.lastIndex.coerceIn(0,3999))
     }
     SelectionContainer(Modifier.fillMaxWidth().then(modifier)) {
-        LazyColumn(Modifier.fillMaxWidth(), state = lazyListState) {
-            items(state.lines) {
-                BasicText()
+        LazyColumn(Modifier.fillMaxWidth(), state = lazyListState, /*reverseLayout = true*/) {
+            itemsIndexed(state.lines, key = { index, _ -> index }) { _, it->
                 Text(
                     it,
                     Modifier.fillMaxWidth(),
