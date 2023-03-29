@@ -5,18 +5,13 @@ import me.naotiki.ese.core.IO
 import me.naotiki.ese.core.commands.Expression
 import me.naotiki.ese.core.initialize
 import me.naotiki.ese.core.prepareKoinInjection
-import me.naotiki.ese.core.utils.log
-import me.naotiki.ese.core.utils.loop
 import org.jline.reader.*
-import org.jline.reader.impl.DefaultParser
-import org.jline.reader.impl.LineReaderImpl.BRACKETED_PASTE_ON
-import org.jline.terminal.Attributes
+import org.jline.terminal.Terminal
 import org.jline.terminal.TerminalBuilder
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.logger.Level
 import java.util.*
-import java.util.logging.Logger
 import kotlin.system.exitProcess
 
 fun mains() {
@@ -52,10 +47,15 @@ fun mains() {
 
 // IMPORTANT : DO NOT EXECUTE FROM GRADLE RUN TASKS
 // JLine3 will not be working
+@OptIn(ExperimentalCoroutinesApi::class)
 suspend fun main(args: Array<String>) {
     val koin = prepareKoinInjection(Level.NONE).koin
-    val term = TerminalBuilder.builder().build()
-
+    val expression = koin.get<Expression>()
+    val term = TerminalBuilder.builder().system(true).nativeSignals(true).signalHandler {
+        if (it == Terminal.Signal.INT) {
+            expression.cancelJob()
+        }
+    }.build()
     val reader = LineReaderBuilder.builder()
         .terminal(term)
         .completer(EseCompleter())
@@ -67,7 +67,10 @@ suspend fun main(args: Array<String>) {
         override fun getClientName(): String = "EseLinux Client-CUI"
         override suspend fun prompt(promptText: String, value: String) {
             withContext(Dispatchers.Default) {
-                val str = reader.readLine(promptText)
+                while (!io.readChannel.isEmpty){
+                    yield()
+                }
+                val str = reader.readLine(promptText, null, value)
                 io.clientChannel.println(str)
             }
         }
@@ -77,7 +80,7 @@ suspend fun main(args: Array<String>) {
         }
 
         override fun clear() {
-           // reader.history.save()
+            // reader.history.save()
         }
 
     }
@@ -88,10 +91,10 @@ suspend fun main(args: Array<String>) {
                 initialize(koin, impl)
             },
             launch {
-                val w=term.writer()
+                val w = term.writer()
                 io.readChannel.consumeEach {
                     w.write(it.code)
-                    if (it=='\n')w.flush()
+                    if (it == '\n') w.flush()
                 }
 
                 /* while (!io.printChannel.isClosed) {
