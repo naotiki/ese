@@ -12,12 +12,10 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
@@ -95,22 +93,18 @@ fun calc() {
 @Composable
 fun TextLog(
     state: TextLogState, modifier: Modifier = Modifier, fontSize: TextUnit = TextUnit.Unspecified,
-    letterSpacing: TextUnit = 0.0.em
+    letterSpacing: TextUnit = TextUnit.Unspecified, footer: @Composable (() -> Unit)? =null
 ) {
     val lazyListState = rememberLazyListState()
 
     SelectionContainer(Modifier.fillMaxWidth().then(modifier)) {
-        LazyColumn(Modifier.fillMaxWidth().onSizeChanged {
 
-            /*    val fontPx = with(localDensity) {
-                    fontSize.toPx()
+        LazyColumn(Modifier.fillMaxWidth().then(modifier), state = lazyListState, reverseLayout = true) {
+            footer?.let {
+                item {
+                    it()
                 }
-                println(fontPx)
-                val spacePx = letterSpacing.value * fontPx
-                println(spacePx)
-                val x = (it.width + spacePx) / (fontPx + spacePx)
-                println(x * 2)*/
-        }, state = lazyListState, reverseLayout = true) {
+            }
             items(state.lines.count()) {
 
                 BoxWithConstraints {
@@ -173,6 +167,7 @@ fun TextLog(
                  )*/
 
             }
+
         }
     }
 
