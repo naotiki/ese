@@ -30,27 +30,26 @@ val lineSeparator = '\n'
 
 class TextLogState(maxLineCount: Int) {
     val maxLineCount by mutableStateOf(maxLineCount)
-
-    var lines by mutableStateOf(listOf(""))//mutableStateListOf("")
+    var lines =mutableStateListOf("")//駄目ならmutableStateOf(listOf(""))
     private fun newLine() {
-
         //lastLine+= lineSeparator
-        lines = if (lines.size > maxLineCount) listOf("") + lines.dropLast(1) else listOf("") + lines
-        /*  lines.add(0,"")
+        //lines = if (lines.size > maxLineCount) listOf("") + lines.dropLast(1) else listOf("") + lines
+          lines.add(0,"")
            //Overflow時 TODO ログファイル的なのに書き込む？
-           if (lines.size > maxLineCount) lines.removeAt(lines.lastIndex)*/
+           if (lines.size > maxLineCount) lines.removeAt(lines.lastIndex)
     }
 
     private var firstLine
         get() = lines[0]
         set(value) {
-            lines = lines.toMutableList().apply { set(0, value) }
+            //lines = lines.toMutableList().apply { set(0, value) }
+            lines[0] = value
         }
     private var lastLine
         get() = lines[lines.lastIndex]
         set(value) {
-            lines = lines.toMutableList().apply { set(lines.lastIndex, value) }
-            // lines[lines.lastIndex] = value
+            //lines = lines.toMutableList().apply { set(lines.lastIndex, value) }
+             lines[lines.lastIndex] = value
         }
 
     val mutex = Mutex()
@@ -74,9 +73,10 @@ class TextLogState(maxLineCount: Int) {
     }
 
     fun clear() {
-        lines = listOf("")
-        //lines.clear()
-        // newLine()
+       // lines = listOf("")
+        firstLine = ""
+        lines.removeRange(1,lines.lastIndex)
+
     }
 }
 
@@ -85,9 +85,6 @@ fun rememberTextLogState(initialLineCount: Int) = remember {
     TextLogState(initialLineCount)
 }
 
-fun calc() {
-
-}
 
 @OptIn(ExperimentalTextApi::class)
 @Composable
