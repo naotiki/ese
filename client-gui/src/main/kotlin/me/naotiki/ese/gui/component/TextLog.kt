@@ -2,7 +2,6 @@ package me.naotiki.ese.gui.component
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.MaterialTheme
@@ -33,30 +32,35 @@ val lineSeparator = '\n'
 class TextLogState(maxLineCount: Int) {
     val maxLineCount by mutableStateOf(maxLineCount)
 
-    var lines by mutableStateOf(listOf(""))
+    var lines by mutableStateOf(listOf(""))//mutableStateListOf("")
     private fun newLine() {
-        //lastLine+= lineSeparator
-        lines= if (lines.size > maxLineCount) lines.plus("").drop(1) else lines.plus("")
-       /* lines.add("")
-        //Overflow時 TODO ログファイル的なのに書き込む？
-        if (lines.size > maxLineCount) lines.removeAt(0)*/
-    }
 
+        //lastLine+= lineSeparator
+        lines= if (lines.size > maxLineCount) listOf("")+lines.dropLast(1) else listOf("")+lines
+     /*  lines.add(0,"")
+        //Overflow時 TODO ログファイル的なのに書き込む？
+        if (lines.size > maxLineCount) lines.removeAt(lines.lastIndex)*/
+    }
+    private var firstLine
+        get() = lines[0]
+        set(value) {
+            lines=lines.toMutableList() .apply{ set(0, value) }
+        }
     private var lastLine
         get() = lines[lines.lastIndex]
         set(value) {
             lines=lines.toMutableList() .apply{ set(lines.lastIndex, value) }
-            //lines[lines.lastIndex] = value
+           // lines[lines.lastIndex] = value
         }
 
     val mutex= Mutex()
     fun addString(line: CharSequence) {
         arrayOfNulls<String>(50).indexOfLast { it != null }
         val separatedString = line.lines()
-        lastLine += separatedString.first()
+        firstLine += separatedString.first()
         newLine()
         separatedString.drop(1).forEach {
-            lastLine += it
+            firstLine += it
             newLine()
         }
     }
@@ -66,13 +70,13 @@ class TextLogState(maxLineCount: Int) {
             newLine()
             return
         }
-        lastLine += char
+        firstLine += char
     }
 
     fun clear() {
-        lines= emptyList()
+        lines= listOf("")
         //lines.clear()
-        newLine()
+       // newLine()
     }
 }
 
@@ -84,26 +88,26 @@ fun rememberTextLogState(initialLineCount: Int) = remember {
 @Composable
 fun TextLog(state: TextLogState,modifier: Modifier=Modifier, fontSize: TextUnit = TextUnit.Unspecified,) {
     val lazyListState = rememberLazyListState()
-    val lastItemIndex by remember {
+  /*  val lastItemIndex by remember {
         derivedStateOf {
             lazyListState.layoutInfo.totalItemsCount -1
         }
     }
     LaunchedEffect(state.lines){
-        lazyListState.scrollToItem(index = state.lines.lastIndex.coerceIn(0,3999))
-    }
+     //   lazyListState.scrollToItem(index = state.lines.lastIndex.coerceIn(0,3999))
+    }*/
     SelectionContainer(Modifier.fillMaxWidth().then(modifier)) {
-        LazyColumn(Modifier.fillMaxWidth(), state = lazyListState, /*reverseLayout = true*/) {
-            itemsIndexed(state.lines, key = { index, _ -> index }) { _, it->
+        LazyColumn(Modifier.fillMaxWidth(), state = lazyListState, reverseLayout = true) {
+            items(state.lines.size){
                 Text(
-                    it,
+                    state.lines.getOrNull(it)?:"",
                     Modifier.fillMaxWidth(),
                     overflow = TextOverflow.Visible,
                     color = Color.LightGray,
                     fontSize = fontSize,
 
                     fontFamily = FontFamily.Monospace,
-                   // maxLines = 1
+                    // maxLines = 1
                 )
             }
         }
