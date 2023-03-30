@@ -1,15 +1,16 @@
 package me.naotiki.ese.gui.component
 
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.*
@@ -30,13 +31,13 @@ val lineSeparator = '\n'
 
 class TextLogState(maxLineCount: Int) {
     val maxLineCount by mutableStateOf(maxLineCount)
-    var lines =mutableStateListOf("")//駄目ならmutableStateOf(listOf(""))
+    var lines = mutableStateListOf("")//駄目ならmutableStateOf(listOf(""))
     private fun newLine() {
         //lastLine+= lineSeparator
         //lines = if (lines.size > maxLineCount) listOf("") + lines.dropLast(1) else listOf("") + lines
-          lines.add(0,"")
-           //Overflow時 TODO ログファイル的なのに書き込む？
-           if (lines.size > maxLineCount) lines.removeAt(lines.lastIndex)
+        lines.add(0, "")
+        //Overflow時 TODO ログファイル的なのに書き込む？
+        if (lines.size > maxLineCount) lines.removeAt(lines.lastIndex)
     }
 
     private var firstLine
@@ -49,7 +50,7 @@ class TextLogState(maxLineCount: Int) {
         get() = lines[lines.lastIndex]
         set(value) {
             //lines = lines.toMutableList().apply { set(lines.lastIndex, value) }
-             lines[lines.lastIndex] = value
+            lines[lines.lastIndex] = value
         }
 
     val mutex = Mutex()
@@ -73,9 +74,9 @@ class TextLogState(maxLineCount: Int) {
     }
 
     fun clear() {
-       // lines = listOf("")
+        // lines = listOf("")
         firstLine = ""
-        lines.removeRange(1,lines.lastIndex)
+        lines.removeRange(1, lines.lastIndex)
 
     }
 }
@@ -90,82 +91,75 @@ fun rememberTextLogState(initialLineCount: Int) = remember {
 @Composable
 fun TextLog(
     state: TextLogState, modifier: Modifier = Modifier, fontSize: TextUnit = TextUnit.Unspecified,
-    letterSpacing: TextUnit = TextUnit.Unspecified, footer: @Composable (() -> Unit)? =null
+    letterSpacing: TextUnit = TextUnit.Unspecified, footer: @Composable (() -> Unit)? = null
 ) {
     val lazyListState = rememberLazyListState()
 
-    SelectionContainer(Modifier.fillMaxWidth().then(modifier)) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        SelectionContainer(Modifier.fillMaxWidth().then(modifier)) {
 
-        LazyColumn(Modifier.fillMaxWidth().then(modifier), state = lazyListState, reverseLayout = true) {
-            footer?.let {
-                item {
-                    it()
+            LazyColumn(Modifier.fillMaxWidth().then(modifier), state = lazyListState, reverseLayout = true) {
+                footer?.let {
+                    item {
+                        it()
+                    }
                 }
-            }
-            items(state.lines.count()) {
+                items(state.lines.count()) {
 
-                BoxWithConstraints {
-                    Column(modifier=Modifier.fillParentMaxWidth()) {
-                        val textMeasurer = rememberTextMeasurer(0)
-                        val text = AnnotatedString(state.lines.getOrNull(it) ?: run {
-                            println("LazyList has got null")
-                            ""
-                        })
+                    BoxWithConstraints {
+                        Column(modifier = Modifier.fillParentMaxWidth()) {
+                            val textMeasurer = rememberTextMeasurer(0)
+                            val text = AnnotatedString(state.lines.getOrNull(it) ?: run {
+                                println("LazyList has got null")
+                                ""
+                            })
 
-                        val result = textMeasurer.measure(
-                            text,
-                            overflow = TextOverflow.Visible,
-                            constraints = this@BoxWithConstraints.constraints,
-                            style = TextStyle(
-                                color = Color.LightGray,
-                                fontSize = fontSize,
-                                fontFamily = FontFamily.Monospace,
-                                letterSpacing = letterSpacing,
-                            )
-                        )
-                        repeat(result.lineCount) { lineIndex ->
-                            val start=result.getLineStart(lineIndex)
-                            val end=result.getLineEnd(lineIndex)
-                            Text(
-                                text.subSequence(start,end).plus(AnnotatedString("\n")),
-                                Modifier.fillMaxWidth(),
+                            val result = textMeasurer.measure(
+                                text,
+                                overflow = TextOverflow.Visible,
+                                constraints = this@BoxWithConstraints.constraints,
                                 style = TextStyle(
                                     color = Color.LightGray,
                                     fontSize = fontSize,
                                     fontFamily = FontFamily.Monospace,
                                     letterSpacing = letterSpacing,
-                                ),
-                                overflow = TextOverflow.Visible,
-                                maxLines = 1
+                                )
                             )
-
+                            repeat(result.lineCount) { lineIndex ->
+                                val start = result.getLineStart(lineIndex)
+                                val end = result.getLineEnd(lineIndex)
+                                Text(
+                                    //本当の改行にしか改行コードを付与しない
+                                    if (result.lineCount - 1 == lineIndex)
+                                        text.subSequence(start, end).plus(AnnotatedString("\n"))
+                                    else text.subSequence(start, end),
+                                    Modifier.fillMaxWidth(),
+                                    style = TextStyle(
+                                        color = Color.LightGray,
+                                        fontSize = fontSize,
+                                        fontFamily = FontFamily.Monospace,
+                                        letterSpacing = letterSpacing,
+                                    ),
+                                    overflow = TextOverflow.Visible,
+                                    //コピーのときのみ改行される
+                                    maxLines = 1
+                                )
+                            }
                         }
                     }
+
                 }
 
-
-                /* Text(
-                     state.lines.getOrNull(it) ?: run {
-                         println("LazyList has got null")
-                         ""
-                     },
-
-                     Modifier.fillMaxWidth(),
-                     overflow = TextOverflow.Visible,
-                     color = Color.LightGray,
-                     fontSize = fontSize,
-                     fontFamily = FontFamily.Monospace,
-                     letterSpacing = letterSpacing,
-
-                     //   maxLines = 1,
-                     onTextLayout = {
-                         println(it.getLineStart(1.coerceIn(0, it.lineCount - 1)))
-                     }
-                 )*/
-
             }
-
         }
+        VerticalScrollbar(
+            modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
+            adapter = rememberScrollbarAdapter(
+                scrollState = lazyListState
+            ),
+            reverseLayout = true
+
+        )
     }
 
 }
