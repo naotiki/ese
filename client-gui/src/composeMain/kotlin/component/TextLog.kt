@@ -1,10 +1,12 @@
 package component
 
 import DefaultFont
+import LocalDefaultFont
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -15,8 +17,12 @@ import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
+import clientPlatform
+import getDefaultFont
+import japaneseFont
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.jetbrains.compose.resources.load
 import kotlin.text.Regex.Companion.fromLiteral
 
 val lineSeparator = '\n'
@@ -77,7 +83,10 @@ class TextLogState(maxLineCount: Int) {
 fun rememberTextLogState(initialLineCount: Int) = remember {
     TextLogState(initialLineCount)
 }
-
+@Composable
+expect fun SelectionContainer(content:@Composable ()->Unit)
+@Composable
+expect fun DisableSelection(content:@Composable ()->Unit)
 
 @OptIn(ExperimentalTextApi::class)
 @Composable
@@ -85,71 +94,73 @@ fun TextLog(
     state: TextLogState, modifier: Modifier = Modifier, fontSize: TextUnit = TextUnit.Unspecified,
     letterSpacing: TextUnit = TextUnit.Unspecified, footer: @Composable (() -> Unit)? = null
 ) {
+
     val lazyListState = rememberLazyListState()
 
-    Box(modifier = Modifier.fillMaxSize()) {
-       // SelectionContainer(Modifier.fillMaxWidth().then(modifier)) {
+    Box(modifier = Modifier.fillMaxSize().then(modifier)) {
+         component.SelectionContainer() {
 
-            LazyColumn(Modifier.fillMaxWidth().then(modifier), state = lazyListState, reverseLayout = true) {
-                footer?.let {
-                    item {
+        LazyColumn(Modifier.fillMaxWidth(), state = lazyListState, reverseLayout = true) {
+            footer?.let {
+                item {
+                    DisableSelection {
                         it()
                     }
                 }
-                items(state.lines.count()) {
-
-                    BoxWithConstraints {
-                        Column(modifier = Modifier.fillParentMaxWidth()) {
-                            val textMeasurer = rememberTextMeasurer(0)
-                            val text = AnnotatedString(state.lines.getOrNull(it) ?: run {
-                                println("LazyList has got null")
-                                ""
-                            })
-                            //Target JS Not Woring
-                            val result = textMeasurer.measure(
-                                text,
-                                overflow = TextOverflow.Visible,
-                                constraints = this@BoxWithConstraints.constraints,
+            }
+            items(state.lines.count()) {
+                BoxWithConstraints {
+                    Column(modifier = Modifier.fillParentMaxWidth()) {
+                        val textMeasurer = rememberTextMeasurer(0)
+                        val text = AnnotatedString(state.lines.getOrNull(it) ?: run {
+                            println("LazyList has got null")
+                            ""
+                        })
+                        //in JS, Not Working
+                        val result = textMeasurer.measure(
+                            text,
+                            overflow = TextOverflow.Visible,
+                            constraints = this@BoxWithConstraints.constraints,
+                            style = TextStyle(
+                                color = Color.White,
+                                fontSize = fontSize,
+                                fontFamily = LocalDefaultFont.current,
+                                letterSpacing = letterSpacing,
+                            )
+                        )
+                        repeat(result.lineCount) { lineIndex ->
+                            val start = result.getLineStart(lineIndex)
+                            val end = result.getLineEnd(lineIndex)
+                            //JS Bug avoidance
+                            val shown = if (clientPlatform==ClientPlatform.JS) {
+                                text
+                            } else {
+                                //本当の改行にしか改行コードを付与しない
+                                if (result.lineCount - 1 == lineIndex)
+                                    text.subSequence(start, end).plus(AnnotatedString("\n"))
+                                else text.subSequence(start, end)
+                            }
+                            Text(
+                                shown,
+                                Modifier.fillMaxWidth(),
                                 style = TextStyle(
                                     color = Color.White,
                                     fontSize = fontSize,
-                                    fontFamily = DefaultFont,
+                                    fontFamily = LocalDefaultFont.current,
                                     letterSpacing = letterSpacing,
-                                )
+                                ),
+                                overflow = TextOverflow.Visible,
+                                //コピーのときのみ改行される
+                                maxLines = 1
                             )
-                            repeat(result.lineCount) { lineIndex ->
-                                val start = result.getLineStart(lineIndex)
-                                val end = result.getLineEnd(lineIndex)
-                                //JS Bug avoidance
-                                val shown=if (start+end==0){
-                                    text
-                                }else{
-                                    //本当の改行にしか改行コードを付与しない
-                                    if (result.lineCount - 1 == lineIndex)
-                                        text.subSequence(start, end).plus(AnnotatedString("\n"))
-                                    else text.subSequence(start, end)
-                                }
-                                Text(
-                                    shown,
-                                    Modifier.fillMaxWidth(),
-                                    style = TextStyle(
-                                        color = Color.White,
-                                        fontSize = fontSize,
-                                        fontFamily = DefaultFont,
-                                        letterSpacing = letterSpacing,
-                                    ),
-                                    overflow = TextOverflow.Visible,
-                                    //コピーのときのみ改行される
-                                    maxLines = 1
-                                )
-                            }
                         }
                     }
-
                 }
 
             }
-       // }
+
+        }
+         }
         VerticalScrollbar(
             modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
             adapter = lazyListState,

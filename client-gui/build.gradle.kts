@@ -34,8 +34,8 @@ kotlin {
 
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-
-                implementation("me.naotiki:ese-core:0.0-B")
+                implementation(project(":ese-core"))
+                //implementation("me.naotiki:ese-core:0.0-B")
             }
         }
 

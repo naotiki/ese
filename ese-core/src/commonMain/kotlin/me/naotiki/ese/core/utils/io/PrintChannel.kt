@@ -46,9 +46,9 @@ class PrintChannel(
         tryPrint(a.toString() + '\n')
     }
 
-    fun tryPrintln() = newLineBlocking()
+    fun tryPrintln() = tryNewLine()
 
-    private fun newLineBlocking() = lineSeparator.toCharArray().forEach { channel.trySend(it)}
+    private fun tryNewLine() = lineSeparator.toCharArray().forEach { channel.trySend(it)}
     private suspend inline fun newLine() =  lineSeparator.toCharArray().forEach{ channel.send(it) }
 
     override suspend fun readln(): String {

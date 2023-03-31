@@ -17,6 +17,7 @@ import me.naotiki.ese.core.vfs.dsl.fileDSL
 import me.naotiki.ese.core.vfs.dsl.textFile
 import org.koin.core.component.inject
 
+import kotlinx.atomicfu.*
 import kotlin.math.roundToInt
 
 //  UDON is a Downloader Of Noodles
@@ -203,25 +204,21 @@ class Yes : Executable<Unit>(
     val value by argument(ArgType.String, "value", "出力する文字列").optional()
     override suspend fun execute(user: User, rawArgs: List<String>) {
         val v = value ?: "yes"
-        val rest = if (delay != 0) suspend {
-            delay(delay.toLong())
-        } else suspend {
-            yield()
-        }
+
         if (benchmark > 0) {
             val results = mutableListOf<Int>()
             repeat(benchmark) {
                 if (!noClean) client.clear()
-                val c = AtomicInteger()
+                val c = atomic(0)
 
                 withTimeoutOrNull(1000) {
                     while (true) {
                         out.println(v)
-                        c.increment()
-                        rest()
+                        c.incrementAndGet()
+                        delay(delay.toLong())
                     }
                 }
-                results += c.get()
+                results += c.value
             }
             if (!noClean) client.clear()
             out.println()
@@ -244,7 +241,7 @@ class Yes : Executable<Unit>(
         } else {
             while (true) {
                 out.println(v)
-                rest()
+                delay(delay.toLong())
             }
         }
 

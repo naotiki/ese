@@ -1,6 +1,7 @@
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -20,6 +21,7 @@ import me.naotiki.ese.core.utils.splitArgs
 import component.TextLog
 import component.TextLogState
 import component.rememberTextLogState
+import org.jetbrains.compose.resources.load
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.coroutines.CoroutineContext
@@ -127,6 +129,7 @@ fun Terminal() {
             modifier = Modifier.fillMaxSize().padding(5.dp),
         ) {
             TextLog(textLogState, Modifier.weight(0.1f, false), fontSize = 20.sp) {
+
                 var lastInput by remember { mutableStateOf("") }
                 BasicTextField(
                     prompt.textFieldValue,
@@ -140,7 +143,7 @@ fun Terminal() {
                         color = Color.White,
                         fontSize =
                         20.sp,
-                        fontFamily =DefaultFont
+                        fontFamily =LocalDefaultFont.current
                     ),
                     cursorBrush = SolidColor(Color.White),
                     modifier = Modifier.fillMaxWidth().weight(1f).onPreviewKeyEvent {

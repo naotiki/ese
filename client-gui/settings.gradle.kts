@@ -13,4 +13,4 @@ pluginManagement {
 }
 
 rootProject.name = "client-gui"
-//includeFlat("core")
+includeFlat("ese-core")

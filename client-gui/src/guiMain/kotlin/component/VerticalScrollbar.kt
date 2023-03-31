@@ -22,3 +22,11 @@ actual fun VerticalScrollbar(
 
     )
 }
+@Composable
+actual fun SelectionContainer(content: @Composable () -> Unit) = androidx.compose.foundation.text.selection
+    .SelectionContainer(content=content)
+
+@Composable
+actual fun DisableSelection(content: @Composable () -> Unit) {
+    androidx.compose.foundation.text.selection.DisableSelection(content)
+}
