@@ -33,7 +33,7 @@ class PluginTest : KoinTest {
     @Test
     fun getAttributeFromJarTest() {
         val um = get<UserManager>()
-        dir.listFiles()?.map { it.name }.log()
+        dir.listFiles()?.map { it.name }
         val pluginFolder = dir//.resolve("plugins")
         assert(pluginFolder.exists())
         val file = pluginFolder.listFiles { dir, name -> name.endsWith(".$fileExtension") }.orEmpty().first()

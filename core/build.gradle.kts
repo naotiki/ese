@@ -1,7 +1,6 @@
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization") version "1.8.0"
-    id("org.jetbrains.dokka")
 }
 
 group = "me.naotiki"

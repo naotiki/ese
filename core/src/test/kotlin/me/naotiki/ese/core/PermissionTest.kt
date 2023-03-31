@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
 class PermissionTest {
     @Test
     fun splitTest(){
-        "+rwx".splitPair('u','g','o','a').log()
+        "+rwx".splitPair('u','g','o','a')
 
     }
 
