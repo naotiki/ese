@@ -1,3 +1,6 @@
+[![Deploy Kotlin/JS site to GitHub Pages](https://github.com/naotiki/EseLinux/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/naotiki/EseLinux/actions/workflows/deploy-pages.yml)
+[![Create Release Draft Compose Desktop](https://github.com/naotiki/EseLinux/actions/workflows/create-release.yml/badge.svg)](https://github.com/naotiki/EseLinux/actions/workflows/create-release.yml)
+[![wakatime](https://wakatime.com/badge/github/naotiki/EseLinux.svg)](https://wakatime.com/badge/github/naotiki/EseLinux)
 # Ese Linux
 Unixシェルを模した動作をするアプリ
 # インストール
