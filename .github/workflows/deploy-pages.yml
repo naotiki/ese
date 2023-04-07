@@ -33,11 +33,12 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           arguments: jsBrowserProductionWebpack
+          build-root-directory: client-gui/
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v1.0.3
         with:
           # Path of the directory containing the static assets.
-          path: build/distributions/
+          path: client-gui/build/distributions/
   # Deployment job
   deploy:
     environment:
