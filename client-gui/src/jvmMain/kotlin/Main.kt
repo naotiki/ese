@@ -31,9 +31,9 @@ import org.jetbrains.compose.splitpane.SplitPaneState
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalSplitPaneApi::class)
 suspend fun main(vararg args: String) {
+    println("Starting... Ese Linux")
     initializeComposeCommon(args)
     awaitApplication {
-
         val appViewModel = rememberAppViewModel()
         // ... Content goes here ...
         // This part of Composition will see the `elevations` instance
@@ -44,7 +44,6 @@ suspend fun main(vararg args: String) {
                 true
             } else false
         }) {
-
             var isAssistExtended by remember { mutableStateOf(true) }
             MenuBar {
                 Menu("表示") {

@@ -165,7 +165,7 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
             if (it is EseError) {
                 out.println(it.errorName)
             } else {
-                io.printChannel.tryPrintln(it.stackTraceToString())
+                io.printChannel.println(it.stackTraceToString())
 
 
             }

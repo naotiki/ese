@@ -56,7 +56,7 @@ fun prepareKoinInjection(level:Level=Level.INFO): KoinApplication =
     }
 
 private var initialized = false
-suspend fun initialize(koin: Koin, clientImpl: ClientImpl) {
+suspend fun initialize(koin: Koin, clientImpl: ClientImpl,initMessage:String="") {
     if (initialized) return
     val io = koin.get<IO>()
     val userManager = koin.get<UserManager>()
@@ -64,8 +64,9 @@ suspend fun initialize(koin: Koin, clientImpl: ClientImpl) {
     var userName: String
     io.printChannel.println(
         """
-        Ese Linux ver.$version - ${clientImpl.getClientName()}
-        """.trimIndent()
+        |Ese Linux ver.$version - ${clientImpl.getClientName()}
+        |$initMessage
+        """.trimMargin()
     )
 
     //名前設定

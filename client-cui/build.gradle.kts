@@ -1,8 +1,6 @@
 plugins {
-    kotlin("jvm") version "1.8.10"
+    kotlin("jvm")
     id("org.jetbrains.dokka") version "1.7.20"
-    application
-    id("com.github.johnrengelman.shadow") version "7.1.0"
 }
 
 group = "me.naotiki.ese"
@@ -11,23 +9,22 @@ version = "1.0-SNAPSHOT"
 repositories {
     mavenCentral()
 }
-tasks{
-    run(action = {
+tasks {
+    /*run(action = {
         standardInput = System.`in`
-    })
-    jar{
-
+    })*/
+    jar {
         manifest {
-        attributes("Main-Class" to "MainKt")
-
+            attributes("Main-Class" to "MainKt")
         }
     }
 }
-application{
+/*application {
     mainClass.set("MainKt")
-}
+}*/
 dependencies {
-    implementation(project(":core"))
+    implementation(project(":ese-core"))
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     implementation("org.jline:jline-terminal-jansi:3.23.0")
     implementation("org.jline:jline:3.23.0")
 

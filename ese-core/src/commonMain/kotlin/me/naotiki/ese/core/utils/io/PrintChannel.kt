@@ -8,7 +8,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.yield
 
-
+expect inline fun <R> trySynchronized(lock:Any, block:()->R):R
 class PrintChannel(
     val lineSeparator: String="\n",
     val buffer:Int=Channel.BUFFERED
@@ -18,13 +18,12 @@ class PrintChannel(
     @OptIn(ExperimentalCoroutinesApi::class)
     val isClosed get() = channel.isClosedForReceive
     private val mutex = Mutex()
-    suspend fun print(a: Any?) {
-        mutex.withLock {
+    suspend fun print(a: Any?) = mutex.withLock {
             a.toString().forEach {
                 channel.send(it)
             }
         }
-    }
+
 
     suspend inline fun println(a: Any?) {
         print(a.toString() + '\n')
@@ -35,11 +34,12 @@ class PrintChannel(
     }
 
     fun tryPrint(a: Any?) {
-        //synchronized(this){
+
+        trySynchronized(this){
             a.toString().forEach {
                 channel.trySend(it)
             }
-        //}
+        }
     }
 
     fun tryPrintln(a: Any?) {

@@ -7,8 +7,9 @@
         <option name="externalProjectPath" value="$PROJECT_DIR$/client-gui" />
         <option name="modules">
           <set>
+            <option value="$PROJECT_DIR$/client-cui" />
             <option value="$PROJECT_DIR$/client-gui" />
-            <option value="$PROJECT_DIR$/client-gui/buildSrc" />
+            <option value="$PROJECT_DIR$/ese-core" />
           </set>
         </option>
       </GradleProjectSettings>

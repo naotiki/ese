@@ -3,10 +3,10 @@ import kotlinx.coroutines.runBlocking
 import kotlin.coroutines.CoroutineContext
 
 actual fun exitProcess(code: Int): Nothing = kotlin.system.exitProcess(code)
-actual fun <T> runBlocking(
+actual fun <T> tryRunBlocking(
     context: CoroutineContext,
-     block: suspend CoroutineScope.() -> T
+    block: suspend CoroutineScope.() -> T
 ) {
 
-     runBlocking(context,block)
+    runBlocking(context, block)
 }

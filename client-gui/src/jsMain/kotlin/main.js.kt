@@ -23,7 +23,7 @@ class JSClientViewModel : KoinComponent {
 fun rememberJSViewModel() = remember { JSClientViewModel() }
 
 fun main() {
-
+    println("Starting... Ese Linux")
     initializeComposeCommon()
     onWasmReady {
 

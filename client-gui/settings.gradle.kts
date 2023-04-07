@@ -14,3 +14,4 @@ pluginManagement {
 
 rootProject.name = "client-gui"
 includeFlat("ese-core")
+includeFlat("client-cui")

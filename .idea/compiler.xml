@@ -2,19 +2,13 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel target="17">
-      <module name="client-cui" target="17" />
-      <module name="client-cui.core" target="17" />
       <module name="client-cui.core.main" target="17" />
       <module name="client-cui.core.test" target="17" />
-      <module name="client-cui.main" target="17" />
-      <module name="client-cui.test" target="17" />
       <module name="client-gui.core" target="17" />
       <module name="client-gui.core.main" target="17" />
       <module name="client-gui.core.test" target="17" />
       <module name="client-gui.cui" target="17" />
       <module name="client-gui.gui" target="17" />
-      <module name="client-gui.main" target="17" />
-      <module name="client-gui.test" target="17" />
       <module name="ese-lib" target="17" />
       <module name="ese-lib.core" target="17" />
       <module name="ese-lib.core.main" target="17" />

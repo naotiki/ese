@@ -1,10 +1,8 @@
-import androidx.compose.ui.window.Window
-import kotlinx.atomicfu.atomic
-import kotlinx.browser.window
-import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.suspendCoroutine
-import kotlin.js.Promise
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 actual fun exitProcess(code: Int): Nothing {
     throw NotImplementedError("Not Supported")
@@ -12,11 +10,11 @@ actual fun exitProcess(code: Int): Nothing {
 
 
 
-actual fun <T> runBlocking(
+@OptIn(DelicateCoroutinesApi::class)
+actual fun <T> tryRunBlocking(
     context: CoroutineContext,
     block: suspend CoroutineScope.() -> T
 ) {
-
     GlobalScope.launch {
         block()
     }

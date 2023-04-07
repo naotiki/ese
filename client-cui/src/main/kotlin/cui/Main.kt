@@ -1,4 +1,4 @@
-
+package cui
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.consumeEach
 import me.naotiki.ese.core.ClientImpl
@@ -19,6 +19,7 @@ import kotlin.system.exitProcess
 // JLine3 will not be working
 @OptIn(ExperimentalCoroutinesApi::class)
 suspend fun main(args: Array<String>) {
+    println("Starting... Ese Linux")
     val koin = prepareKoinInjection(Level.NONE).koin
     val expression = koin.get<Expression>()
     val term = TerminalBuilder.builder().system(true).nativeSignals(true).signalHandler {
