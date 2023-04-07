@@ -100,7 +100,7 @@ runtime {
         when {
             currentOs.isWindows -> {
                 installerType = "exe"
-                resourceDir = file("$rootDir/res/windows")
+                //resourceDir = file("$rootDir/res/windows")
                 outputDir = "jpackage/windows"
                 platformDirName = "windows"
                 appVersion = textVersion.replace("[^0-9.]".toRegex(), "")
@@ -115,7 +115,7 @@ runtime {
             }
 
             currentOs.isLinux -> {
-                resourceDir = file("$rootDir/res/linux")
+                //resourceDir = file("$rootDir/res/linux")
                 val list = textVersion.split("-")
                 appVersion = list.first().replace("[^0-9.]".toRegex(), "")
                 installerOptions.addAll(listOf("--linux-app-release", list.drop(1).joinToString("_")))
