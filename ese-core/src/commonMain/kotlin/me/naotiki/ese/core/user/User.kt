@@ -1,9 +1,9 @@
 package me.naotiki.ese.core.user
 
 import kotlinx.datetime.Clock
-import me.naotiki.ese.core.vfs.Directory
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import me.naotiki.ese.core.vfs.Directory
 import kotlin.jvm.JvmInline
 import kotlin.random.Random
 
@@ -20,42 +20,6 @@ value class UID(
 )
 
 val rootUID = UID()
-
-/**
- * Virtual User Manager
- * */
-class UserManager {
-    private val users = mutableListOf<User>()
-    val userList get() = users.toList()
-
-    private val groups = mutableListOf<Group>()
-    val groupList get() = groups.toList()
-
-    val rootGroup = Group(this, "root")
-    val uRoot = User(this, "root", rootGroup, rootUID)
-
-
-    val nullGroup = Group(this, "null")
-    val uNull = User(this, "null", nullGroup)
-
-    val naotikiGroup = Group(this, "naotiki")
-    val uNaotiki = User(this, "naotiki", naotikiGroup)
-
-    fun addUser(user: User) {
-        users.add(user)
-    }
-
-    fun addGroup(group: Group) {
-        groups.add(group)
-    }
-
-    var user: User = uNull
-        private set
-
-    fun setUser(u: User) {
-        user = u
-    }
-}
 
 /**
  * すごいのかすごくないのか
