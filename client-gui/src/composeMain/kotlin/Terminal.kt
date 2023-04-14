@@ -12,8 +12,10 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import component.Suggester
 import component.TextLog
 import component.TextLogState
 import component.rememberTextLogState
@@ -141,7 +143,7 @@ fun Terminal() {
             TextLog(textLogState,lazyListState,modifier = Modifier.weight(0.1f, false), fontSize = 20.sp) {
 
                 var lastInput by remember { mutableStateOf("") }
-                BasicTextField(
+                    BasicTextField(
                         prompt.textFieldValue,
                         onValueChange = {
                             prompt.updateTextFieldValue(it) { value, _ ->
@@ -150,16 +152,16 @@ fun Terminal() {
                         },
                         textStyle =
                         TextStyle(
-                                color = Color.White,
-                                fontSize =
-                                20.sp,
-                                fontFamily = LocalDefaultFont.current
+                            color = Color.White,
+                            fontSize =
+                            20.sp,
+                            fontFamily = LocalDefaultFont.current
                         ),
                         cursorBrush = SolidColor(Color.White),
                         modifier = Modifier.fillMaxWidth().weight(1f).onPreviewKeyEvent {
                             if (!prompt.isEnable) return@onPreviewKeyEvent false
                             return@onPreviewKeyEvent if ((it.key == Key.Enter || it.key == Key.NumPadEnter) && it.type == KeyEventType
-                                            .KeyDown
+                                    .KeyDown
                             ) {
 
                                 textLogState.addString(prompt.textFieldValue.text)
@@ -182,29 +184,17 @@ fun Terminal() {
                                 prompt.updateValue(viewModel.nextSuggest(lastInput))
                                 true
                             } else false
-                        }.focusTarget().focusRequester(focusRequester).onFocusChanged {
+                        }.focusRequester(focusRequester).onFocusChanged {
                             println(it)
                             /*if (it.isFocused){
 
                             }else   */
                         },
-                        decorationBox = {
-                            /*DisposableEffect(Unit) {
+                    )
 
-                                onDispose {
-                                    println("UnLock")
-                                    //CompositionをTextFieldが離れた場合
-                                    focusRequester.freeFocus()
-                                    focusManager.clearFocus(true)
-                                }
-                            }*/
-
-                            it()
-                        }
-                )
                 LaunchedEffect(Unit){
                     //Focusをロック
-                    focusRequester.requestFocus()
+                   focusRequester.requestFocus()
                     focusRequester.captureFocus()
                 }
             }

@@ -106,7 +106,6 @@ fun TextLog(
             LazyColumn(Modifier.fillMaxWidth(), state = lazyListState, reverseLayout = true) {
 
                 footer?.let {
-
                     item {
                         DisableSelection {
                             it()
