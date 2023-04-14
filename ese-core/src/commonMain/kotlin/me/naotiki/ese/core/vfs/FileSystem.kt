@@ -2,9 +2,7 @@ package me.naotiki.ese.core.vfs
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.Serializable
-import me.naotiki.ese.core.user.UserManager
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
+import me.naotiki.ese.core.EseSystem.FileTree
 import kotlin.jvm.JvmInline
 
 @Serializable
@@ -22,9 +20,7 @@ value class Path(val value: String) {
 /**
  * ぼくのかんがえたさいきょうのVirtual File System
  */
-class FileSystem(currentDirectory: Directory) : KoinComponent {
-    private val fileTree by inject<FileTree>()
-    private val userManager by inject<UserManager>()
+class FileSystem(currentDirectory: Directory)  {
     var currentDirectory: Directory = currentDirectory
         private set
     var currentPath: Path = currentDirectory.getFullPath()
@@ -41,7 +37,7 @@ class FileSystem(currentDirectory: Directory) : KoinComponent {
     /**
      * Overload [setCurrentPath]
      * */
-    fun setCurrentPath(path: Path) = tryResolve(path)?.toDirectoryOrNull()?.let {
+    fun setCurrentPath(path: Path) = FileTree.tryResolve(path)?.toDirectoryOrNull()?.let {
         currentPath = path
         currentDirectory = it
         setCurrentPath(it, path)
@@ -51,37 +47,4 @@ class FileSystem(currentDirectory: Directory) : KoinComponent {
      * Overload [setCurrentPath]
      * */
     fun setCurrentPath(dir: Directory) = setCurrentPath(dir, dir.getFullPath())
-
-
-    /**
-     * 渡された[path]を解決し、[File]を返します
-     * @return [File],見つからなければ null
-     * */
-    fun tryResolve(path: Path): File? {
-        val isAbsolute = path.value.startsWith("/")
-        val isHomeDir = path.value.startsWith("~")
-        val partialPath = path.value.trim('/').split("/")
-        return if (isAbsolute || isHomeDir) {
-            if (partialPath.size == 1) {
-                when {
-                    partialPath.first() == "" -> return fileTree.root
-                    isHomeDir -> return fileTree.userDir
-                }
-            }
-            partialPath.drop(if (isHomeDir) 1 else 0)
-                .fold<String, File?>(if (isHomeDir) fileTree.userDir else fileTree.root) { dir, partial ->
-                    dir?.toDirectoryOrNull()?.getChildren(userManager.user)?.get(partial)
-                }
-        } else {
-            partialPath.fold<String, File?>(currentDirectory) { dir, partial ->
-                dir?.toDirectoryOrNull()?.let {
-                    when (partial) {
-                        "." -> it
-                        ".." -> it.parent
-                        else -> it.getChildren(userManager.user)?.get(partial)
-                    }
-                }
-            }
-        }
-    }
 }

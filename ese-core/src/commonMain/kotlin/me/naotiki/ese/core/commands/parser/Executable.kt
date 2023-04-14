@@ -1,13 +1,12 @@
 package me.naotiki.ese.core.commands.parser
 
 
+import me.naotiki.ese.core.EseSystem.ClientImpl
+import me.naotiki.ese.core.EseSystem.IO
 import me.naotiki.ese.core.EseError
-import me.naotiki.ese.core.IO
 import me.naotiki.ese.core.commands.dev.CommandDefineException
 import me.naotiki.ese.core.user.User
-import me.naotiki.ese.core.user.UserManager
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import kotlin.coroutines.cancellation.CancellationException
 
 abstract class CommandDefine<R>(val name: String, val description: String? = null) : KoinComponent {
@@ -32,9 +31,7 @@ abstract class CommandDefine<R>(val name: String, val description: String? = nul
  * @param description コマンドの説明、ヘルプで使用されます。(オプション)
  * @param R [execute]戻り値の型、基本は[Unit]
  * */
-abstract class Executable<R>(val name: String, val description: String? = null) : KoinComponent {
-    val um by inject<UserManager>()
-    val io by inject<IO>()
+abstract class Executable<R>(val name: String, val description: String? = null)  {
     internal val argParser: SuperArgsParser = SuperArgsParser()
     val help by option(ArgType.Boolean, "help", "h", "ヘルプを表示します。").default(false)
 
@@ -72,9 +69,9 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
         return a
     }
 
-    val out get() = io.printChannel
-    val reader get() = io.readChannel
-    val client by inject<me.naotiki.ese.core.ClientImpl>()
+    val out get() = IO.printChannel
+    val reader get() = IO.readChannel
+    val client by lazy { ClientImpl }
 
     /**
      * For Development
@@ -165,7 +162,7 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
             if (it is EseError) {
                 out.println(it.errorName)
             } else {
-                io.printChannel.println(it.stackTraceToString())
+                out.println(it.stackTraceToString())
 
 
             }
@@ -234,7 +231,7 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
                     if (it is EseError) {
                         out.println(it.errorName)
                     } else {
-                        io.printChannel.tryPrintln(it.stackTraceToString())
+                        out.tryPrintln(it.stackTraceToString())
 
                     }
                     CommandResult.Error()

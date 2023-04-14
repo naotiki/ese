@@ -14,8 +14,8 @@ class UserManager {
     val uRoot = User(this, "root", rootGroup, rootUID)
 
 
-    val nullGroup = Group(this, "null")
-    val uNull = User(this, "null", nullGroup)
+    private val nullGroup = Group(this, "null")
+    private val uNull = User(this, "null", nullGroup)
 
     val naotikiGroup = Group(this, "naotiki")
     val uNaotiki = User(this, "naotiki", naotikiGroup)

@@ -1,5 +1,6 @@
 package me.naotiki.ese.core.vfs
 
+import me.naotiki.ese.core.Shell
 import me.naotiki.ese.core.commands.*
 import me.naotiki.ese.core.commands.dev.Parse
 import me.naotiki.ese.core.commands.parser.Executable
@@ -51,6 +52,38 @@ class FileTree(val userManager: UserManager)  {
             }
             dir("opt"){
 
+            }
+        }
+    }
+
+    /**
+     * 渡された[path]を解決し、[File]を返します
+     * @return [File],見つからなければ null
+     * */
+    fun tryResolve(path: Path): File? {
+        val isAbsolute = path.value.startsWith("/")
+        val isHomeDir = path.value.startsWith("~")
+        val partialPath = path.value.trim('/').split("/")
+        return if (isAbsolute || isHomeDir) {
+            if (partialPath.size == 1) {
+                when {
+                    partialPath.first() == "" -> return root
+                    isHomeDir -> return userDir
+                }
+            }
+            partialPath.drop(if (isHomeDir) 1 else 0)
+                .fold<String, File?>(if (isHomeDir) userDir else root) { dir, partial ->
+                    dir?.toDirectoryOrNull()?.getChildren(userManager.user)?.get(partial)
+                }
+        } else {
+            partialPath.fold<String, File?>(Shell.FileSystem.currentDirectory) { dir, partial ->
+                dir?.toDirectoryOrNull()?.let {
+                    when (partial) {
+                        "." -> it
+                        ".." -> it.parent
+                        else -> it.getChildren(userManager.user)?.get(partial)
+                    }
+                }
             }
         }
     }

@@ -107,7 +107,6 @@ suspend fun initialize(koin: Koin, clientImpl: ClientImpl,initMessage:String="")
 
     loadKoinModules(module {
         single { clientImpl }
-        single { expression }
     })
     initialized = true
     while (true/*TODO 終了機能*/) {
