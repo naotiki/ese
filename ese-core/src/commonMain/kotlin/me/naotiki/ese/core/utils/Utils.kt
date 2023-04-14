@@ -16,13 +16,6 @@ fun normalizeYesNoAnswer(input:String): Boolean? {
         else -> null
     }
 }
-@Deprecated("", level = DeprecationLevel.ERROR)
-fun <T:Any?> T.log(prefix:String?=null)= also {
-    if (prefix!=null){
-        print(prefix)
-    }
-    println("[TLog] $it")
-}
 
 suspend inline fun loop( block: ()->Unit){
     while (true) {

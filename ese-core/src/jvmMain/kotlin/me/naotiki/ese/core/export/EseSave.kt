@@ -2,7 +2,6 @@ package me.naotiki.ese.core.export
 
 import me.naotiki.ese.core.user.Group
 import me.naotiki.ese.core.user.User
-import me.naotiki.ese.core.utils.log
 import me.naotiki.ese.core.vfs.Directory
 import kotlinx.serialization.Serializable
 import java.nio.ByteBuffer

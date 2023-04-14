@@ -4,7 +4,6 @@ import me.naotiki.ese.core.user.User
 import me.naotiki.ese.core.user.isSugoi
 import me.naotiki.ese.core.utils.SugoiString.splitPair
 import me.naotiki.ese.core.utils.getFlag
-import me.naotiki.ese.core.utils.log
 import me.naotiki.ese.core.vfs.Permission.Companion.Operation
 import kotlinx.serialization.Serializable
 import kotlin.Boolean

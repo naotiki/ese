@@ -2,9 +2,7 @@ package me.naotiki.ese.core.commands
 
 
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import me.naotiki.ese.core.EseError
 import me.naotiki.ese.core.Variable
@@ -19,7 +17,6 @@ import me.naotiki.ese.core.vfs.dsl.dir
 import me.naotiki.ese.core.vfs.dsl.fileDSL
 import me.naotiki.ese.core.vfs.dsl.textFile
 import org.koin.core.component.inject
-import kotlin.coroutines.CoroutineContext
 import kotlin.math.roundToInt
 
 //  UDON is a Downloader Of Noodles

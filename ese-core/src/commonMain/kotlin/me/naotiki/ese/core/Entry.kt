@@ -57,7 +57,7 @@ fun prepareKoinInjection(level:Level=Level.INFO): KoinApplication =
 
 private var initialized = false
 suspend fun initialize(koin: Koin, clientImpl: ClientImpl,initMessage:String="") {
-    if (initialized) return
+    check(!initialized)
     val io = koin.get<IO>()
     val userManager = koin.get<UserManager>()
     val fileTree = koin.get<FileTree>()
@@ -68,16 +68,13 @@ suspend fun initialize(koin: Koin, clientImpl: ClientImpl,initMessage:String="")
         |$initMessage
         """.trimMargin()
     )
-
     //名前設定
     while (true) {
         userName = io.newPromptAsync(clientImpl, "あなたの名前は？:", "")
-
         when {
             userName.isBlank() -> {
                 io.printChannel.println("空白は使用できません")
             }
-
             !userName.matches(Regex("[0-9A-z]+")) -> {
                 io.printChannel.println("使用できる文字は0~9の数字とアルファベットと一部記号です")
             }
@@ -85,7 +82,6 @@ suspend fun initialize(koin: Koin, clientImpl: ClientImpl,initMessage:String="")
             userManager.userList.any { it.name == userName } -> {
                 io.printChannel.println("既にあるユーザー名です")
             }
-
             else -> break
         }
     }
@@ -94,7 +90,6 @@ suspend fun initialize(koin: Koin, clientImpl: ClientImpl,initMessage:String="")
     newUser.setHomeDir { user, group ->
         fileDSL(fileTree.home, userManager.uRoot) {
             dir(user.name, user, group) {
-
                     "LOG:" + textFile(
                         "Readme.txt",
                         """
