@@ -12,6 +12,7 @@ class VSMTest {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun test() = runTest {
+        println(EseSystem.FileTree)
         println(EseSystem.UserManager.userList.map { it.name })
         User(EseSystem.UserManager,"a", Group(EseSystem.UserManager,"fyguyh"))
 

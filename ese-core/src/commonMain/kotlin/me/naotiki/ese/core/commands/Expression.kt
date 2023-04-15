@@ -8,7 +8,9 @@ import me.naotiki.ese.core.Shell.FileSystem
 import me.naotiki.ese.core.Shell.Variable
 import me.naotiki.ese.core.commands.parser.ArgType
 import me.naotiki.ese.core.utils.splitArgs
-import me.naotiki.ese.core.vfs.*
+import me.naotiki.ese.core.vfs.Directory
+import me.naotiki.ese.core.vfs.ExecutableFile
+import me.naotiki.ese.core.vfs.Path
 import kotlin.collections.set
 
 class Expression  {
@@ -93,5 +95,4 @@ class Expression  {
         }
         return true
     }
-
 }

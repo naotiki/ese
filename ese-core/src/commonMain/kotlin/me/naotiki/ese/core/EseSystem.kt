@@ -8,7 +8,7 @@ import me.naotiki.ese.core.vfs.FileTree
 object EseSystem : VirtualSingletonManager() {
     val UserManager by virtualSingle { UserManager() }
     val IO by virtualSingle { IO() }
-    val FileTree by virtualSingle { FileTree(inject()) }
+    val FileTree by virtualSingle { FileTree() }
     lateinit var ClientImpl:ClientImpl
 }
 

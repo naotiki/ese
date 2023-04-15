@@ -23,11 +23,13 @@ import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.naotiki.ese.core.ClientImpl
+import me.naotiki.ese.core.EseSystem
+import me.naotiki.ese.core.EseSystem.IO
 import me.naotiki.ese.core.IO
+import me.naotiki.ese.core.Shell
+import me.naotiki.ese.core.Shell.Expression
 import me.naotiki.ese.core.commands.Expression
 import me.naotiki.ese.core.utils.splitArgs
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -37,12 +39,10 @@ expect fun <T> tryRunBlocking(
 )
 
 expect fun exitProcess(code: Int): Nothing
-class TerminalViewModel(prompt: Prompt, logState: TextLogState) : KoinComponent {
-    val io by inject<IO>()
-    val expression by inject<Expression>()
+class TerminalViewModel(prompt: Prompt, logState: TextLogState)  {
 
-    val channnel = io.readChannel
-    val commandHistory get() = expression.commandHistory
+    val channnel = IO.readChannel
+    val commandHistory get() = Expression.commandHistory
 
     private val clientImpl = object : ClientImpl {
         override fun getClientName(): String = clientName
@@ -85,11 +85,11 @@ class TerminalViewModel(prompt: Prompt, logState: TextLogState) : KoinComponent 
     }
 
     fun getSuggestList(value: String) =
-            expression.suggest(value)
+            Expression.suggest(value)
 
 
     suspend fun initialize() {
-        me.naotiki.ese.core.initialize(getKoin(), clientImpl, platformInitMessage)
+        me.naotiki.ese.core.initialize( clientImpl, platformInitMessage)
     }
 
     fun CoroutineScope.outln(value: String) {
@@ -97,7 +97,7 @@ class TerminalViewModel(prompt: Prompt, logState: TextLogState) : KoinComponent 
         suggestList = emptyList()
 
         tryRunBlocking {
-            this@outln.launch { io.clientChannel.println(value) }
+            this@outln.launch { IO.clientChannel.println(value) }
         }
 
     }

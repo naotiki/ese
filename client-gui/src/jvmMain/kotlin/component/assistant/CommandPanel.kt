@@ -12,15 +12,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import component.Accordion
 import component.VerticalScrollbar
+import me.naotiki.ese.core.Shell
 import me.naotiki.ese.core.commands.Expression
 import me.naotiki.ese.core.vfs.ExecutableFile
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
-class CommandPanelViewModel  : KoinComponent {
-    private val ex by inject<Expression>()
+class CommandPanelViewModel   {
     fun getExecutablesList(): List<ExecutableFile<*>> {
-        return ex.getExecutables(includeHidden = false)
+        return Shell.Expression.getExecutables(includeHidden = false)
     }
 }
 

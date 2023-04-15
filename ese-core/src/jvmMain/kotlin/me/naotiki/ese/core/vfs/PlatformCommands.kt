@@ -2,6 +2,8 @@ package me.naotiki.ese.core.vfs
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import me.naotiki.ese.core.EseSystem
+import me.naotiki.ese.core.EseSystem.IO
 import me.naotiki.ese.core.commands.parser.ArgType
 import me.naotiki.ese.core.commands.parser.Executable
 import me.naotiki.ese.core.secure.PluginLoader
@@ -56,7 +58,7 @@ class Udon : Executable<Unit>("udon", "UDON is a Downloader Of Noodles") {
     inner class LocalInstall : SubCommand<Unit>("local", "ローカルファイルからインストールします。") {
         val pkgName by argument(ArgType.String, "packageName", "パッケージ名")
         override suspend fun execute(user: User, rawArgs: List<String>) {
-            val pluginDir = java.io.File(dataDir, "plugins")
+            val pluginDir = File(dataDir, "plugins")
             if (!pluginDir.exists()) {
                 out.println("pluginフォルダーが見つかりませんでした。\n${pluginDir.absolutePath}に作成してください。")
             }
@@ -70,7 +72,7 @@ class Udon : Executable<Unit>("udon", "UDON is a Downloader Of Noodles") {
             var ans: Boolean?
             do {
                 ans = normalizeYesNoAnswer(
-                    io.newPrompt(client, "プラグイン ${file.nameWithoutExtension} を本当にインストールしますか？(yes/no)")
+                    IO.newPrompt(client, "プラグイン ${file.nameWithoutExtension} を本当にインストールしますか？(yes/no)")
                 )
             } while (ans == null)
             if (ans != true) {

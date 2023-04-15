@@ -1,15 +1,14 @@
 package me.naotiki.ese.core.commands.parser
 
 
+import me.naotiki.ese.core.EseError
 import me.naotiki.ese.core.EseSystem.ClientImpl
 import me.naotiki.ese.core.EseSystem.IO
-import me.naotiki.ese.core.EseError
 import me.naotiki.ese.core.commands.dev.CommandDefineException
 import me.naotiki.ese.core.user.User
-import org.koin.core.component.KoinComponent
 import kotlin.coroutines.cancellation.CancellationException
 
-abstract class CommandDefine<R>(val name: String, val description: String? = null) : KoinComponent {
+abstract class CommandDefine<R>(val name: String, val description: String? = null)  {
     val args = mutableListOf<Arg<*>>()
     val opts = mutableListOf<Opt<*>>()
 
@@ -245,5 +244,4 @@ sealed interface CommandResult<T> {
     class Nothing<T> : CommandResult<T>
     class Success<T>(val value: T) : CommandResult<T>
     class Error<T> : CommandResult<T>
-
 }

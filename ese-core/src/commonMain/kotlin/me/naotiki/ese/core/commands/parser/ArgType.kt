@@ -1,10 +1,13 @@
 package me.naotiki.ese.core.commands.parser
 
-import me.naotiki.ese.core.commands.Expression
-import me.naotiki.ese.core.vfs.*
-import org.koin.core.Koin
+import me.naotiki.ese.core.EseSystem.FileTree
+import me.naotiki.ese.core.Shell.Expression
+import me.naotiki.ese.core.vfs.Directory
+import me.naotiki.ese.core.vfs.ExecutableFile
+import me.naotiki.ese.core.vfs.Path
+import me.naotiki.ese.core.vfs.toDirectoryOrNull
 
-sealed class ArgType<out T : Any> constructor(inline val converter: Koin.(kotlin.String) -> T?) {
+sealed class ArgType<out T : Any>(inline val converter: (kotlin.String) -> T?) {
 
 
     //Primitive Types
@@ -14,16 +17,16 @@ sealed class ArgType<out T : Any> constructor(inline val converter: Koin.(kotlin
 
     //Special Types
     object File : ArgType<me.naotiki.ese.core.vfs.File>({
-        get<FileSystem>().tryResolve(Path(it))
+        FileTree.tryResolve(Path(it))
     })
     object Dir : ArgType<Directory>({
-        get<FileSystem>().tryResolve(Path(it))?.toDirectoryOrNull()
+        FileTree.tryResolve(Path(it))?.toDirectoryOrNull()
     })
 
-    object Executable : ArgType<ExecutableFile<*>>({ get<Expression>().tryResolve(it) })
+    object Executable : ArgType<ExecutableFile<*>>({ Expression.tryResolve(it) })
 
 
-    class Define<T : Any>(converter: Koin.(kotlin.String) -> T?) : ArgType<T>(converter)
+    class Define<T : Any>(converter: (kotlin.String) -> T?) : ArgType<T>(converter)
 
     class Choice<T : Any>(val choices: List<T>) : ArgType<T>({ str ->
         choices.singleOrNull { it.toString().equals(str, true) }

@@ -1,8 +1,6 @@
+import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlin.js.Promise
 
 actual fun exitProcess(code: Int): Nothing {
     throw NotImplementedError("Not Supported")

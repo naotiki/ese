@@ -1,28 +1,36 @@
 package me.naotiki.ese.core
 
+import kotlinx.coroutines.sync.Mutex
 import me.naotiki.ese.core.EseSystem.UserManager
 import me.naotiki.ese.core.VirtualSingletonKey.Companion.key
 import me.naotiki.ese.core.user.Group
 import me.naotiki.ese.core.user.User
-import me.naotiki.ese.core.vfs.FileSystem
 import kotlin.jvm.JvmInline
 import kotlin.jvm.JvmStatic
 import kotlin.reflect.KProperty
+import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 
 @JvmInline
 value class VirtualSingletonKey(val key: Any) {
+
+    internal constructor(key: Unit) : this(key as Any)
+
     companion object {
-        val Any.key get() =  VirtualSingletonKey(this)
+        val Any.key get() = VirtualSingletonKey(this)
     }
 }
+
+
+
 abstract class VirtualSingletonManager {
     private var currentKey: VirtualSingletonKey = DefaultKey
     private val keys = mutableSetOf(DefaultKey)
-    val singletons = mutableMapOf<String, VirtualSingleton<*>>()
+    val virtualSingletonsMap = mutableMapOf<KType, VirtualSingleton<*>>()
+
     inline fun <reified T> getSingleton(): VirtualSingleton<T> {
-        return singletons.filter { (className, _) ->
-            className == T::class.qualifiedName
-        }.values.filterIsInstance<VirtualSingleton<T>>().single()
+        @Suppress("UNCHECKED_CAST")
+        return (virtualSingletonsMap[typeOf<T>()] ?: TODO("Instance Not Found")) as VirtualSingleton<T>
     }
 
     private val factoryContext = FactoryContext()
@@ -33,11 +41,17 @@ abstract class VirtualSingletonManager {
         }
     }
 
-    inner class VirtualSingleton<T>(private val factory: FactoryContext.() -> T) {
+    inner class VirtualSingleton<T>(val factory: FactoryContext.() -> T) {
+        private val mutex= Mutex()
+
         private val instanceMap = mutableMapOf<VirtualSingletonKey, T>()
         fun getInstance(vst: VirtualSingletonManager): T {
+            @Suppress("ControlFlowWithEmptyBody")
+            while (!mutex.tryLock());
             return instanceMap.getOrPut(vst.currentKey) {
                 factoryContext.factory()
+            }.also {
+                mutex.unlock()
             }
         }
 
@@ -45,43 +59,42 @@ abstract class VirtualSingletonManager {
             return getInstance(vst)
         }
 
-        fun getInstanceFromKey(virtualSingletonKey: VirtualSingletonKey): T {
-            return instanceMap.getOrPut(virtualSingletonKey) {
-                factoryContext.factory()
-            }
-        }
+
     }
-    inner class LazyVirtualSingleton<T>{
+
+    inner class LazyVirtualSingleton<T> {
         private val instanceMap = mutableMapOf<VirtualSingletonKey, T>()
-        operator fun setValue(vst: VirtualSingletonManager,property: KProperty<*>, value:T) {
+        operator fun setValue(vst: VirtualSingletonManager, property: KProperty<*>, value: T) {
             instanceMap[vst.key] = value
         }
 
-        fun getInstance(vst: VirtualSingletonManager): T {
-            return instanceMap[vst.currentKey]?:TODO("Not Initialized")
+        private fun getInstance(vst: VirtualSingletonManager): T {
+            return instanceMap[vst.currentKey] ?: TODO("Not Initialized")
         }
 
         operator fun getValue(vst: VirtualSingletonManager, property: KProperty<*>): T {
             return getInstance(vst)
         }
     }
+
     fun <T> lazyVirtualSingle(): LazyVirtualSingleton<T> {
         return LazyVirtualSingleton()
     }
+
     inline fun <reified T> virtualSingle(noinline factory: FactoryContext.() -> T): VirtualSingleton<T> {
         return VirtualSingleton(factory).also {
-            singletons[T::class.qualifiedName!!] = it
+            virtualSingletonsMap[typeOf<T>()] = it
         }
     }
 
-    internal fun switch(key: VirtualSingletonKey) {
+    fun switch(key: VirtualSingletonKey) {
         val existsKey = keys.find { it == key }
         if (existsKey != null) {
             this.currentKey = existsKey
         } else TODO("IllegalState")
     }
 
-    internal fun create(key: VirtualSingletonKey, switch: Boolean = true) {
+    fun create(key: VirtualSingletonKey, switch: Boolean = true) {
         val isCreated = keys.add(key)
         check(isCreated)
         if (switch) {

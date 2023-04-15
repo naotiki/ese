@@ -15,19 +15,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import component.Accordion
+import me.naotiki.ese.core.EseSystem
+import me.naotiki.ese.core.Shell
 import me.naotiki.ese.core.user.UserManager
 import me.naotiki.ese.core.vfs.Directory
 import me.naotiki.ese.core.vfs.File
 import me.naotiki.ese.core.vfs.FileSystem
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
-class FilePanelViewModel : KoinComponent {
-    val um by inject<UserManager>()
-    private val fs by inject<FileSystem>()
-    val flow get() = fs.currentDirectoryFlow
+class FilePanelViewModel  {
+    val flow get() = Shell.FileSystem.currentDirectoryFlow
     fun getChildren(dir:Directory): Map<String, File>? {
-        return dir.getChildren(um.user)
+        return dir.getChildren(EseSystem.UserManager.user)
     }
 }
 
