@@ -32,16 +32,16 @@ class PrintChannel(
     suspend fun println() {
         newLine()
     }
-
+    @Deprecated("JS Not Working",level = DeprecationLevel.WARNING)
     fun tryPrint(a: Any?) {
-
         trySynchronized(this){
             a.toString().forEach {
-                channel.trySend(it)
+                while(!channel.trySend(it).isSuccess);
+
             }
         }
     }
-
+    @Deprecated("JS Not Working",level = DeprecationLevel.WARNING)
     fun tryPrintln(a: Any?) {
         tryPrint(a.toString() + '\n')
     }

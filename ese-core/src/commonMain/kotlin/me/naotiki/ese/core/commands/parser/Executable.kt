@@ -126,8 +126,8 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
     /**
      * ヘルプを出力します。
      * */
-    open fun outputHelp(): CommandResult.Nothing<R> {
-        out.tryPrintln(
+    open suspend  fun outputHelp(): CommandResult.Nothing<R> {
+        out.println(
             generateHelpText()
         )
         return CommandResult.Nothing()
@@ -234,7 +234,7 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
                     if (it is EseError) {
                         out.println(it.errorName)
                     } else {
-                        io.printChannel.tryPrintln(it.stackTraceToString())
+                        io.printChannel.println(it.stackTraceToString())
 
                     }
                     CommandResult.Error()
