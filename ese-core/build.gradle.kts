@@ -1,7 +1,6 @@
 plugins {
     kotlin("multiplatform") //version "1.8.10"
     kotlin("plugin.serialization") version "1.8.10"
-    `maven-publish`
 }
 
 group = "me.naotiki"
@@ -12,8 +11,10 @@ repositories {
 }
 
 kotlin {
+    jvmToolchain(11)
     jvm {
-       // jvmToolchain(11)
+
+        jvmToolchain(11)
         withJava()
         testRuns["test"].executionTask.configure {
             useJUnitPlatform()

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JavaScriptLibraryMappings">
+    <excludedPredefinedLibrary name="EseLinux/clients/composeShared/build/js/node_modules" />
+    <excludedPredefinedLibrary name="EseLinux/clients/composeShared/build/js/packages/client-gui-ese-core-test/node_modules" />
+    <excludedPredefinedLibrary name="EseLinux/clients/composeShared/build/js/packages/client-gui-test/node_modules" />
+    <excludedPredefinedLibrary name="EseLinux/clients/composeShared/build/js/packages/client-gui/node_modules" />
+    <excludedPredefinedLibrary name="EseLinux/clients/composeShared/build/js/packages_imported/Kotlin-DateTime-library-kotlinx-datetime-js-ir/0.4.0/node_modules" />
+    <excludedPredefinedLibrary name="EseLinux/clients/composeShared/build/js/packages_imported/kotlin-test-js-runner/0.0.1/node_modules" />
+  </component>
+</project>
