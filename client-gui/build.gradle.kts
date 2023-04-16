@@ -53,8 +53,8 @@ kotlin {
                 implementation(compose.material)
                 implementation(compose.materialIconsExtended)
                 implementation("org.jetbrains.compose.components:components-resources:1.3.1")
-                /*  @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
-                  implementation(compose.components.resources)*/
+                  @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+                 implementation(compose.components.resources)
             }
         }
 

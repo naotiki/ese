@@ -28,6 +28,14 @@ kotlin {
             }
         }
     }
+    //ktx-serialization ktx-coroutine のWASMサポートを待つ
+    /*@OptIn(org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl::class)
+    wasm{
+        binaries.executable()
+        browser {
+        }
+        applyBinaryen()
+    }*/
     val hostOs = System.getProperty("os.name")
     val isMingwX64 = hostOs.startsWith("Windows")
     /* val nativeTarget = when {

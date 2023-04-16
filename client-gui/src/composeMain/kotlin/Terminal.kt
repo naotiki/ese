@@ -1,16 +1,17 @@
 import androidx.compose.foundation.background
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.*
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.focusTarget
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -18,17 +19,11 @@ import component.TextLog
 import component.TextLogState
 import component.rememberTextLogState
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import me.naotiki.ese.core.ClientImpl
-import me.naotiki.ese.core.EseSystem
 import me.naotiki.ese.core.EseSystem.IO
-import me.naotiki.ese.core.IO
-import me.naotiki.ese.core.Shell
 import me.naotiki.ese.core.Shell.Expression
-import me.naotiki.ese.core.commands.Expression
 import me.naotiki.ese.core.utils.splitArgs
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -126,10 +121,8 @@ fun Terminal() {
                 throw e
             }
         }
-        withContext(Dispatchers.Default) {
-            viewModel.channnel.consumeEach {
-                textLogState.addChar(it)
-            }
+        viewModel.channnel.consumeEach {
+            textLogState.addChar(it)
         }
     }
 
@@ -182,41 +175,12 @@ fun Terminal() {
                                 prompt.updateValue(viewModel.nextSuggest(lastInput))
                                 true
                             } else false
-                        }.focusTarget().focusRequester(focusRequester).onFocusChanged {
-                            println(it)
-                            /*if (it.isFocused){
-
-                            }else   */
-                        },
-                        decorationBox = {
-                            /*DisposableEffect(Unit) {
-
-                                onDispose {
-                                    println("UnLock")
-                                    //CompositionをTextFieldが離れた場合
-                                    focusRequester.freeFocus()
-                                    focusManager.clearFocus(true)
-                                }
-                            }*/
-
-                            it()
-                        }
+                        }.focusRequester(focusRequester),
                 )
                 LaunchedEffect(Unit){
                     //Focusをロック
                     focusRequester.requestFocus()
                     focusRequester.captureFocus()
-                }
-            }
-            val isShownTextField by remember {
-                derivedStateOf {
-                    lazyListState.firstVisibleItemIndex == 0
-                }
-            }
-            LaunchedEffect(isShownTextField){
-                if(clientPlatform==ClientPlatform.JS)return@LaunchedEffect
-                if (!isShownTextField) {
-                    focusRequester.freeFocus()
                 }
             }
         }

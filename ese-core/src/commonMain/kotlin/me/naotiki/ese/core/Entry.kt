@@ -41,7 +41,6 @@ suspend fun initialize( clientImpl: ClientImpl,initMessage:String="") {
     check(!initialized)
     ClientImpl =clientImpl
     var userName: String
-    println("TEST")
     EseSystem.IO.printChannel.println(
         """
         |Ese Linux ver.$version - ${clientImpl.getClientName()}

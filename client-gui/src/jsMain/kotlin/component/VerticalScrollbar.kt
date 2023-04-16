@@ -18,7 +18,3 @@ actual fun SelectionContainer(content: @Composable () -> Unit) {
     content()
 }
 
-@Composable
-actual fun DisableSelection(content: @Composable () -> Unit) {
-    content()
-}

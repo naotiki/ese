@@ -145,6 +145,7 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
                 return subcommand.first.resolve(user, subcommand.second, args)
         } catch (_: CancellationException) {
             //Ctrl+Cを検知してしまうので握りつぶす
+            println("Job Interrupt")
         } catch (e: Exception) {
             if (help) return outputHelp()
             throw e

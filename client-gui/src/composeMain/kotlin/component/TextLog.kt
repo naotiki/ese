@@ -87,24 +87,25 @@ fun rememberTextLogState(initialLineCount: Int) = remember {
     TextLogState(initialLineCount)
 }
 
+//SelectionContainer has the bug on JS Platform
 @Composable
 expect fun SelectionContainer(content: @Composable () -> Unit)
-
-@Composable
-expect fun DisableSelection(content: @Composable () -> Unit)
 
 @OptIn(ExperimentalTextApi::class)
 @Composable
 fun TextLog(
-        state: TextLogState, lazyListState: LazyListState = rememberLazyListState(), modifier: Modifier = Modifier, fontSize: TextUnit = TextUnit.Unspecified,
-        letterSpacing: TextUnit = TextUnit.Unspecified, footer: @Composable (() -> Unit)? = null
+    state: TextLogState,
+    lazyListState: LazyListState = rememberLazyListState(),
+    modifier: Modifier = Modifier,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+    footer: @Composable (() -> Unit)? = null
 ) {
 
 
     Box(modifier = Modifier.fillMaxSize().then(modifier)) {
-        component.SelectionContainer {
+        SelectionContainer {
             LazyColumn(Modifier.fillMaxWidth(), state = lazyListState, reverseLayout = true) {
-
                 footer?.let {
 
                     item {
@@ -121,44 +122,44 @@ fun TextLog(
                                 println("LazyList has got null")
                                 ""
                             })
+
                             //in JS, Not Working
                             val result = textMeasurer.measure(
-                                    text,
-                                    overflow = TextOverflow.Visible,
-                                    constraints = this@BoxWithConstraints.constraints,
-                                    style = TextStyle(
-                                            color = Color.White,
-                                            fontSize = fontSize,
-                                            fontFamily = LocalDefaultFont.current,
-                                            letterSpacing = letterSpacing,
-                                    )
-                            )
-                            repeat(result.lineCount) { lineIndex ->
-                                val start = result.getLineStart(lineIndex)
-                                val end = result.getLineEnd(lineIndex)
+                                text,
+                                overflow = TextOverflow.Visible,
+                                constraints = this@BoxWithConstraints.constraints,
+                                style = TextStyle(
+                                    color = Color.White,
+                                    fontSize = fontSize,
+                                    fontFamily = LocalDefaultFont.current,
+                                    letterSpacing = letterSpacing,
+                                )
+                            ).takeIf { clientPlatform != ClientPlatform.JS }
+                            repeat(result?.lineCount ?: 1) { lineIndex ->
+                                val start = result?.getLineStart(lineIndex) ?: 0
+                                val end = result?.getLineEnd(lineIndex) ?: text.length
+
                                 //JS Bug avoidance
-                                val shown = if (clientPlatform != ClientPlatform.JS) {
+                                val shown =
                                     //本当の改行にしか改行コードを付与しない
-                                    if (result.lineCount - 1 == lineIndex) {
+                                    if ((result?.lineCount?.minus(1) ?: 0) == lineIndex) {
                                         text.subSequence(start, end).plus(AnnotatedString("\n"))
                                     } else {
                                         text.subSequence(start, end)
                                     }
-                                } else {
-                                    text
-                                }
                                 Text(
-                                        shown,
-                                        Modifier.fillMaxWidth(),
-                                        style = TextStyle(
-                                                color = Color.White,
-                                                fontSize = fontSize,
-                                                fontFamily = LocalDefaultFont.current,
-                                                letterSpacing = letterSpacing,
-                                        ),
-                                        overflow = TextOverflow.Visible,
-                                        //コピーのときのみ改行される
-                                        maxLines = 1
+                                    shown,
+                                    Modifier.fillMaxWidth(),
+                                    style = TextStyle(
+                                        color = Color.White,
+                                        fontSize = fontSize,
+                                        fontFamily = LocalDefaultFont.current,
+                                        letterSpacing = letterSpacing,
+                                    ),
+                                    softWrap = false,
+                                    overflow = TextOverflow.Visible,
+                                    //コピーのときのみ改行される
+                                    maxLines = 1
                                 )
                             }
                         }
@@ -169,9 +170,9 @@ fun TextLog(
             }
         }
         VerticalScrollbar(
-                modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
-                adapter = lazyListState,
-                reverseLayout = true
+            modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
+            adapter = lazyListState,
+            reverseLayout = true
 
         )
     }
