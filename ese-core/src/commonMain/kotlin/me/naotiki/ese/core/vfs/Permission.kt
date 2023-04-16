@@ -119,4 +119,4 @@ private fun File.getOperatorValue(user: User) = when {
 }
 
 fun File.checkPermission(user: User, operation: Operation): Boolean =
-    isSugoi(user) || permission.get().has(operation.getFlag() shl getOperatorValue(user))
+    user.isSugoi || permission.get().has(operation.getFlag() shl getOperatorValue(user))

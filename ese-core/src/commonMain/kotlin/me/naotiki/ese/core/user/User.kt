@@ -4,6 +4,7 @@ import kotlinx.atomicfu.atomic
 import kotlinx.datetime.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import me.naotiki.ese.core.EseSystem
 import me.naotiki.ese.core.vfs.Directory
 import kotlin.jvm.JvmInline
 import kotlin.jvm.JvmStatic
@@ -29,12 +30,14 @@ value class UID(
     }
 }
 
-val rootUID = UID()
+
+
 
 /**
  * すごいのかすごくないのか
+ * @return [Boolean] Sugoi
  * */
-fun isSugoi(user: User) = (user.id == rootUID)
+val User.isSugoi get() = id == EseSystem.UserManager.uRoot.id
 
 
 class User internal constructor(
@@ -43,7 +46,7 @@ class User internal constructor(
     var dir: Directory? = null
 ) : AccessObject {
     constructor(
-        userManager: UserManager, name: String, group: Group, id: UID = UID(), dir:
+        userManager: UserManager=EseSystem.UserManager, name: String, group: Group, id: UID = UID(), dir:
         Directory? = null
     ) : this(name, group, id, dir) {
         userManager.addUser(this)

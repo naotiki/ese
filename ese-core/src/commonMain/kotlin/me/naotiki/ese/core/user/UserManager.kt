@@ -11,7 +11,7 @@ class UserManager {
     val groupList get() = groups.toList()
 
     val rootGroup = Group(this, "root")
-    val uRoot = User(this, "root", rootGroup, rootUID)
+    val uRoot = User(this, "root", rootGroup)
 
 
     private val nullGroup = Group(this, "null")
