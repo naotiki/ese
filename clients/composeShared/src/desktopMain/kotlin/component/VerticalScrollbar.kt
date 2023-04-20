@@ -26,3 +26,5 @@ actual fun VerticalScrollbar(
 actual fun SelectionContainer(content: @Composable () -> Unit) = androidx.compose.foundation.text.selection
     .SelectionContainer(content=content)
 
+actual fun getSystemLineSeparator(): String =
+    System.getProperty("line.separator")?:"\n"

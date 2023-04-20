@@ -26,13 +26,13 @@ kotlin {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 implementation(project(":ese-core"))
-                implementation(compose.ui)
-                implementation(compose.foundation)
-                implementation(compose.runtime)
-                implementation(compose.material)
-                implementation(compose.materialIconsExtended)
+                api(compose.ui)
+                api(compose.foundation)
+                api(compose.runtime)
+                api(compose.material)
+                api(compose.materialIconsExtended)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
-                implementation(compose.components.resources)
+                api(compose.components.resources)
             }
         }
 
@@ -40,7 +40,7 @@ kotlin {
         val desktopMain by getting {
 
             dependencies {
-                implementation(compose.desktop.currentOs)
+                api(compose.desktop.currentOs)
                 implementation(compose.preview)
                 implementation(compose.uiTooling)
             }
@@ -52,9 +52,9 @@ kotlin {
         }
         val androidMain by getting {
             dependencies {
-                api("androidx.activity:activity-compose:1.6.1")
+                api("androidx.activity:activity-compose:1.7.0")
                 api("androidx.appcompat:appcompat:1.6.1")
-                api("androidx.core:core-ktx:1.9.0")
+                api("androidx.core:core-ktx:1.10.0")
             }
         }
     }
@@ -74,4 +74,5 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    namespace = "me.naotiki.ese.shared"
 }

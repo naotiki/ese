@@ -1,12 +1,10 @@
 package me.naotiki.ese.core.vfs
 
-import me.naotiki.ese.core.EseSystem
 import me.naotiki.ese.core.EseSystem.UserManager
 import me.naotiki.ese.core.Shell
 import me.naotiki.ese.core.commands.*
 import me.naotiki.ese.core.commands.dev.Parse
 import me.naotiki.ese.core.commands.parser.Executable
-import me.naotiki.ese.core.user.UserManager
 import me.naotiki.ese.core.vfs.dsl.dir
 import me.naotiki.ese.core.vfs.dsl.executable
 import me.naotiki.ese.core.vfs.dsl.rootDir
@@ -24,7 +22,7 @@ class FileTree()  {
         val initialCommands = listOf<Executable<*>>(
             ListSegments(), ChangeDirectory(), Cat(), Exit(), SugoiUserDo(),
             Yes(), Clear(), Echo(), Remove(), Test(), Help(),MakeDirectory(),
-            Touch(),Chmod(),WriteToFile()
+            Touch(),Chmod(),WriteToFile(),PrintWorkingDirectory()
         )+platformCommands
         rootDir {
             executableEnvPaths+= dir("bin") {

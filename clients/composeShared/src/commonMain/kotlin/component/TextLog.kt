@@ -1,27 +1,29 @@
 package component
 
-import ClientPlatform
+import PlatformBackend
 import LocalDefaultFont
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.selection.DisableSelection
-import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.*
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
-import clientPlatform
+import platform
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.text.Regex.Companion.fromLiteral
 
-val lineSeparator = '\n'
-
+expect fun getSystemLineSeparator():String
+val lineSeparator = getSystemLineSeparator()
+val annotatedLineSeparator=AnnotatedString(lineSeparator)
 class TextLogState(maxLineCount: Int) {
     val maxLineCount by mutableStateOf(maxLineCount)
     var lines = mutableStateListOf("")//駄目ならmutableStateOf(listOf(""))
@@ -56,7 +58,6 @@ class TextLogState(maxLineCount: Int) {
 
     private val mutex = Mutex()
     fun addString(line: CharSequence) {
-        arrayOfNulls<String>(50).indexOfLast { it != null }
         val separatedString = line.lines()
         firstLine += separatedString.first()
         newLine()
@@ -67,8 +68,8 @@ class TextLogState(maxLineCount: Int) {
     }
 
     suspend fun addChar(char: Char) = mutex.withLock {
-        if (char == lineSeparator) {
-            newLine()
+        if (char in lineSeparator) {
+            if (char == lineSeparator.last()) newLine()
             return
         }
         firstLine += char
@@ -117,7 +118,7 @@ fun TextLog(
                 items(state.lines.count()) {
                     BoxWithConstraints {
                         Column(modifier = Modifier.fillParentMaxWidth()) {
-                            val textMeasurer = rememberTextMeasurer(0)
+                            val textMeasurer = rememberTextMeasurer()
                             val text = AnnotatedString(state.lines.getOrNull(it) ?: run {
                                 println("LazyList has got null")
                                 ""
@@ -133,32 +134,33 @@ fun TextLog(
                                     fontSize = fontSize,
                                     fontFamily = LocalDefaultFont.current,
                                     letterSpacing = letterSpacing,
+                                    lineBreak = LineBreak.Simple
                                 )
-                            ).takeIf { clientPlatform != ClientPlatform.JS }
+                            ).takeIf { platform.backend != PlatformBackend.JS }
                             repeat(result?.lineCount ?: 1) { lineIndex ->
                                 val start = result?.getLineStart(lineIndex) ?: 0
                                 val end = result?.getLineEnd(lineIndex) ?: text.length
-
                                 //JS Bug avoidance
                                 val shown =
                                     //本当の改行にしか改行コードを付与しない
-                                    if ((result?.lineCount?.minus(1) ?: 0) == lineIndex) {
-                                        text.subSequence(start, end).plus(AnnotatedString("\n"))
+                                    if ((result?.lineCount?.minus(1) ?: 0) == lineIndex && platform!=Platform.Android) {
+                                        text.subSequence(start, end).plus(annotatedLineSeparator)
                                     } else {
                                         text.subSequence(start, end)
                                     }
-                                Text(
+                                println("L$it : $shown")
+                                BasicText(
                                     shown,
-                                    Modifier.fillMaxWidth(),
                                     style = TextStyle(
                                         color = Color.White,
                                         fontSize = fontSize,
                                         fontFamily = LocalDefaultFont.current,
-                                        letterSpacing = letterSpacing,
+                                       //letterSpacing = letterSpacing,
                                     ),
-                                    softWrap = false,
+                                    softWrap = true,
                                     overflow = TextOverflow.Visible,
                                     //コピーのときのみ改行される
+                                    minLines = 1,
                                     maxLines = 1
                                 )
                             }

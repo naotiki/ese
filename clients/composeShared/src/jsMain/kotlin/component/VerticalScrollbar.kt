@@ -18,3 +18,4 @@ actual fun SelectionContainer(content: @Composable () -> Unit) {
     content()
 }
 
+actual fun getSystemLineSeparator(): String ="\n"

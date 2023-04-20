@@ -20,6 +20,9 @@ on:
       os:
         required: true
         type: string
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron: '0 2 * * *'
 permissions:
   contents: read
 
@@ -36,16 +39,16 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
       - name: Make gradlew executable
-        run: chmod +x ./client-gui/gradlew
+        run: chmod +x ./clients/gradlew
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
         with:
           arguments: superReleaseBuild -PappVersion=${{ env.version }}
-          build-root-directory: client-gui/
+          build-root-directory: clients/
       - name: Upload Package Artifact
         uses: actions/upload-artifact@v3
         with:
           name: ${{ inputs.os }}-package
           path: |
-            client-gui/build/jpackage/*/*.*
+            clients/build/jpackage/*/*.*
           if-no-files-found: error

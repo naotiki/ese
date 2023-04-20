@@ -2,7 +2,7 @@ package me.naotiki.ese.core
 
 import kotlinx.coroutines.sync.Mutex
 import me.naotiki.ese.core.EseSystem.UserManager
-import me.naotiki.ese.core.VirtualSingletonKey.Companion.key
+import me.naotiki.ese.core.VirtualSingletonKey.Companion.virtualSingletonKey
 import me.naotiki.ese.core.user.Group
 import me.naotiki.ese.core.user.User
 import kotlin.jvm.JvmInline
@@ -14,10 +14,8 @@ import kotlin.reflect.typeOf
 @JvmInline
 value class VirtualSingletonKey(val key: Any) {
 
-    internal constructor(key: Unit) : this(key as Any)
-
     companion object {
-        val Any.key get() = VirtualSingletonKey(this)
+        internal val Any.virtualSingletonKey get() = VirtualSingletonKey(this)
     }
 }
 
@@ -32,18 +30,14 @@ abstract class VirtualSingletonManager {
         @Suppress("UNCHECKED_CAST")
         return (virtualSingletonsMap[typeOf<T>()] ?: TODO("Instance Not Found")) as VirtualSingleton<T>
     }
-
     private val factoryContext = FactoryContext()
-
     inner class FactoryContext {
         inline fun <reified T> inject(): T {
             return getSingleton<T>().getInstance(this@VirtualSingletonManager)
         }
     }
-
     inner class VirtualSingleton<T>(val factory: FactoryContext.() -> T) {
         private val mutex= Mutex()
-
         private val instanceMap = mutableMapOf<VirtualSingletonKey, T>()
         fun getInstance(vst: VirtualSingletonManager): T {
             @Suppress("ControlFlowWithEmptyBody")
@@ -59,13 +53,12 @@ abstract class VirtualSingletonManager {
             return getInstance(vst)
         }
 
-
     }
 
     inner class LazyVirtualSingleton<T> {
         private val instanceMap = mutableMapOf<VirtualSingletonKey, T>()
         operator fun setValue(vst: VirtualSingletonManager, property: KProperty<*>, value: T) {
-            instanceMap[vst.key] = value
+            instanceMap[vst.virtualSingletonKey] = value
         }
 
         private fun getInstance(vst: VirtualSingletonManager): T {
@@ -104,7 +97,7 @@ abstract class VirtualSingletonManager {
 
     companion object {
         @JvmStatic
-        val DefaultKey = Unit.key
+        val DefaultKey = Unit.virtualSingletonKey
     }
 }
 
@@ -113,7 +106,7 @@ private fun main(args: Array<out String>) {
     println(UserManager.userList.map { it.name })
     UserManager.addUser(User(UserManager, "a", Group(UserManager, "fyguyh")))
     println(UserManager.userList.map { it.name })
-    EseSystem.create(1.key)
+    EseSystem.create(1.virtualSingletonKey)
     println(UserManager.userList.map { it.name })
 }
 

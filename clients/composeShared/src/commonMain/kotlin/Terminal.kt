@@ -2,6 +2,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -11,6 +13,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import component.TextLog
@@ -27,12 +31,12 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 expect fun <T> tryRunBlocking(
-        context: CoroutineContext = EmptyCoroutineContext,
-        block: suspend CoroutineScope.() -> T
+    context: CoroutineContext = EmptyCoroutineContext,
+    block: suspend CoroutineScope.() -> T
 )
 
 expect fun exitApp(code: Int): Unit
-class TerminalViewModel(prompt: Prompt, logState: TextLogState)  {
+class TerminalViewModel(prompt: Prompt, logState: TextLogState) {
 
     val channnel = IO.readChannel
     val commandHistory get() = Expression.commandHistory
@@ -79,11 +83,11 @@ class TerminalViewModel(prompt: Prompt, logState: TextLogState)  {
     }
 
     fun getSuggestList(value: String) =
-            Expression.suggest(value)
+        Expression.suggest(value)
 
 
     suspend fun initialize() {
-        me.naotiki.ese.core.initialize( clientImpl, platformInitMessage)
+        me.naotiki.ese.core.initialize(clientImpl, platformInitMessage)
     }
 
     fun CoroutineScope.outln(value: String) {
@@ -99,7 +103,7 @@ class TerminalViewModel(prompt: Prompt, logState: TextLogState)  {
 
 @Composable
 fun rememberTerminalViewModel(prompt: Prompt, logState: TextLogState) =
-        remember { TerminalViewModel(prompt, logState) }
+    remember { TerminalViewModel(prompt, logState) }
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -121,62 +125,71 @@ fun Terminal() {
             }
         }
         viewModel.channnel.consumeEach {
+            println("Log $it:${it.code}")
             textLogState.addChar(it)
         }
     }
 
     Box(modifier = Modifier.fillMaxSize().background(Color.DarkGray)) {
         Column(
-                modifier = Modifier.fillMaxSize().padding(5.dp),
+            modifier = Modifier.fillMaxSize().padding(5.dp),
         ) {
-            val lazyListState= rememberLazyListState()
-            TextLog(textLogState,lazyListState,modifier = Modifier.weight(0.1f, false), fontSize = 20.sp) {
+            val lazyListState = rememberLazyListState()
+            TextLog(textLogState, lazyListState, modifier = Modifier.weight(0.1f, false), fontSize = 20.sp) {
 
                 var lastInput by remember { mutableStateOf("") }
+                val onSend by rememberUpdatedState {
+                    textLogState.addString(prompt.textFieldValue.text)
+                    with(viewModel) { coroutine.outln(prompt.getValue()) }
+                    prompt.reset()
+                    lastInput = ""
+                    historyIndex = -1
+                }
                 BasicTextField(
-                        prompt.textFieldValue,
-                        onValueChange = {
-                            prompt.updateTextFieldValue(it) { value, _ ->
-                                lastInput = value
-                            }
-                        },
-                        textStyle =
-                        TextStyle(
-                                color = Color.White,
-                                fontSize =
-                                20.sp,
-                                fontFamily = LocalDefaultFont.current
-                        ),
-                        cursorBrush = SolidColor(Color.White),
-                        modifier = Modifier.fillMaxWidth().weight(1f).onPreviewKeyEvent {
-                            if (!prompt.isEnable) return@onPreviewKeyEvent false
-                            return@onPreviewKeyEvent if ((it.key == Key.Enter || it.key == Key.NumPadEnter) && it.type == KeyEventType
-                                            .KeyDown
-                            ) {
+                    prompt.textFieldValue,
 
-                                textLogState.addString(prompt.textFieldValue.text)
-                                with(viewModel) { coroutine.outln(prompt.getValue()) }
-                                prompt.reset()
-                                lastInput = ""
-                                historyIndex = -1
-                                true
-                            } else if ((it.key == Key.DirectionUp || it.key == Key.DirectionDown) && it.type == KeyEventType.KeyDown) {
-                                historyIndex = when (it.key) {
-                                    Key.DirectionUp -> minOf(historyIndex + 1, viewModel.commandHistory.lastIndex)
-                                    Key.DirectionDown -> maxOf(historyIndex - 1, -1)
-                                    else -> -1
-                                }
-                                viewModel.commandHistory.getOrNull(historyIndex).let { s ->
-                                    prompt.updateValue((s ?: "").also { lastInput = it })
-                                }
-                                true
-                            } else if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
-                                prompt.updateValue(viewModel.nextSuggest(lastInput))
-                                true
-                            } else false
-                        }.focusRequester(focusRequester),
+                    onValueChange = {
+                        prompt.updateTextFieldValue(it) { value, _ ->
+                            lastInput = value
+                        }
+                    },
+                    keyboardActions = KeyboardActions {
+                        onSend()
+                    },
+                    textStyle =
+                    TextStyle(
+                        color = Color.White,
+                        fontSize =
+                        20.sp,
+                        fontFamily = LocalDefaultFont.current
+                    ),
+                    cursorBrush = SolidColor(Color.White),
+                    modifier = Modifier.fillMaxWidth().weight(1f).onPreviewKeyEvent {
+                        if (!prompt.isEnable) return@onPreviewKeyEvent false
+                        return@onPreviewKeyEvent if ((it.key == Key.Enter || it.key == Key.NumPadEnter) && it.type == KeyEventType
+                                .KeyDown
+                        ) {
+                            onSend()
+                            true
+                        } else if ((it.key == Key.DirectionUp || it.key == Key.DirectionDown) && it.type == KeyEventType.KeyDown) {
+                            historyIndex = when (it.key) {
+                                Key.DirectionUp -> minOf(historyIndex + 1, viewModel.commandHistory.lastIndex)
+                                Key.DirectionDown -> maxOf(historyIndex - 1, -1)
+                                else -> -1
+                            }
+                            viewModel.commandHistory.getOrNull(historyIndex).let { s ->
+                                prompt.updateValue((s ?: "").also { lastInput = it })
+                            }
+                            true
+                        } else if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
+                            prompt.updateValue(viewModel.nextSuggest(lastInput))
+                            true
+                        } else false
+                    }.focusRequester(focusRequester),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Send),
                 )
-                LaunchedEffect(Unit){
+                LaunchedEffect(Unit) {
+                    return@LaunchedEffect//TODO
                     //Focusをロック
                     focusRequester.requestFocus()
                     focusRequester.captureFocus()

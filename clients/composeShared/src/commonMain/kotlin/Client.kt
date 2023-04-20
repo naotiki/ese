@@ -1,13 +1,23 @@
 expect val clientName:String
 expect val platformInitMessage:String
-enum class ClientPlatform{
+enum class PlatformBackend{
     JVM,
     JS,
 }
-expect val clientPlatform:ClientPlatform
+enum class Platform(val backend: PlatformBackend){
+    Desktop(PlatformBackend.JVM),
+    Android(PlatformBackend.JVM),
+    Web(PlatformBackend.JS)
+}
+expect val platform:Platform
 
-inline fun only(platform: ClientPlatform,block:()->Unit){
-    if (clientPlatform==platform) {
+inline fun only(p: Platform, block:()->Unit){
+    if (platform==p) {
         block()
     }
+}
+
+inline fun <T> T.alt(p:Platform,block: () -> T):T{
+    return if (platform==p) block()
+    else this
 }

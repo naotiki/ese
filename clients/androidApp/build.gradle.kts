@@ -12,11 +12,6 @@ kotlin {
         val androidMain by getting {
             dependencies {
                 implementation(projects.composeShared)
-                api("androidx.activity:activity-compose:1.7.0")
-                api("androidx.appcompat:appcompat:1.6.1")
-                api("androidx.core:core-ktx:1.10.0")
-                implementation("androidx.compose.foundation:foundation:1.4.1")
-                implementation("androidx.compose.ui:ui:1.4.1")
             }
         }
     }
@@ -27,13 +22,15 @@ android {
     compileSdk = 33
     defaultConfig {
         applicationId = "me.naotiki.ese"
-        minSdk = 26
+        minSdk =26
         targetSdk = 33
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.02"
     }
     compileOptions {
+
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    namespace = "me.naotiki.ese"
 }

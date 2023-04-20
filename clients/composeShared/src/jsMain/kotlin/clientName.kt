@@ -1,8 +1,8 @@
 
 actual val clientName: String
         = "Ese Client-WASM"
-actual val clientPlatform: ClientPlatform
-     =ClientPlatform.JS
+actual val platform: Platform
+     =Platform.Web
 actual val platformInitMessage: String="""
     この${clientName}は一部機能が制限されており、バグもあります。
     既知の問題

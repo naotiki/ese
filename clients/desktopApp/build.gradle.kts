@@ -21,7 +21,7 @@ repositories {
 val textVersion = project.properties.getOrDefault("appVersion", "0.0.1-dev").toString()
 version=textVersion
 dependencies {
-    implementation(compose.desktop.currentOs)
+  //  implementation(compose.desktop.currentOs)
 
     @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
     implementation(compose.desktop.components.splitPane)

@@ -7,6 +7,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import me.naotiki.ese.core.EseError
 import me.naotiki.ese.core.EseSystem.IO
 import me.naotiki.ese.core.EseSystem.UserManager
+import me.naotiki.ese.core.Shell
 import me.naotiki.ese.core.Shell.Expression
 import me.naotiki.ese.core.Shell.FileSystem
 import me.naotiki.ese.core.Shell.Variable
@@ -49,6 +50,11 @@ import kotlin.math.roundToInt
 }*/
 
 
+class PrintWorkingDirectory:Executable<Unit>("pwd","現在のディレクトリへのパスを表示します。"){
+    override suspend fun execute(user: User, rawArgs: List<String>) {
+        out.println(FileSystem.currentPath.value)
+    }
+}
 
 //Man
 class Help : Executable<Unit>(
