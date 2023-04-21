@@ -5,6 +5,7 @@ import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
 import me.naotiki.ese.core.EseError
+import me.naotiki.ese.core.EseSystem
 import me.naotiki.ese.core.EseSystem.IO
 import me.naotiki.ese.core.EseSystem.UserManager
 import me.naotiki.ese.core.Shell
@@ -53,6 +54,11 @@ import kotlin.math.roundToInt
 class PrintWorkingDirectory:Executable<Unit>("pwd","現在のディレクトリへのパスを表示します。"){
     override suspend fun execute(user: User, rawArgs: List<String>) {
         out.println(FileSystem.currentPath.value)
+    }
+}
+class WhoAMI:Executable<Unit>("whoami","現在のユーザー名を表示します。"){
+    override suspend fun execute(user: User, rawArgs: List<String>) {
+        out.println(user.name)
     }
 }
 
@@ -297,12 +303,13 @@ class SugoiUserDo : Executable<Unit>(
         //by Linux
         if (!isConfirm) {
             out.println(
-                """あなたはsudoコマンドの講習を受けたはずです。
+                """
+    あなたはsudoコマンドの講習を受けたはずです。
     これは通常、以下の3点に要約されます:
     
         #1) 他人のプライバシーを尊重すること。
         #2) タイプする前に考えること。
-        #3) 大いなる力には大いなる責任が伴うこと。"""
+        #3) 大いなる力には大いなる責任が伴うこと。""".trimIndent()
             )
         }
         val n = IO.newPrompt(client, "実行しますか？(続行するにはあなたのユーザー名を入力) >>")

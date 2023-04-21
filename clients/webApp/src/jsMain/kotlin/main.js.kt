@@ -28,9 +28,7 @@ fun main() {
                 val vm = rememberJSViewModel()
                 Box(modifier = Modifier.fillMaxSize()) {
                     Terminal()
-                    Button({ vm.cancelJob() }, Modifier.align(Alignment.BottomEnd)) {
-                        Text("コマンド中止", fontFamily = LocalDefaultFont.current)
-                    }
+
                 }
             }
         }

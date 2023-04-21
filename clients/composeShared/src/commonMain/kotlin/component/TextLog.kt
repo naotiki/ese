@@ -133,7 +133,6 @@ fun TextLog(
                                     color = Color.White,
                                     fontSize = fontSize,
                                     fontFamily = LocalDefaultFont.current,
-                                    letterSpacing = letterSpacing,
                                     lineBreak = LineBreak.Simple
                                 )
                             ).takeIf { platform.backend != PlatformBackend.JS }
@@ -151,6 +150,7 @@ fun TextLog(
                                 println("L$it : $shown")
                                 BasicText(
                                     shown,
+                                    Modifier.fillMaxWidth(),
                                     style = TextStyle(
                                         color = Color.White,
                                         fontSize = fontSize,
@@ -160,7 +160,6 @@ fun TextLog(
                                     softWrap = true,
                                     overflow = TextOverflow.Visible,
                                     //コピーのときのみ改行される
-                                    minLines = 1,
                                     maxLines = 1
                                 )
                             }

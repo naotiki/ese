@@ -24,7 +24,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.launch
 import me.naotiki.ese.core.ClientImpl
+import me.naotiki.ese.core.EseSystem
 import me.naotiki.ese.core.EseSystem.IO
+import me.naotiki.ese.core.Shell
 import me.naotiki.ese.core.Shell.Expression
 import me.naotiki.ese.core.utils.splitArgs
 import kotlin.coroutines.CoroutineContext
@@ -131,6 +133,7 @@ fun Terminal() {
     }
 
     Box(modifier = Modifier.fillMaxSize().background(Color.DarkGray)) {
+
         Column(
             modifier = Modifier.fillMaxSize().padding(5.dp),
         ) {
@@ -145,56 +148,100 @@ fun Terminal() {
                     lastInput = ""
                     historyIndex = -1
                 }
-                BasicTextField(
-                    prompt.textFieldValue,
 
-                    onValueChange = {
-                        prompt.updateTextFieldValue(it) { value, _ ->
-                            lastInput = value
-                        }
-                    },
-                    keyboardActions = KeyboardActions {
-                        onSend()
-                    },
-                    textStyle =
-                    TextStyle(
-                        color = Color.White,
-                        fontSize =
-                        20.sp,
-                        fontFamily = LocalDefaultFont.current
-                    ),
-                    cursorBrush = SolidColor(Color.White),
-                    modifier = Modifier.fillMaxWidth().weight(1f).onPreviewKeyEvent {
-                        if (!prompt.isEnable) return@onPreviewKeyEvent false
-                        return@onPreviewKeyEvent if ((it.key == Key.Enter || it.key == Key.NumPadEnter) && it.type == KeyEventType
-                                .KeyDown
-                        ) {
+                    BasicTextField(
+                        prompt.textFieldValue,
+
+                        onValueChange = {
+                            prompt.updateTextFieldValue(it) { value, _ ->
+                                lastInput = value
+                            }
+                        },
+                        keyboardActions = KeyboardActions {
                             onSend()
-                            true
-                        } else if ((it.key == Key.DirectionUp || it.key == Key.DirectionDown) && it.type == KeyEventType.KeyDown) {
-                            historyIndex = when (it.key) {
-                                Key.DirectionUp -> minOf(historyIndex + 1, viewModel.commandHistory.lastIndex)
-                                Key.DirectionDown -> maxOf(historyIndex - 1, -1)
-                                else -> -1
-                            }
-                            viewModel.commandHistory.getOrNull(historyIndex).let { s ->
-                                prompt.updateValue((s ?: "").also { lastInput = it })
-                            }
-                            true
-                        } else if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
-                            prompt.updateValue(viewModel.nextSuggest(lastInput))
-                            true
-                        } else false
-                    }.focusRequester(focusRequester),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Send),
-                )
-                LaunchedEffect(Unit) {
-                    return@LaunchedEffect//TODO
-                    //Focusをロック
-                    focusRequester.requestFocus()
-                    focusRequester.captureFocus()
-                }
+                        },
+                        textStyle =
+                        TextStyle(
+                            color = Color.White,
+                            fontSize =
+                            20.sp,
+                            fontFamily = LocalDefaultFont.current
+                        ),
+                        cursorBrush = SolidColor(Color.White),
+                        modifier = Modifier.fillMaxWidth().weight(1f).onPreviewKeyEvent {
+                            if (!prompt.isEnable) return@onPreviewKeyEvent false
+                            return@onPreviewKeyEvent if ((it.key == Key.Enter || it.key == Key.NumPadEnter) && it.type == KeyEventType
+                                    .KeyDown
+                            ) {
+                                onSend()
+                                true
+                            } else if ((it.key == Key.DirectionUp || it.key == Key.DirectionDown) && it.type == KeyEventType.KeyDown) {
+                                historyIndex = when (it.key) {
+                                    Key.DirectionUp -> minOf(historyIndex + 1, viewModel.commandHistory.lastIndex)
+                                    Key.DirectionDown -> maxOf(historyIndex - 1, -1)
+                                    else -> -1
+                                }
+                                viewModel.commandHistory.getOrNull(historyIndex).let { s ->
+                                    prompt.updateValue((s ?: "").also { lastInput = it })
+                                }
+                                true
+                            } else if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
+                                prompt.updateValue(viewModel.nextSuggest(lastInput))
+                                true
+                            } else false
+                        }.focusRequester(focusRequester),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Ascii,
+                            imeAction = ImeAction.Send
+                        ),
+                    )
+                    LaunchedEffect(Unit) {
+                        //Focusをロック
+                        focusRequester.requestFocus()
+                        focusRequester.captureFocus()
+                        //VK登録
+                        VirtualKeyboardManager.addListener {
+                            if (it.isCtrlPressed&&it.key==Key.C){
+                                Shell.Expression.cancelJob()
+                                true
+                            }else
+                            if ((it.key == Key.DirectionUp || it.key == Key.DirectionDown) && it.type == KeyEventType.KeyDown) {
+                                historyIndex = when (it.key) {
+                                    Key.DirectionUp -> minOf(historyIndex + 1, viewModel.commandHistory.lastIndex)
+                                    Key.DirectionDown -> maxOf(historyIndex - 1, -1)
+                                    else -> -1
+                                }
+                                viewModel.commandHistory.getOrNull(historyIndex).let { s ->
+                                    prompt.updateValue((s ?: "").also { lastInput = it })
+                                }
+                                true
+                            } else if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
+                                prompt.updateValue(viewModel.nextSuggest(lastInput))
+                                true
+                            } else false
+                        }
+                    }
+
+
+            }
+            VirtualKeyboard()
+        }
+
+    }
+}
+
+object VirtualKeyboardManager{
+    private val listeners= mutableListOf<(KeyEvent)->Boolean>()
+    fun addListener(onPressed:(KeyEvent)->Boolean){
+        listeners.add(onPressed)
+    }
+    fun press(keyEvent: KeyEvent){
+        listeners.forEach {
+            if (it(keyEvent)) {
+                return
             }
         }
     }
 }
+@Composable
+expect fun VirtualKeyboard(modifier: Modifier=Modifier)

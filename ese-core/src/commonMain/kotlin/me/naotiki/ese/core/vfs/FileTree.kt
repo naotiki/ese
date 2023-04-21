@@ -22,7 +22,7 @@ class FileTree()  {
         val initialCommands = listOf<Executable<*>>(
             ListSegments(), ChangeDirectory(), Cat(), Exit(), SugoiUserDo(),
             Yes(), Clear(), Echo(), Remove(), Test(), Help(),MakeDirectory(),
-            Touch(),Chmod(),WriteToFile(),PrintWorkingDirectory()
+            Touch(),Chmod(),WriteToFile(),PrintWorkingDirectory(),WhoAMI()
         )+platformCommands
         rootDir {
             executableEnvPaths+= dir("bin") {
