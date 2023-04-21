@@ -2,6 +2,9 @@ package me.naotiki.ese.core.vfs
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import me.naotiki.ese.core.EseSystem
+import me.naotiki.ese.core.EseSystem.IO
+import me.naotiki.ese.core.appName
 import me.naotiki.ese.core.commands.parser.ArgType
 import me.naotiki.ese.core.commands.parser.Executable
 import me.naotiki.ese.core.secure.PluginLoader
@@ -25,7 +28,7 @@ class Status : Executable<Unit>(
 
         out.println(
             """
-           EseLinux MemoryInfo
+           $appName MemoryInfo
            Free : ${"%,6d MB".format((Runtime.getRuntime().freeMemory() / (1024 * 1024)))}
            Total: ${"%,6d MB".format((Runtime.getRuntime().totalMemory() / (1024 * 1024)))}
            Max  : ${"%,6d MB".format((Runtime.getRuntime().maxMemory() / (1024 * 1024)))}
@@ -56,7 +59,7 @@ class Udon : Executable<Unit>("udon", "UDON is a Downloader Of Noodles") {
     inner class LocalInstall : SubCommand<Unit>("local", "ローカルファイルからインストールします。") {
         val pkgName by argument(ArgType.String, "packageName", "パッケージ名")
         override suspend fun execute(user: User, rawArgs: List<String>) {
-            val pluginDir = java.io.File(dataDir, "plugins")
+            val pluginDir = File(dataDir, "plugins")
             if (!pluginDir.exists()) {
                 out.println("pluginフォルダーが見つかりませんでした。\n${pluginDir.absolutePath}に作成してください。")
             }
@@ -70,7 +73,7 @@ class Udon : Executable<Unit>("udon", "UDON is a Downloader Of Noodles") {
             var ans: Boolean?
             do {
                 ans = normalizeYesNoAnswer(
-                    io.newPrompt(client, "プラグイン ${file.nameWithoutExtension} を本当にインストールしますか？(yes/no)")
+                    IO.newPrompt(client, "プラグイン ${file.nameWithoutExtension} を本当にインストールしますか？(yes/no)")
                 )
             } while (ans == null)
             if (ans != true) {
@@ -86,7 +89,7 @@ class Udon : Executable<Unit>("udon", "UDON is a Downloader Of Noodles") {
     override suspend fun execute(user: User, rawArgs: List<String>) {
         out.println(
             """
-            Udon は EseLinuxのプラグインマネージャーです。
+            Udon は $appName のプラグインマネージャーです。
             """.trimIndent()
         )
     }

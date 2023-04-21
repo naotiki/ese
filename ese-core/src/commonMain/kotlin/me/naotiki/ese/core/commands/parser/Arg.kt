@@ -3,12 +3,11 @@
 */
 package me.naotiki.ese.core.commands.parser
 
-import org.koin.core.Koin
 import kotlin.reflect.KProperty
 
 
 class VarArg<T : Any>(
-    val type: ArgType<T>, val name: String, val includeOptionInArg: Boolean, val koin: Koin
+    val type: ArgType<T>, val name: String, val includeOptionInArg: Boolean
 ) {
     var value: MutableList<T> = mutableListOf()
     operator fun getValue(thisRef: Any?, property: KProperty<*>): List<T> {
@@ -22,7 +21,7 @@ class VarArg<T : Any>(
     }
 
     fun addValue(str: String) {
-        val casted = type.converter(koin, str) ?: throw CommandIllegalArgsException("$name が無効な値です。", type)
+        val casted = type.converter( str) ?: throw CommandIllegalArgsException("$name が無効な値です。", type)
         if (validator?.invoke(casted) != false) {
             value += casted
         } else {
@@ -58,12 +57,12 @@ class Arg<T : Any>(
 
     var vararg: VarArg<T>? = null
     fun vararg(includeOption: Boolean = false): VarArg<T> {
-        vararg = VarArg(type, name, includeOption, getKoin())
+        vararg = VarArg(type, name, includeOption)
         return vararg as VarArg<T>
     }
 
     override fun updateValue(str: String) {
-        val casted = type.converter(getKoin(), str) ?: throw CommandIllegalArgsException("$name が無効な値です。", type)
+        val casted = type.converter( str) ?: throw CommandIllegalArgsException("$name が無効な値です。", type)
         if (validator?.invoke(casted) != false) {
             value = casted
         } else {

@@ -1,5 +1,6 @@
 package me.naotiki.ese.core.vfs.dsl
 
+import me.naotiki.ese.core.EseSystem
 import me.naotiki.ese.core.commands.parser.Executable
 import me.naotiki.ese.core.user.Group
 import me.naotiki.ese.core.user.User
@@ -16,7 +17,7 @@ data class FileDslContext @PublishedApi internal constructor(val dir: Directory,
  * @param block DSLを使用し[root]にファイルを追加します
  */
 internal inline fun FileTree.rootDir(block: FileDslContext.() -> Unit) {
-    fileDSL(this.root, this.userManager.uRoot,block)
+    fileDSL(this.root, EseSystem.UserManager.uRoot,block)
 }
 
 @EseFileTreeDslMarker

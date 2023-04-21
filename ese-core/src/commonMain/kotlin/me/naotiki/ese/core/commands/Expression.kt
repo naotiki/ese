@@ -2,29 +2,24 @@ package me.naotiki.ese.core.commands
 
 
 import kotlinx.coroutines.Job
-import me.naotiki.ese.core.IO
-import me.naotiki.ese.core.Variable
+import me.naotiki.ese.core.EseSystem.FileTree
+import me.naotiki.ese.core.EseSystem.UserManager
+import me.naotiki.ese.core.Shell.FileSystem
+import me.naotiki.ese.core.Shell.Variable
 import me.naotiki.ese.core.commands.parser.ArgType
-import me.naotiki.ese.core.user.UserManager
 import me.naotiki.ese.core.utils.splitArgs
-import me.naotiki.ese.core.vfs.*
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
+import me.naotiki.ese.core.vfs.Directory
+import me.naotiki.ese.core.vfs.ExecutableFile
+import me.naotiki.ese.core.vfs.Path
 import kotlin.collections.set
 
-class Expression : KoinComponent {
-    private val fileSystem by inject<FileSystem>()
-    private val io by inject<IO>()
-    private val fileTree by inject<FileTree>()
-    private val um by inject<UserManager>()
-    private val variable by inject<Variable>()
+class Expression  {
 
     var currentJob: Job? = null
     fun cancelJob(): Boolean {
         currentJob?.cancel() ?: return false
         return true
     }
-
     private val _commandHistory = mutableListOf<String>()
     fun addHistory(string: String){
         _commandHistory.add(0,string)
@@ -32,16 +27,16 @@ class Expression : KoinComponent {
     val commandHistory :List<String> get() = _commandHistory
     fun getExecutables(dir: Directory? = null, includeHidden: Boolean = true): List<ExecutableFile<*>> {
         val target = if (dir != null)
-            fileTree.executableEnvPaths.plus(dir)
-        else fileTree.executableEnvPaths
+            FileTree.executableEnvPaths.plus(dir)
+        else FileTree.executableEnvPaths
         return target.flatMap {
-            it.getChildren(um.user, includeHidden)?.values.orEmpty()
+            it.getChildren(UserManager.user, includeHidden)?.values.orEmpty()
                 .filterIsInstance<ExecutableFile<*>>()
         }
     }
 
     fun tryResolve(cmd: String): ExecutableFile<*>? {
-        (getExecutables().firstOrNull { cmd == it.name } ?: fileSystem.tryResolve(Path(cmd)) as? ExecutableFile<*>
+        (getExecutables().firstOrNull { cmd == it.name } ?: FileTree.tryResolve(Path(cmd)) as? ExecutableFile<*>
                 )?.let {
                 return it
             }
@@ -53,8 +48,8 @@ class Expression : KoinComponent {
             tryResolve(it.first()) to it.drop(1)
         }
         if (exe == null && targetText.isNotBlank()) {
-            return fileTree.executableEnvPaths.flatMap {
-                it.getChildren(um.user)?.keys ?: emptyList()
+            return FileTree.executableEnvPaths.flatMap {
+                it.getChildren(UserManager.user)?.keys ?: emptyList()
             }.filter { it.startsWith(targetText) }
         }
 
@@ -65,17 +60,17 @@ class Expression : KoinComponent {
             }
 
             is ArgType.Executable -> {
-                fileTree.executableEnvPaths.flatMap {
-                    it.getChildren(um.user)?.keys ?: emptyList()
+                FileTree.executableEnvPaths.flatMap {
+                    it.getChildren(UserManager.user)?.keys ?: emptyList()
                 }
             }
 
             is ArgType.File -> {
-                fileSystem.currentDirectory.getChildren(um.user)?.keys
+                FileSystem.currentDirectory.getChildren(UserManager.user)?.keys
             }
 
             is ArgType.Dir -> {
-                fileSystem.currentDirectory.getChildren(um.user)
+                FileSystem.currentDirectory.getChildren(UserManager.user)
                     ?.filterValues { it is Directory }?.keys
             }
 
@@ -88,17 +83,16 @@ class Expression : KoinComponent {
 
     fun expressionParser(string: String): Boolean {
 
-        val assignment = Regex("^${variable.nameRule}=")
+        val assignment = Regex("^${Variable.nameRule}=")
         when {
             string.contains(assignment) -> {
 
                 val a = string.replaceFirst(assignment, "")
-                variable.map[assignment.matchAt(string, 0)!!.value.trimEnd('=')] = a
+                Variable.map[assignment.matchAt(string, 0)!!.value.trimEnd('=')] = a
             }
 
             else -> return false
         }
         return true
     }
-
 }

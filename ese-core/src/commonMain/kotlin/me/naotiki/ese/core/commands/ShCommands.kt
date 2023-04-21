@@ -1,11 +1,10 @@
 package me.naotiki.ese.core.commands
 
 
-import me.naotiki.ese.core.Variable
+import me.naotiki.ese.core.Shell
 import me.naotiki.ese.core.commands.Operator.*
 import me.naotiki.ese.core.commands.parser.Executable
 import me.naotiki.ese.core.user.User
-import org.koin.core.component.inject
 
 
 class If : Executable<Unit>("if") {
@@ -16,7 +15,6 @@ class If : Executable<Unit>("if") {
 }
 
 class Test : Executable<Boolean>("test") {
-    val variable by inject<Variable>()
     override suspend fun execute(user: User, rawArgs: List<String>): Boolean {
 
         if (rawArgs.isEmpty()) return false
@@ -29,8 +27,8 @@ class Test : Executable<Boolean>("test") {
         val o = values().firstOrNull {
             it.string == conditional[1]
         }
-        val a = variable.expandVariable(conditional.first())
-        val b = variable.expandVariable(conditional[2])
+        val a = Shell.Variable.expandVariable(conditional.first())
+        val b = Shell.Variable.expandVariable(conditional[2])
         return when (o) {
             Equal -> a==b
             NotEqual -> a!=b

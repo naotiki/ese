@@ -1,7 +1,6 @@
 plugins {
     kotlin("multiplatform") //version "1.8.10"
     kotlin("plugin.serialization") version "1.8.10"
-    `maven-publish`
 }
 
 group = "me.naotiki"
@@ -12,8 +11,10 @@ repositories {
 }
 
 kotlin {
+    jvmToolchain(11)
     jvm {
-       // jvmToolchain(11)
+
+        jvmToolchain(11)
         withJava()
         testRuns["test"].executionTask.configure {
             useJUnitPlatform()
@@ -28,6 +29,14 @@ kotlin {
             }
         }
     }
+    //ktx-serialization ktx-coroutine のWASMサポートを待つ
+    /*@OptIn(org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl::class)
+    wasm{
+        binaries.executable()
+        browser {
+        }
+        applyBinaryen()
+    }*/
     val hostOs = System.getProperty("os.name")
     val isMingwX64 = hostOs.startsWith("Windows")
     /* val nativeTarget = when {
@@ -41,7 +50,6 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api("io.insert-koin:koin-core:3.3.2")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.4.1")
@@ -53,6 +61,7 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
             }
         }
         val jvmMain by getting {

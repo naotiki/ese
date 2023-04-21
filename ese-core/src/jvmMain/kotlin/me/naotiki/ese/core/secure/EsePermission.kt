@@ -4,7 +4,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.Json
 import me.naotiki.ese.core.secure.Permissions.*
 import org.objectweb.asm.Opcodes.ACC_NATIVE
 import org.objectweb.asm.Type

@@ -1,9 +1,8 @@
 package me.naotiki.ese.core.commands.parser
 
-import org.koin.core.component.KoinComponent
 import kotlin.reflect.KProperty
 
-interface CommandElement<T : Any> :KoinComponent{
+interface CommandElement<T : Any> {
     val name: String
     val description: String?
     var value: T?

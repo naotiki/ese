@@ -1,13 +1,11 @@
 package me.naotiki.ese.core.vfs
 
+import kotlinx.serialization.Serializable
 import me.naotiki.ese.core.user.User
 import me.naotiki.ese.core.user.isSugoi
 import me.naotiki.ese.core.utils.SugoiString.splitPair
 import me.naotiki.ese.core.utils.getFlag
-import me.naotiki.ese.core.utils.log
 import me.naotiki.ese.core.vfs.Permission.Companion.Operation
-import kotlinx.serialization.Serializable
-import kotlin.Boolean
 import kotlin.jvm.JvmInline
 
 enum class PermissionTarget {
@@ -121,4 +119,4 @@ private fun File.getOperatorValue(user: User) = when {
 }
 
 fun File.checkPermission(user: User, operation: Operation): Boolean =
-    isSugoi(user) || permission.get().has(operation.getFlag() shl getOperatorValue(user))
+    user.isSugoi || permission.get().has(operation.getFlag() shl getOperatorValue(user))

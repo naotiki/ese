@@ -57,7 +57,7 @@ fun <T> File.value(value: T) = FileValue(this, value)
  *  @param parent 親ディレクトリ、ルートの場合はnull
  *  @param hidden 属性 [Boolean]をとる
  */
-abstract class File(
+abstract class File @PublishedApi internal constructor(
     var name: String, val parent: Directory? = null, hidden: Boolean, owner: User, group: Group, permission: Permission,
 ) {
     val hidden = value(hidden)
@@ -129,7 +129,7 @@ class ExecutableFile<R>(
 
 }
 
-open class Directory(
+open class Directory (
     name: String, parent: Directory?, owner: User, group: Group, permission: Permission,
     hidden: Boolean
 ) : File(

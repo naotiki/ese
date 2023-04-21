@@ -5,7 +5,6 @@ class Variable {
     val map = mutableMapOf<String, String>()
 
     fun expandVariable(string: String): String {
-
         return Regex("\\$$nameRule").replace(string) {
             map[it.value.trimStart('$')] ?:""
         }

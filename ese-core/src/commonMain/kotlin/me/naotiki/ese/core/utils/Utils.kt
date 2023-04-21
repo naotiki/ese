@@ -1,7 +1,6 @@
 package me.naotiki.ese.core.utils
 
 import kotlinx.coroutines.yield
-import kotlin.reflect.KClass
 
 fun String.splitArgs()= replace(" {2,}".toRegex()," ").split(' ')
 
@@ -16,13 +15,6 @@ fun normalizeYesNoAnswer(input:String): Boolean? {
         else -> null
     }
 }
-@Deprecated("", level = DeprecationLevel.ERROR)
-fun <T:Any?> T.log(prefix:String?=null)= also {
-    if (prefix!=null){
-        print(prefix)
-    }
-    println("[TLog] $it")
-}
 
 suspend inline fun loop( block: ()->Unit){
     while (true) {
@@ -30,4 +22,10 @@ suspend inline fun loop( block: ()->Unit){
         yield()
     }
 }
+
+inline fun <K, reified R> Map<out K ,*>.filterValueInstance():Map<out K,R>{
+    return mapValues { it.value as R }
+}
+
 expect fun String.format(vararg args:Any?):String
+

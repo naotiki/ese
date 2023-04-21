@@ -1,8 +1,7 @@
 package me.naotiki.ese.core.api
 
 import me.naotiki.ese.core.user.User
-import org.koin.core.component.KoinComponent
 
-interface EsePlugin:KoinComponent{
+interface EsePlugin{
     fun init(user: User)
 }

@@ -2,24 +2,26 @@ package me.naotiki.ese.core.commands
 
 
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
-import me.naotiki.ese.core.EseError
-import me.naotiki.ese.core.Variable
+import me.naotiki.ese.core.*
+import me.naotiki.ese.core.EseSystem.IO
+import me.naotiki.ese.core.EseSystem.UserManager
+import me.naotiki.ese.core.Shell.Expression
+import me.naotiki.ese.core.Shell.FileSystem
+import me.naotiki.ese.core.Shell.Variable
 import me.naotiki.ese.core.commands.parser.ArgType
 import me.naotiki.ese.core.commands.parser.Executable
 import me.naotiki.ese.core.user.User
 import me.naotiki.ese.core.utils.format
 import me.naotiki.ese.core.utils.normalizeYesNoAnswer
-import me.naotiki.ese.core.version
-import me.naotiki.ese.core.vfs.*
+import me.naotiki.ese.core.vfs.Directory
+import me.naotiki.ese.core.vfs.File
+import me.naotiki.ese.core.vfs.Permission
+import me.naotiki.ese.core.vfs.TextFile
 import me.naotiki.ese.core.vfs.dsl.dir
 import me.naotiki.ese.core.vfs.dsl.fileDSL
 import me.naotiki.ese.core.vfs.dsl.textFile
-import org.koin.core.component.inject
-import kotlin.coroutines.CoroutineContext
 import kotlin.math.roundToInt
 
 //  UDON is a Downloader Of Noodles
@@ -46,6 +48,16 @@ import kotlin.math.roundToInt
 }*/
 
 
+class PrintWorkingDirectory:Executable<Unit>("pwd","現在のディレクトリへのパスを表示します。"){
+    override suspend fun execute(user: User, rawArgs: List<String>) {
+        out.println(FileSystem.currentPath.value)
+    }
+}
+class WhoAMI:Executable<Unit>("whoami","現在のユーザー名を表示します。"){
+    override suspend fun execute(user: User, rawArgs: List<String>) {
+        out.println(user.name)
+    }
+}
 
 //Man
 class Help : Executable<Unit>(
@@ -53,9 +65,8 @@ class Help : Executable<Unit>(
         役に立ちます。
 """.trimIndent()
 ) {
-    private val ex by inject<Expression>()
     override suspend fun execute(user: User, rawArgs: List<String>) {
-        val exes = ex.getExecutables(includeHidden = false).map { it }
+        val exes = Expression.getExecutables(includeHidden = false).map { it }
         out.println("現在、以下の${exes.count()}個のコマンドが使用可能です。")
         exes.forEach {
             out.println(it.name)
@@ -72,7 +83,6 @@ class ListSegments : Executable<Unit>(
     今いる場所のファイルを一覧表示します。
 """.trimIndent()
 ) {
-    val fs by inject<FileSystem>()
     val detail by option(
         ArgType.Boolean,
         "list", "l", "ディレクトリの内容を詳細表示します。"
@@ -83,7 +93,7 @@ class ListSegments : Executable<Unit>(
     ).default(false)
     private val directory by argument(ArgType.Dir, "target", "一覧表示するディレクトリ").optional()
     override suspend fun execute(user: User, rawArgs: List<String>) {
-        (directory ?: fs.currentDirectory).getChildren(user, all)?.forEach { (name, file) ->
+        (directory ?: FileSystem.currentDirectory).getChildren(user, all)?.forEach { (name, file) ->
             if (detail) {
                 file.run {
                     out.println(
@@ -105,7 +115,6 @@ class Remove : Executable<Unit>(
     ファイルを削除します。
 """.trimIndent()
 ) {
-    val fs by inject<FileSystem>()
     val recursive by option(ArgType.Boolean, "recursive", "r", "ディレクトリを削除します。").default(false)
     val interactive by option(ArgType.Boolean, "interactive", "i", "削除前に確認します。").default(false)
 
@@ -117,7 +126,7 @@ class Remove : Executable<Unit>(
         } else {
             "ファイル"
         }
-        val ans = io.newPrompt(client, "$text ${file.getFullPath().value}を削除しますか？ (y/N)")
+        val ans = IO.newPrompt(client, "$text ${file.getFullPath().value}を削除しますか？ (y/N)")
         return if (normalizeYesNoAnswer(ans) == true) {
             file.parent?.removeChild(user, file) == true
         } else {
@@ -175,11 +184,10 @@ class ChangeDirectory : Executable<Unit>(
     対象のディレクトリに移動します。
 """.trimIndent()
 ) {
-    private val fs by inject<FileSystem>()
     val directory by argument(ArgType.Dir, "target", "一覧表示するディレクトリ")
     override suspend fun execute(user: User, rawArgs: List<String>) {
         val dir = directory//args.firstOrNull()?.let { Vfs.tryResolve(Path(it)) } as? Directory
-        fs.setCurrentPath(dir)
+        FileSystem.setCurrentPath(dir)
     }
 }
 class Yes : Executable<Unit>(
@@ -269,10 +277,9 @@ class Cat : Executable<Unit>(
 }
 
 class Echo : Executable<Unit>("echo", "メッセージを出力します。") {
-    private val variable by inject<Variable>()
     private val input by argument(ArgType.String, "msg", "出力するメッセージ").vararg()
     override suspend fun execute(user: User, rawArgs: List<String>) {
-        input.joinToString(" ").let { out.println(variable.expandVariable(it)) }
+        input.joinToString(" ").let { out.println(Variable.expandVariable(it)) }
     }
 }
 
@@ -293,27 +300,28 @@ class SugoiUserDo : Executable<Unit>(
         //by Linux
         if (!isConfirm) {
             out.println(
-                """あなたはsudoコマンドの講習を受けたはずです。
+                """
+    あなたはsudoコマンドの講習を受けたはずです。
     これは通常、以下の3点に要約されます:
     
         #1) 他人のプライバシーを尊重すること。
         #2) タイプする前に考えること。
-        #3) 大いなる力には大いなる責任が伴うこと。"""
+        #3) 大いなる力には大いなる責任が伴うこと。""".trimIndent()
             )
         }
-        val n = io.newPrompt(client, "実行しますか？(続行するにはあなたのユーザー名を入力) >>")
+        val n = IO.newPrompt(client, "実行しますか？(続行するにはあなたのユーザー名を入力) >>")
         if (n == user.name) {
             isConfirm = true
-            um.setUser(um.uRoot)
-            cmd.execute(um.uRoot, targetArgs)
-            um.setUser(user)
+            UserManager.setUser(UserManager.uRoot)
+            cmd.execute(UserManager.uRoot, targetArgs)
+            UserManager.setUser(user)
         } else {
             out.println("残念、間違いなユーザー名")
         }
     }
 }
 
-class Exit : Executable<Unit>("exit", "Ese Linux を終了します。") {
+class Exit : Executable<Unit>("exit", "$appName を終了します。") {
     override suspend fun execute(user: User, rawArgs: List<String>) {
         out.println("終了します")
         client.exit()
@@ -321,10 +329,9 @@ class Exit : Executable<Unit>("exit", "Ese Linux を終了します。") {
 }
 
 class MakeDirectory : Executable<Unit>("mkdir", "ディレクトリを作成します。") {
-    val fs by inject<FileSystem>()
     val dirName by argument(ArgType.String, "name", "作成するディレクトリの名前")
     override suspend fun execute(user: User, rawArgs: List<String>) {
-        fileDSL(fs.currentDirectory, um.user) {
+        fileDSL(FileSystem.currentDirectory, UserManager.user) {
             dir(dirName)
         }
 
@@ -332,17 +339,15 @@ class MakeDirectory : Executable<Unit>("mkdir", "ディレクトリを作成し�
 }
 
 class Touch : Executable<Unit>("touch", "書き込み可能ファイルを作成します。") {
-    val fs by inject<FileSystem>()
     val fileName by argument(ArgType.String, "name", "作成するファイルの名前")
     override suspend fun execute(user: User, rawArgs: List<String>) {
-        fileDSL(fs.currentDirectory, um.user) {
+        fileDSL(FileSystem.currentDirectory, UserManager.user) {
             textFile(fileName, "")
         }
     }
 }
 
 class Chmod : Executable<Unit>("chmod", "権限を変更します。") {
-    val fs by inject<FileSystem>()
     val value by argument(ArgType.String, "value", "権限の値(8進数9桁)")
     val file by argument(ArgType.File, "target", "変更するファイルの名前")
     override suspend fun execute(user: User, rawArgs: List<String>) {
@@ -351,7 +356,7 @@ class Chmod : Executable<Unit>("chmod", "権限を変更します。") {
             throw EseError.CommandIllegalArgumentError("不正な権限値")
         }
 
-        file.permission.set(um.user, Permission(p))
+        file.permission.set(UserManager.user, Permission(p))
     }
 }
 
@@ -360,7 +365,6 @@ class WriteToFile : Executable<Unit>(
         テキストファイルになにかを書き込みます。
         -aまたは-o オプションで書き込み方法を指定する必要があります。""".trimIndent()
 ) {
-    val fs by inject<FileSystem>()
     val value by argument(ArgType.String, "text", "書き込む内容")
     val file by argument(ArgType.File, "file", "書き込むファイルの名前")
 

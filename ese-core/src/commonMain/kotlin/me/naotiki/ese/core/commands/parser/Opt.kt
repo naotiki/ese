@@ -1,11 +1,10 @@
 package me.naotiki.ese.core.commands.parser
 
-import org.koin.core.Koin
 import kotlin.reflect.KProperty
 
 class MultipleOpt<T : Any>(
     val type: ArgType<T>,
-    val name: String,val koin: Koin,
+    val name: String,
     var validator:((T)->Boolean)?
 ) {
     var value: MutableList<T> = mutableListOf()
@@ -26,7 +25,7 @@ class MultipleOpt<T : Any>(
         return this
     }
     fun addValue(str: String) {
-        val casted=type.converter(koin,str)?:throw CommandIllegalArgsException("$name が無効な数値です。",
+        val casted=type.converter(str)?:throw CommandIllegalArgsException("$name が無効な数値です。",
             type)
         if (validator?.invoke(casted) != false) {
             value += casted
@@ -64,7 +63,7 @@ class Opt<T : Any>(
     }
     override fun updateValue(str: String) {
 
-        val casted = type.converter(getKoin(),str)?:throw CommandIllegalArgsException("$name が無効な数値です。",type)
+        val casted = type.converter(str)?:throw CommandIllegalArgsException("$name が無効な数値です。",type)
         if (validator?.invoke(casted) != false) {
             value = casted
         } else {
@@ -92,7 +91,7 @@ class Opt<T : Any>(
      * */
     fun multiple(): MultipleOpt<T> {
         isMultiple = MultipleOpt(
-            type,name,getKoin(),validator
+            type,name,validator
         )
         return isMultiple as MultipleOpt<T>
     }

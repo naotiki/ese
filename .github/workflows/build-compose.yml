@@ -20,6 +20,9 @@ on:
       os:
         required: true
         type: string
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron: '0 2 * * *'
 permissions:
   contents: read
 
@@ -30,22 +33,47 @@ jobs:
     runs-on: ${{ inputs.os }}
     steps:
       - uses: actions/checkout@v3
-      - name: Set up JDK 17
+      - name: Set up JDK 17, 11
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
+          java-version: |
+            17
+            11
           distribution: 'adopt'
       - name: Make gradlew executable
-        run: chmod +x ./client-gui/gradlew
-      - name: Build with Gradle
+        run: chmod +x ./clients/gradlew
+      - name: Build Desktop with Gradle
         uses: gradle/gradle-build-action@v2
         with:
           arguments: superReleaseBuild -PappVersion=${{ env.version }}
-          build-root-directory: client-gui/
+          build-root-directory: clients/
+      - name: Download Android SDK
+        if: ${{ contains(inputs.os,'ubuntu') }}
+        run: |
+            wget --quiet --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip
+            unzip -d android-sdk-linux android-sdk.zip
+            sudo mkdir -p /root/.android
+            sudo touch /root/.android/repositories.cfg
+            echo y | android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=. "platforms;android-${{ matrix.compile-sdk }}" >/dev/null
+            echo y | android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=. "platform-tools" >/dev/null
+            echo y | android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=. "build-tools;${{ matrix.build-tools }}" >/dev/null
+            export ANDROID_SDK_ROOT=$PWD
+            export PATH=$PATH:$PWD/platform-tools/
+            chmod +x ./gradlew
+            set +o pipefail
+            yes | android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=. --licenses
+            set -o pipefail
+      - name: Build Android with Gradle
+        uses: gradle/gradle-build-action@v2
+        if: ${{ contains(inputs.os,'ubuntu') }}
+        with:
+          arguments: assembleRelease -PappVersion=${{ env.version }}
+          build-root-directory: clients/
       - name: Upload Package Artifact
         uses: actions/upload-artifact@v3
         with:
           name: ${{ inputs.os }}-package
           path: |
-            client-gui/build/jpackage/*/*.*
-          if-no-files-found: error
+            clients/desktopApp/build/jpackage/*/*.*
+            clients/androidApp/build/outputs/apk/release/*.apk
+          if-no-files-found: warn

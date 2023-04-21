@@ -1,9 +1,9 @@
 package me.naotiki.ese.core.secure
 
+import me.naotiki.ese.core.secure.InspectValue.*
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes.*
-import me.naotiki.ese.core.secure.InspectValue.*
 
 class SecureClassChecker(map: PermissionMap) : ClassVisitor(ASM5) {
     private val acc: MutableMap<AccessFlag, Permissions> = mutableMapOf()
