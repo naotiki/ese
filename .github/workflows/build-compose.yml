@@ -49,6 +49,7 @@ jobs:
           build-root-directory: clients/
       - name: Download Android SDK
         if: ${{ contains(inputs.os,'ubuntu') }}
+        working-directory: clients/
         run: |
             wget --quiet --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip
             unzip -d android-sdk-linux android-sdk.zip
@@ -59,7 +60,6 @@ jobs:
             echo y | android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=. "build-tools;33.0.2" >/dev/null
             export ANDROID_SDK_ROOT=$PWD
             export PATH=$PATH:$PWD/platform-tools/
-            chmod +x ./gradlew
             set +o pipefail
             yes | android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=. --licenses
             set -o pipefail
