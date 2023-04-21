@@ -10,35 +10,45 @@ Unixシェルを模した動作をするアプリ
 
 ※初回アクセス時、約15MBの通信を行います。
 ## モジュール
-### `client-cui` (JVM)
-Ese LinuxのCUIクライアントアプリ
-### `client-gui` (JVM/JS)
-Ese LinuxのGUIクライアントアプリ
+### `clients`
+Eseのクライアントアプリ
+#### `desktopApp` (JVM)
+#### `cuiApp` (JVM)
+#### `androidApp` (JVM)
+#### `webApp` (JS)
+(WASM対応予定)
+
+---
 ### `ese-core` (JVM/JS)
-Ese Linuxのコアライブラリ
+Eseのコアライブラリ
 
 # ビルド方法
-まず、`client-gui`フォルダに移動
+まず、`clients`フォルダに移動
 ```shell
-cd client-gui
+cd clients
 ```
 ---
 ## デスクトップクライアントを実行
 タスク`run`を実行
 ```shell
-./gradlew run
+./gradlew :desktopApp:run
+```
+## Androidクライアントを端末にインストール
+タスク`installDebug`を実行
+```shell
+./gradlew :androidApp:installDebug
 ```
 ## Webクライアントを実行 (Experimental)
 タスク`jsBrowserDevelopmentRun`を実行
 ```shell
-./gradlew jsBrowserDevelopmentRun
+./gradlew :webApp:jsBrowserDevelopmentRun
 ```
-## パッケージング
+## デスクトップのパッケージング
 タスク`superReleaseBuild`を実行
-`vX.X.X-TEXT`の形式で`<APP_VERSION>`を指定できます。
+`vX.Y.Z-TEXT`の形式で`<APP_VERSION>`を指定できます。
 
 例:`-PappVersion=v0.9.0-beta`
 指定されなければ`v0.0.0-dev`で実行されます。
 ```shell
-./gradlew superReleaseBuild -PappVersion=<APP_VERSION>
+./gradlew :desktopApp:superReleaseBuild -PappVersion=<APP_VERSION>
 ```
