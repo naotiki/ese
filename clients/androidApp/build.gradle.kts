@@ -5,7 +5,7 @@ plugins {
 }
 
 kotlin {
-    android(){
+    android() {
         jvmToolchain(11)
     }
     sourceSets {
@@ -17,15 +17,15 @@ kotlin {
     }
 }
 val textVersion = project.properties.getOrDefault("appVersion", "0.0.1-dev").toString()
-val (major,minor,patch)=textVersion.replace("[^0-9.]".toRegex(), "").split(".").map { it.toInt() }
+val (major, minor, patch) = textVersion.replace("[^0-9.]".toRegex(), "").split(".").map { it.toInt() }
 android {
     sourceSets["main"].manifest.srcFile(file("src/main/AndroidManifest.xml"))
     compileSdk = 33
     defaultConfig {
         applicationId = "me.naotiki.ese"
-        minSdk =26
+        minSdk = 26
         targetSdk = 33
-        versionCode = major*10000+minor*100+patch
+        versionCode = major * 10000 + minor * 100 + patch
         versionName = textVersion
     }
     compileOptions {
@@ -33,5 +33,17 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    val debugSign by signingConfigs.creating() {
+        storeFile = file("keys/debug.keystore")
+        storePassword = "android"
+        keyAlias = "androiddebugkey"
+        keyPassword = "android"
+    }
+    buildTypes{
+        release {
+            signingConfig=debugSign
+        }
+    }
+
     namespace = "me.naotiki.ese"
 }
