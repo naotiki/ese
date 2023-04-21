@@ -16,7 +16,8 @@ kotlin {
         }
     }
 }
-
+val textVersion = project.properties.getOrDefault("appVersion", "0.0.1-dev").toString()
+val (major,minor,patch)=textVersion.replace("[^0-9.]".toRegex(), "").split(".").map { it.toInt() }
 android {
     sourceSets["main"].manifest.srcFile(file("src/main/AndroidManifest.xml"))
     compileSdk = 33
@@ -24,8 +25,8 @@ android {
         applicationId = "me.naotiki.ese"
         minSdk =26
         targetSdk = 33
-        versionCode = 2
-        versionName = "1.02"
+        versionCode = major*10000+minor*100+patch
+        versionName = textVersion
     }
     compileOptions {
 

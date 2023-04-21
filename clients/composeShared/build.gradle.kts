@@ -13,10 +13,10 @@ repositories {
 }
 
 kotlin {
-    android()
-    jvm("desktop") {
+    android(){
         jvmToolchain(11)
     }
+    jvm("desktop")
     js(IR) {
         browser()
         binaries.executable()
