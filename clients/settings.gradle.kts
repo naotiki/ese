@@ -18,7 +18,7 @@ pluginManagement {
         id("org.jetbrains.compose").version(composeVersion)
     }
 }
-rootProject.name = "EseLinux"
+rootProject.name = "Ese"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 includeFlat("ese-core")
 include(":desktopApp",":composeShared",":cuiApp",":webApp",":androidApp")

@@ -19,12 +19,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import initializeComposeCommon
+import me.naotiki.ese.core.appName
 import targetActivity
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        println("Starting... Ese Linux")
+        println("Starting... ${appName}")
         targetActivity=this
         initializeComposeCommon()
         setContent {

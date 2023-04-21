@@ -38,7 +38,7 @@ tasks.test {
 
 application {
     mainClass.set("MainKt")
-    applicationName = "EseLinux"
+    applicationName = "Ese"
 }
 
 //System.getProperty("jpackage.app-path");
@@ -46,8 +46,8 @@ runtime {
     jpackage {
 
         mainClass = "MainKt"
-        imageName = "EseLinux"
-        installerName = "EseLinux"
+        imageName = "Ese"
+        installerName = "Ese"
         installerOptions.addAll(listOf("--vendor", "Naotiki"))
 
         val currentOs = OperatingSystem.current()
@@ -154,8 +154,8 @@ compose.desktop {
 
             println(this.outputBaseDir.asFile.get().absolutePath)
             targetFormats(TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
-            packageName = "EseLinux"
-            description = "Ese Linux"
+            packageName = "Ese"
+            description = "Ese"
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources").apply {
                 println(this.asFile.absolutePath)
             })
@@ -205,7 +205,7 @@ tasks.register("superReleaseBuild") {
 
         val app =
             file(runtime.jpackageData.get().imageOutputDirOrDefault.resolve(runtime.jpackageData.get().imageNameOrDefault))
-        val zip = file(app.parentFile.resolve("EseLinux-$osFamilyName-$textVersion.zip"))
+        val zip = file(app.parentFile.resolve("Ese-$osFamilyName-$textVersion.zip"))
         zipTo(zip, app)
     }
 }

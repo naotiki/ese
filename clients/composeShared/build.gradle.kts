@@ -25,7 +25,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-                implementation(project(":ese-core"))
+                api(project(":ese-core"))
                 api(compose.ui)
                 api(compose.foundation)
                 api(compose.runtime)

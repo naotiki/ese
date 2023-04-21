@@ -1,6 +1,6 @@
 
 actual val clientName: String
-        = "Ese Client-WASM"
+        = "Ese Web"
 actual val platform: Platform
      =Platform.Web
 actual val platformInitMessage: String="""

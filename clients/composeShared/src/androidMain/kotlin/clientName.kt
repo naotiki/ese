@@ -1,5 +1,5 @@
 actual val clientName: String
-    get() = "Ese Client-Android"
+    get() = "Ese Android"
 actual val platformInitMessage: String
     get() = ""
 actual val platform: Platform

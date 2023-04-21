@@ -1,5 +1,5 @@
 actual val clientName: String
-        = "Ese Client-GUI"
+        = "Ese Desktop"
 actual val platform: Platform
      = Platform.Desktop
 actual val platformInitMessage: String

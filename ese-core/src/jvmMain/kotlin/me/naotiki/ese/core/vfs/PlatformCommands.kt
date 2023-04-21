@@ -4,6 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.naotiki.ese.core.EseSystem
 import me.naotiki.ese.core.EseSystem.IO
+import me.naotiki.ese.core.appName
 import me.naotiki.ese.core.commands.parser.ArgType
 import me.naotiki.ese.core.commands.parser.Executable
 import me.naotiki.ese.core.secure.PluginLoader
@@ -27,7 +28,7 @@ class Status : Executable<Unit>(
 
         out.println(
             """
-           EseLinux MemoryInfo
+           $appName MemoryInfo
            Free : ${"%,6d MB".format((Runtime.getRuntime().freeMemory() / (1024 * 1024)))}
            Total: ${"%,6d MB".format((Runtime.getRuntime().totalMemory() / (1024 * 1024)))}
            Max  : ${"%,6d MB".format((Runtime.getRuntime().maxMemory() / (1024 * 1024)))}
@@ -88,7 +89,7 @@ class Udon : Executable<Unit>("udon", "UDON is a Downloader Of Noodles") {
     override suspend fun execute(user: User, rawArgs: List<String>) {
         out.println(
             """
-            Udon は EseLinuxのプラグインマネージャーです。
+            Udon は $appName のプラグインマネージャーです。
             """.trimIndent()
         )
     }

@@ -6,6 +6,7 @@ import me.naotiki.ese.core.ClientImpl
 import me.naotiki.ese.core.EseSystem.IO
 import me.naotiki.ese.core.Shell
 import me.naotiki.ese.core.Shell.Expression
+import me.naotiki.ese.core.appName
 import me.naotiki.ese.core.initialize
 import org.jline.reader.*
 import org.jline.terminal.Terminal
@@ -17,7 +18,7 @@ import kotlin.system.exitProcess
 // JLine3 will not be working
 @OptIn(ExperimentalCoroutinesApi::class)
 suspend fun main(args: Array<String>) {
-    println("Starting... Ese Linux")
+    println("Starting... $appName")
     val term = TerminalBuilder.builder().system(true).nativeSignals(true).signalHandler {
         if (it == Terminal.Signal.INT) {
             if (!Shell.Expression.cancelJob()) {
@@ -32,7 +33,7 @@ suspend fun main(args: Array<String>) {
 
 
     val impl = object : ClientImpl {
-        override fun getClientName(): String = "EseLinux Client-CUI"
+        override fun getClientName(): String = "Ese CUI"
         override suspend fun prompt(promptText: String, value: String) {
             withContext(Dispatchers.Default) {
                 while (!IO.readChannel.isEmpty) {

@@ -4,11 +4,9 @@ package me.naotiki.ese.core.commands
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
-import me.naotiki.ese.core.EseError
-import me.naotiki.ese.core.EseSystem
+import me.naotiki.ese.core.*
 import me.naotiki.ese.core.EseSystem.IO
 import me.naotiki.ese.core.EseSystem.UserManager
-import me.naotiki.ese.core.Shell
 import me.naotiki.ese.core.Shell.Expression
 import me.naotiki.ese.core.Shell.FileSystem
 import me.naotiki.ese.core.Shell.Variable
@@ -17,7 +15,6 @@ import me.naotiki.ese.core.commands.parser.Executable
 import me.naotiki.ese.core.user.User
 import me.naotiki.ese.core.utils.format
 import me.naotiki.ese.core.utils.normalizeYesNoAnswer
-import me.naotiki.ese.core.version
 import me.naotiki.ese.core.vfs.Directory
 import me.naotiki.ese.core.vfs.File
 import me.naotiki.ese.core.vfs.Permission
@@ -324,7 +321,7 @@ class SugoiUserDo : Executable<Unit>(
     }
 }
 
-class Exit : Executable<Unit>("exit", "Ese Linux を終了します。") {
+class Exit : Executable<Unit>("exit", "$appName を終了します。") {
     override suspend fun execute(user: User, rawArgs: List<String>) {
         out.println("終了します")
         client.exit()

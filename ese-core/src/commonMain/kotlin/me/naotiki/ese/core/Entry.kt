@@ -17,7 +17,7 @@ import me.naotiki.ese.core.vfs.dsl.fileDSL
 import me.naotiki.ese.core.vfs.dsl.textFile
 
 const val version = "0.0.0-dev"
-
+const val appName = "Ese"
 
 object Program {
     var debug: Boolean = false
@@ -43,7 +43,7 @@ suspend fun initialize( clientImpl: ClientImpl,initMessage:String="") {
     var userName: String
     EseSystem.IO.printChannel.println(
         """
-        |Ese Linux ver.$version - ${clientImpl.getClientName()}
+        |$appName ver.$version - ${clientImpl.getClientName()}
         |$initMessage
         """.trimMargin()
     )

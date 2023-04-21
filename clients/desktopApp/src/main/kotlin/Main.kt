@@ -25,20 +25,21 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.awaitApplication
 import component.assistant.CommandPanel
 import component.assistant.EasyFileView
+import me.naotiki.ese.core.appName
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
 import org.jetbrains.compose.splitpane.SplitPaneState
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalSplitPaneApi::class)
 suspend fun main(vararg args: String) {
-    println("Starting... Ese Linux")
+    println("Starting... $appName")
     initializeComposeCommon(args)
     awaitApplication {
         val appViewModel = rememberAppViewModel()
         // ... Content goes here ...
         // This part of Composition will see the `elevations` instance
         // when accessing LocalElevations.current
-        Window(onCloseRequest = ::exitApplication, title = "EseLinux", onPreviewKeyEvent = {
+        Window(onCloseRequest = ::exitApplication, title = appName, onPreviewKeyEvent = {
             return@Window if (it.key == Key.C && it.isCtrlPressed) {
                 appViewModel.cancelCommand()
                 true

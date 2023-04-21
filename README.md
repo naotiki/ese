@@ -1,10 +1,10 @@
-[![Deploy Kotlin/JS site to GitHub Pages](https://github.com/naotiki/EseLinux/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/naotiki/EseLinux/actions/workflows/deploy-pages.yml)
-[![Create Release Draft Compose Desktop](https://github.com/naotiki/EseLinux/actions/workflows/create-release.yml/badge.svg)](https://github.com/naotiki/EseLinux/actions/workflows/create-release.yml)
+[![Deploy Kotlin/JS site to GitHub Pages](https://github.com/naotiki/Ese/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/naotiki/Ese/actions/workflows/deploy-pages.yml)
+[![Create Release Draft Compose Desktop](https://github.com/naotiki/Ese/actions/workflows/create-release.yml/badge.svg)](https://github.com/naotiki/Ese/actions/workflows/create-release.yml)
 [![wakatime](https://wakatime.com/badge/github/naotiki/EseLinux.svg)](https://wakatime.com/badge/github/naotiki/EseLinux)
-# Ese Linux
+# Ese - Easy Shell Environment 
 Unixシェルを模した動作をするアプリ
 # インストール
-[Release](https://github.com/naotiki/EseLinux/releases/latest)からダウンロードできます。
+[Release](https://github.com/naotiki/Ese/releases/latest)からダウンロードできます。
 # Web版
 [https://ese.naotiki.me](https://ese.naotiki.me)
 

@@ -21,7 +21,7 @@ abstract class CommandDefine<R>(val name: String, val description: String? = nul
 
 /**
  * すべてのコマンドの基底クラス
- * Ese Linux 内のコマンドはこのクラスを継承し、引数は[argument]や[option]で定義する必要があります。
+ * Ese内のコマンドはこのクラスを継承し、引数は[argument]や[option]で定義する必要があります。
  * [help]オプションはデフォルトで自動生成されています。
  * helpの挙動を変更するには[outputHelp]をオーバーライドしてください。
  *
