@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompileCommon
 import java.awt.SystemColor.text
 
 plugins {
@@ -13,12 +14,12 @@ repositories {
     mavenCentral()
 }
 val textVersion = project.properties.getOrDefault("appVersion", "0.0.1-dev").toString().trimStart('v')
+val generatedDir=buildDir.resolve("generated")
 val generateSource: Task by tasks.creating{
     inputs.property("version",textVersion)
-    val dir=buildDir.resolve("generated")
-    outputs.dir(dir)
+    outputs.dir(generatedDir)
     doLast {
-        val s=dir.resolve("AppVersion.kt")
+        val s=generatedDir.resolve("AppVersion.kt")
         s.createNewFile()
         s.outputStream().writer().append("""
             package me.naotiki.ese.core
@@ -26,12 +27,26 @@ val generateSource: Task by tasks.creating{
         """.trimIndent()).flush()
     }
 }
-tasks{
 
-    withType(KotlinCompile::class){
+afterEvaluate {
+    buildDir.mkdir()
+    generatedDir.mkdir()
+    val s=generatedDir.resolve("AppVersion.kt")
+
+    s.createNewFile()
+    s.outputStream().writer().append("""
+            package me.naotiki.ese.core
+            const val appVersion:String = "$textVersion"
+        """.trimIndent()).flush()
+}
+/*tasks{
+    withType(JavaCompile::class).all{
         dependsOn(generateSource)
     }
-}
+    withType(KotlinCompile::class).all{
+        dependsOn(generateSource)
+    }
+}*/
 
 
 kotlin {
