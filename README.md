@@ -48,7 +48,8 @@ cd clients
 `vX.Y.Z-TEXT`の形式で`<APP_VERSION>`を指定できます。
 
 例:`-PappVersion=v0.9.0-beta`
-指定されなければ`v0.0.0-dev`で実行されます。
+
+指定されなければ`0.0.0-dev`で実行されます。
 ```shell
 ./gradlew :desktopApp:superReleaseBuild -PappVersion=<APP_VERSION>
 ```
