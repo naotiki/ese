@@ -1,3 +1,7 @@
+pluginManagement {
+    includeBuild("../ese-gradle-plugin")
+}
+
 rootProject.name = "ese-lib"
 
-includeFlat("core")
+includeFlat("ese-core")

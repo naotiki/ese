@@ -9,12 +9,13 @@
       <module name="client-gui.core.test" target="17" />
       <module name="client-gui.cui" target="17" />
       <module name="client-gui.gui" target="17" />
-      <module name="ese-lib" target="17" />
-      <module name="ese-lib.core" target="17" />
+      <module name="ese-dev-plugin" target="17" />
+      <module name="ese-dev-plugin.main" target="17" />
+      <module name="ese-dev-plugin.test" target="17" />
       <module name="ese-lib.core.main" target="17" />
       <module name="ese-lib.core.test" target="17" />
-      <module name="ese-lib.main" target="17" />
-      <module name="ese-lib.test" target="17" />
+      <module name="me.naotiki.ese-gradle-plugin.main" target="17" />
+      <module name="me.naotiki.ese-gradle-plugin.test" target="17" />
     </bytecodeTargetLevel>
   </component>
 </project>

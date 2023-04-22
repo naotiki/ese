@@ -11,7 +11,11 @@ object PluginLoader {
     fun loadPluginFromFile(file: File): EsePlugin? {
         val jarFile = JarFile(file)
         val className = jarFile.manifest.mainAttributes.getValue("Plugin-Class")
-        return EseClassLoader(file).loadClass(className).getConstructor().newInstance() as? EsePlugin
+        return runCatching { EseClassLoader(file).loadClass(className).getConstructor().newInstance() }.fold({
+            it as? EsePlugin
+        }, {
+            null
+        })
     }
 }
 
@@ -30,7 +34,7 @@ private class EseClassLoader(
         try {
             val path = name.replace('.', '/') + ".class"
             val jarInputStream = URL("jar:" + pluginFile.toURI().toURL() + "!/" + path).openStream()
-            val allClassBytes: ByteArray = jarInputStream.readAllBytes()
+            val allClassBytes: ByteArray = jarInputStream.readAllBytes()//TODO readBytes
             val classReader = ClassReader(allClassBytes)
 
             // クラスにデバッグ情報がある場合、

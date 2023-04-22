@@ -50,10 +50,7 @@ afterEvaluate {
 
 
 kotlin {
-
-    jvmToolchain(11)
     jvm {
-
         jvmToolchain(11)
         withJava()
         testRuns["test"].executionTask.configure {
