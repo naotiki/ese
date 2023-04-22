@@ -2,7 +2,7 @@
   <artifact type="jar" name="ese-core-js-0.0-B">
     <output-path>$PROJECT_DIR$/ese-core/build/libs</output-path>
     <root id="archive" name="ese-core-js-0.0-B.jar">
-      <element id="module-output" name="EseLinux.ese-core.jsMain" />
+      <element id="module-output" name="Ese.ese-core.jsMain" />
     </root>
   </artifact>
 </component>

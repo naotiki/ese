@@ -27,7 +27,7 @@ permissions:
   contents: read
 
 env:
-  version: ${{ inputs.version || '0.0.0' }}
+  version: ${{ inputs.version || '0.0.1-dev' }}
 jobs:
   build:
     runs-on: ${{ inputs.os||'ubuntu-latest' }}

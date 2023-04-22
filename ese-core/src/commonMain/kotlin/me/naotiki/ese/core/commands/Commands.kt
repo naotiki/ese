@@ -236,7 +236,7 @@ class Yes : Executable<Unit>(
             out.println(
                 """
                 |
-                |Yes Benchmark ($version) - ${client.getClientName()}
+                |Yes Benchmark ($appVersion) - ${client.getClientName()}
                 |Executed by ${user.name}
                 |Input  : yes ${rawArgs.joinToString(" ")}
                 |Output : "$v"

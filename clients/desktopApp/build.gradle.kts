@@ -18,7 +18,7 @@ repositories {
     mavenCentral()
 }
 
-val textVersion = project.properties.getOrDefault("appVersion", "0.0.1-dev").toString()
+val textVersion = project.properties.getOrDefault("appVersion", "0.0.1-dev").toString().trimStart('v')
 version=textVersion
 dependencies {
   //  implementation(compose.desktop.currentOs)

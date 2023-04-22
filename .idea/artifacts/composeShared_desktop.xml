@@ -2,7 +2,7 @@
   <artifact type="jar" name="composeShared-desktop">
     <output-path>$PROJECT_DIR$/clients/composeShared/build/libs</output-path>
     <root id="archive" name="composeShared-desktop.jar">
-      <element id="module-output" name="EseLinux.composeShared.desktopMain" />
+      <element id="module-output" name="Ese.composeShared.desktopMain" />
     </root>
   </artifact>
 </component>

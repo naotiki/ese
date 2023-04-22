@@ -16,7 +16,7 @@ kotlin {
         }
     }
 }
-val textVersion = project.properties.getOrDefault("appVersion", "0.0.1-dev").toString()
+val textVersion = project.properties.getOrDefault("appVersion", "0.0.1-dev").toString().trimStart('v')
 val (major, minor, patch) = textVersion.replace("[^0-9.]".toRegex(), "").split(".").map { it.toInt() }
 android {
     sourceSets["main"].manifest.srcFile(file("src/main/AndroidManifest.xml"))

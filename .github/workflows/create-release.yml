@@ -3,11 +3,11 @@ name: Create Release Draft Compose Desktop
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*.*.*'
   workflow_dispatch:
     inputs:
       version:
-        description: 'vX.X.X'
+        description: 'vX.Y.Z-TEXT'
         required: true
         type: string
 permissions:

@@ -2,7 +2,7 @@
   <artifact type="jar" name="composeShared-js">
     <output-path>$PROJECT_DIR$/clients/composeShared/build/libs</output-path>
     <root id="archive" name="composeShared-js.jar">
-      <element id="module-output" name="EseLinux.composeShared.jsMain" />
+      <element id="module-output" name="Ese.composeShared.jsMain" />
     </root>
   </artifact>
 </component>
