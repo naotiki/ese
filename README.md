@@ -1,55 +1,71 @@
 [![Deploy Kotlin/JS site to GitHub Pages](https://github.com/naotiki/Ese/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/naotiki/Ese/actions/workflows/deploy-pages.yml)
 [![Create Release Draft Compose Desktop](https://github.com/naotiki/Ese/actions/workflows/create-release.yml/badge.svg)](https://github.com/naotiki/Ese/actions/workflows/create-release.yml)
-[![wakatime](https://wakatime.com/badge/user/bf61991c-7011-4554-8d9b-4ba9607950b4/project/7daf90b6-0f44-4caf-a555-bb87f3f69617.svg)](https://wakatime.com/badge/user/bf61991c-7011-4554-8d9b-4ba9607950b4/project/7daf90b6-0f44-4caf-a555-bb87f3f69617)
-# Ese - Easy Shell Environment 
-Unixシェルを模した動作をするアプリ
-# インストール
-[Release](https://github.com/naotiki/Ese/releases/latest)からダウンロードできます。
-# Web版
-[https://ese.naotiki.me](https://ese.naotiki.me)
+[![wakatime](https://wakatime.com/badge/github/naotiki/Ese.svg)](https://wakatime.com/badge/github/naotiki/Ese)
 
-※初回アクセス時、約15MBの通信を行います。
-## モジュール
+<div align="center">
+
+# Ese - Easy Shell Environment
+English / [日本語](README-JA.md)
+
+Like Unix shell 
+
+</div>
+
+
+# Install
+You can install the latest version in [Release](https://github.com/naotiki/Ese/releases/latest)
+# Web version
+[https://ese.naotiki.me](https://ese.naotiki.me)
+## Modules
 ### `clients`
-Eseのクライアントアプリ
+Customer apps for Ese
 #### `desktopApp` (JVM)
 #### `cuiApp` (JVM)
 #### `androidApp` (JVM)
 #### `webApp` (JS)
-(WASM対応予定)
+(We're planning WASM support)
 
 ---
-### `ese-core` (JVM/JS)
-Eseのコアライブラリ
+### `ese-core` (JVM / JS)
+Core libraries in Ese
 
-# ビルド方法
-まず、`clients`フォルダに移動
+---
+
+### That plugin
+#### `ese-gradle-plugin`
+Gradle Plugin for creating Ese plugins (Noodle)
+#### `ese-lib`
+Example implementing Ese plugins (we plan to separate them to another repository)
+
+Detail of Ese Plugin is in [HowToBuildNoodle.md](docs/HowToBuildNoodle.md)
+
+# How to build
+First, Change current directory to `clients`
 ```shell
 cd clients
 ```
 ---
-## デスクトップクライアントを実行
-タスク`run`を実行
+## Run desktop client
+Run `run`
 ```shell
 ./gradlew :desktopApp:run
 ```
-## Androidクライアントを端末にインストール
-タスク`installDebug`を実行
+## Install Android client on a terminal
+Run `installDebug`
 ```shell
 ./gradlew :androidApp:installDebug
 ```
-## Webクライアントを実行 (Experimental)
-タスク`jsBrowserDevelopmentRun`を実行
+## Run Web Client (Experimental)
+Run `jsBrowserDevelopmentRun`
 ```shell
 ./gradlew :webApp:jsBrowserDevelopmentRun
 ```
-## デスクトップのパッケージング
-タスク`superReleaseBuild`を実行
-`vX.Y.Z-TEXT`の形式で`<APP_VERSION>`を指定できます。
+## Desktop Packaging
+Run `superReleaseBuild`
+Format of `<APP_VERSION>` is `vX.Y.Z-TEXT`
+For example, `-PappVersion=v0.9.0-beta`
 
-例:`-PappVersion=v0.9.0-beta`
-
-指定されなければ`0.0.0-dev`で実行されます。
+Default value of `<APP_VERSION>` is `0.0.1-dev`
 ```shell
 ./gradlew :desktopApp:superReleaseBuild -PappVersion=<APP_VERSION>
 ```
