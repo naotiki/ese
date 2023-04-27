@@ -18,7 +18,7 @@ You can install the latest version in [Release](https://github.com/naotiki/Ese/r
 [https://ese.naotiki.me](https://ese.naotiki.me)
 ## Modules
 ### `clients`
-Customer apps for Ese
+The Client Apps for Ese
 #### `desktopApp` (JVM)
 #### `cuiApp` (JVM)
 #### `androidApp` (JVM)
@@ -27,11 +27,11 @@ Customer apps for Ese
 
 ---
 ### `ese-core` (JVM / JS)
-Core libraries in Ese
+Ese Core libraries
 
 ---
 
-### That plugin
+### Ese Plugin
 #### `ese-gradle-plugin`
 Gradle Plugin for creating Ese plugins (Noodle)
 #### `ese-lib`
@@ -45,12 +45,12 @@ First, Change current directory to `clients`
 cd clients
 ```
 ---
-## Run desktop client
+## Run Desktop Client
 Run `run`
 ```shell
 ./gradlew :desktopApp:run
 ```
-## Install Android client on a terminal
+## Install Android Client
 Run `installDebug`
 ```shell
 ./gradlew :androidApp:installDebug
