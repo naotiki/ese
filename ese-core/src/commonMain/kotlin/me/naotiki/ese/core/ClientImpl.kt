@@ -7,3 +7,10 @@ interface ClientImpl {
 
     fun clear()
 }
+
+expect interface PlatformImpl
+lateinit var platformImpl: PlatformImpl
+    private set
+fun initializePlatformImpl(impl: PlatformImpl){
+    platformImpl=impl
+}

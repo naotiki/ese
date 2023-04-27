@@ -25,15 +25,26 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.awaitApplication
 import component.assistant.CommandPanel
 import component.assistant.EasyFileView
+import me.naotiki.ese.core.PlatformImpl
 import me.naotiki.ese.core.appName
+import me.naotiki.ese.core.getEseHomeDirByProp
+import me.naotiki.ese.core.initializePlatformImpl
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
 import org.jetbrains.compose.splitpane.SplitPaneState
+import java.io.File
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalSplitPaneApi::class)
+@OptIn(ExperimentalComposeUiApi::class)
 suspend fun main(vararg args: String) {
     println("Starting... $appName")
+    println(System.getProperties().map {(k,v)->
+        "$k : $v"
+    }.joinToString("\n"))
     initializeComposeCommon(args)
+    val clientPlatformImpl= object : PlatformImpl {
+        override fun getEseHomeDir(): File = getEseHomeDirByProp()
+    }
+    initializePlatformImpl(clientPlatformImpl)
     awaitApplication {
         val appViewModel = rememberAppViewModel()
         // ... Content goes here ...

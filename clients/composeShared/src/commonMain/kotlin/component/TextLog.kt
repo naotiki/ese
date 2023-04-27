@@ -1,7 +1,8 @@
 package component
 
-import PlatformBackend
 import LocalDefaultFont
+import Platform
+import PlatformBackend
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -16,9 +17,9 @@ import androidx.compose.ui.text.*
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
-import platform
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import platform
 import kotlin.text.Regex.Companion.fromLiteral
 
 expect fun getSystemLineSeparator():String
@@ -103,7 +104,6 @@ fun TextLog(
     footer: @Composable (() -> Unit)? = null
 ) {
 
-
     Box(modifier = Modifier.fillMaxSize().then(modifier)) {
         SelectionContainer {
             LazyColumn(Modifier.fillMaxWidth(), state = lazyListState, reverseLayout = true) {
@@ -147,7 +147,6 @@ fun TextLog(
                                     } else {
                                         text.subSequence(start, end)
                                     }
-                                println("L$it : $shown")
                                 BasicText(
                                     shown,
                                     Modifier.fillMaxWidth(),

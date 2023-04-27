@@ -229,7 +229,7 @@ abstract class Executable<R>(val name: String, val description: String? = null) 
                 },
                 onFailure = {
                     if (it is EseError) {
-                        out.println(it.errorName)
+                        out.println(it.buildErrorMessage())
                     } else {
                         out.println(it.stackTraceToString())
 

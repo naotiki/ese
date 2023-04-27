@@ -26,22 +26,9 @@
         </option>
       </GradleProjectSettings>
       <GradleProjectSettings>
-        <compositeConfiguration>
-          <compositeBuild compositeDefinitionSource="SCRIPT">
-            <builds>
-              <build path="$PROJECT_DIR$/ese-gradle-plugin" name="ese-gradle-plugin">
-                <projects>
-                  <project path="$PROJECT_DIR$/ese-gradle-plugin" />
-                </projects>
-              </build>
-            </builds>
-          </compositeBuild>
-        </compositeConfiguration>
         <option name="externalProjectPath" value="$PROJECT_DIR$/ese-lib" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$/ese-core" />
-            <option value="$PROJECT_DIR$/ese-gradle-plugin" />
             <option value="$PROJECT_DIR$/ese-lib" />
           </set>
         </option>

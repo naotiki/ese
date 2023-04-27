@@ -23,10 +23,8 @@ import component.rememberTextLogState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.launch
-import me.naotiki.ese.core.ClientImpl
-import me.naotiki.ese.core.EseSystem
+import me.naotiki.ese.core.*
 import me.naotiki.ese.core.EseSystem.IO
-import me.naotiki.ese.core.Shell
 import me.naotiki.ese.core.Shell.Expression
 import me.naotiki.ese.core.utils.splitArgs
 import kotlin.coroutines.CoroutineContext
@@ -38,23 +36,19 @@ expect fun <T> tryRunBlocking(
 )
 
 expect fun exitApp(code: Int): Unit
-class TerminalViewModel(prompt: Prompt, logState: TextLogState) {
+class TerminalViewModel(val prompt: Prompt,val  logState: TextLogState,) {
 
-    val channnel = IO.readChannel
+    val channnel get() = IO.readChannel
     val commandHistory get() = Expression.commandHistory
 
     private val clientImpl = object : ClientImpl {
         override fun getClientName(): String = clientName
         override suspend fun prompt(promptText: String, value: String) {
-
             prompt.newPrompt(promptText, value)
         }
-
-
         override fun exit() {
             exitApp(0)
         }
-
         override fun clear() {
             //textLogs = ""
             logState.clear()
@@ -89,6 +83,8 @@ class TerminalViewModel(prompt: Prompt, logState: TextLogState) {
 
 
     suspend fun initialize() {
+        EseSystem.ClientImpl=clientImpl
+        if (eseInitialized) return
         me.naotiki.ese.core.initialize(clientImpl, platformInitMessage)
     }
 
@@ -116,7 +112,6 @@ fun Terminal() {
     val viewModel = rememberTerminalViewModel(prompt, textLogState)
     var historyIndex by remember { mutableStateOf(-1) }
     val coroutine = rememberCoroutineScope()
-    //  val stateVertical = rememberScrollState(0)
     LaunchedEffect(Unit) {
         launch {
             try {
@@ -127,7 +122,6 @@ fun Terminal() {
             }
         }
         viewModel.channnel.consumeEach {
-            println("Log $it:${it.code}")
             textLogState.addChar(it)
         }
     }
@@ -149,62 +143,62 @@ fun Terminal() {
                     historyIndex = -1
                 }
 
-                    BasicTextField(
-                        prompt.textFieldValue,
+                BasicTextField(
+                    prompt.textFieldValue,
 
-                        onValueChange = {
-                            prompt.updateTextFieldValue(it) { value, _ ->
-                                lastInput = value
-                            }
-                        },
-                        keyboardActions = KeyboardActions {
+                    onValueChange = {
+                        prompt.updateTextFieldValue(it) { value, _ ->
+                            lastInput = value
+                        }
+                    },
+                    keyboardActions = KeyboardActions {
+                        onSend()
+                    },
+                    textStyle =
+                    TextStyle(
+                        color = Color.White,
+                        fontSize =
+                        20.sp,
+                        fontFamily = LocalDefaultFont.current
+                    ),
+                    cursorBrush = SolidColor(Color.White),
+                    modifier = Modifier.fillMaxWidth().weight(1f).onPreviewKeyEvent {
+                        if (!prompt.isEnable) return@onPreviewKeyEvent false
+                        return@onPreviewKeyEvent if ((it.key == Key.Enter || it.key == Key.NumPadEnter) && it.type == KeyEventType
+                                .KeyDown
+                        ) {
                             onSend()
-                        },
-                        textStyle =
-                        TextStyle(
-                            color = Color.White,
-                            fontSize =
-                            20.sp,
-                            fontFamily = LocalDefaultFont.current
-                        ),
-                        cursorBrush = SolidColor(Color.White),
-                        modifier = Modifier.fillMaxWidth().weight(1f).onPreviewKeyEvent {
-                            if (!prompt.isEnable) return@onPreviewKeyEvent false
-                            return@onPreviewKeyEvent if ((it.key == Key.Enter || it.key == Key.NumPadEnter) && it.type == KeyEventType
-                                    .KeyDown
-                            ) {
-                                onSend()
-                                true
-                            } else if ((it.key == Key.DirectionUp || it.key == Key.DirectionDown) && it.type == KeyEventType.KeyDown) {
-                                historyIndex = when (it.key) {
-                                    Key.DirectionUp -> minOf(historyIndex + 1, viewModel.commandHistory.lastIndex)
-                                    Key.DirectionDown -> maxOf(historyIndex - 1, -1)
-                                    else -> -1
-                                }
-                                viewModel.commandHistory.getOrNull(historyIndex).let { s ->
-                                    prompt.updateValue((s ?: "").also { lastInput = it })
-                                }
-                                true
-                            } else if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
-                                prompt.updateValue(viewModel.nextSuggest(lastInput))
-                                true
-                            } else false
-                        }.focusRequester(focusRequester),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Ascii,
-                            imeAction = ImeAction.Send
-                        ),
-                    )
-                    LaunchedEffect(Unit) {
-                        //Focusをロック
-                        focusRequester.requestFocus()
-                        focusRequester.captureFocus()
-                        //VK登録
-                        VirtualKeyboardManager.addListener {
-                            if (it.isCtrlPressed&&it.key==Key.C){
-                                Shell.Expression.cancelJob()
-                                true
-                            }else
+                            true
+                        } else if ((it.key == Key.DirectionUp || it.key == Key.DirectionDown) && it.type == KeyEventType.KeyDown) {
+                            historyIndex = when (it.key) {
+                                Key.DirectionUp -> minOf(historyIndex + 1, viewModel.commandHistory.lastIndex)
+                                Key.DirectionDown -> maxOf(historyIndex - 1, -1)
+                                else -> -1
+                            }
+                            viewModel.commandHistory.getOrNull(historyIndex).let { s ->
+                                prompt.updateValue((s ?: "").also { lastInput = it })
+                            }
+                            true
+                        } else if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
+                            prompt.updateValue(viewModel.nextSuggest(lastInput))
+                            true
+                        } else false
+                    }.focusRequester(focusRequester),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Ascii,
+                        imeAction = ImeAction.Send
+                    ),
+                )
+                LaunchedEffect(Unit) {
+                    //Focusをロック
+                    focusRequester.requestFocus()
+                    focusRequester.captureFocus()
+                    //VK登録
+                    VirtualKeyboardManager.addListener {
+                        if (it.isCtrlPressed && it.key == Key.C) {
+                            Shell.Expression.cancelJob()
+                            true
+                        } else
                             if ((it.key == Key.DirectionUp || it.key == Key.DirectionDown) && it.type == KeyEventType.KeyDown) {
                                 historyIndex = when (it.key) {
                                     Key.DirectionUp -> minOf(historyIndex + 1, viewModel.commandHistory.lastIndex)
@@ -219,8 +213,8 @@ fun Terminal() {
                                 prompt.updateValue(viewModel.nextSuggest(lastInput))
                                 true
                             } else false
-                        }
                     }
+                }
 
 
             }
@@ -230,12 +224,13 @@ fun Terminal() {
     }
 }
 
-object VirtualKeyboardManager{
-    private val listeners= mutableListOf<(KeyEvent)->Boolean>()
-    fun addListener(onPressed:(KeyEvent)->Boolean){
+object VirtualKeyboardManager {
+    private val listeners = mutableListOf<(KeyEvent) -> Boolean>()
+    fun addListener(onPressed: (KeyEvent) -> Boolean) {
         listeners.add(onPressed)
     }
-    fun press(keyEvent: KeyEvent){
+
+    fun press(keyEvent: KeyEvent) {
         listeners.forEach {
             if (it(keyEvent)) {
                 return
@@ -243,5 +238,6 @@ object VirtualKeyboardManager{
         }
     }
 }
+
 @Composable
-expect fun VirtualKeyboard(modifier: Modifier=Modifier)
+expect fun VirtualKeyboard(modifier: Modifier = Modifier)

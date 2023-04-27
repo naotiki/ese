@@ -12,6 +12,8 @@ kotlin {
         val androidMain by getting {
             dependencies {
                 implementation(projects.composeShared)
+                val nav_version = "2.5.3"
+                implementation("androidx.navigation:navigation-compose:$nav_version")
             }
         }
     }

@@ -33,12 +33,15 @@ fun programArg(args: List<String>) {
     }
 }
 
+/**
+ * Ese Coreが初期化されたかどうか
+ * */
+var eseInitialized = false
+    private set
 
-
-private var initialized = false
-suspend fun initialize( clientImpl: ClientImpl,initMessage:String="") {
-    check(!initialized)
-    ClientImpl =clientImpl
+suspend fun initialize(clientImpl: ClientImpl, initMessage: String = "") {
+    check(!eseInitialized)
+    ClientImpl = clientImpl
     var userName: String
     EseSystem.IO.printChannel.println(
         """
@@ -68,12 +71,12 @@ suspend fun initialize( clientImpl: ClientImpl,initMessage:String="") {
     newUser.setHomeDir { user, group ->
         fileDSL(FileTree.home, UserManager.uRoot) {
             dir(user.name, user, group) {
-                    "LOG:" + textFile(
-                        "Readme.txt",
-                        """
+                "LOG:" + textFile(
+                    "Readme.txt",
+                    """
             TODO:なんか書く
             """.trimIndent()
-                    ).parent?.name
+                ).parent?.name
 
             }
         }
@@ -81,7 +84,7 @@ suspend fun initialize( clientImpl: ClientImpl,initMessage:String="") {
     FileSystem.setCurrentPath(newUser.dir!!)
     UserManager.setUser(newUser)
 
-    initialized = true
+    eseInitialized = true
     while (true/*TODO 終了機能*/) {
         val input = EseSystem.IO.newPromptAsync(clientImpl, "${UserManager.user.name}:${FileSystem.currentPath.value}>")
             .ifBlank {
