@@ -1,6 +1,6 @@
 [![Deploy Kotlin/JS site to GitHub Pages](https://github.com/naotiki/Ese/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/naotiki/Ese/actions/workflows/deploy-pages.yml)
 [![Create Release Draft Compose Desktop](https://github.com/naotiki/Ese/actions/workflows/create-release.yml/badge.svg)](https://github.com/naotiki/Ese/actions/workflows/create-release.yml)
-[![wakatime](https://wakatime.com/badge/github/naotiki/EseLinux.svg)](https://wakatime.com/badge/github/naotiki/EseLinux)
+[![wakatime](https://wakatime.com/badge/user/bf61991c-7011-4554-8d9b-4ba9607950b4/project/7daf90b6-0f44-4caf-a555-bb87f3f69617.svg)](https://wakatime.com/badge/user/bf61991c-7011-4554-8d9b-4ba9607950b4/project/7daf90b6-0f44-4caf-a555-bb87f3f69617)
 # Ese - Easy Shell Environment 
 Unixシェルを模した動作をするアプリ
 # インストール
