@@ -26,7 +26,7 @@ abstract class CommandDefine<R>(val name: String, val description: String? = nul
  * helpの挙動を変更するには[outputHelp]をオーバーライドしてください。
  *
  *
- * @param name コマンドの名前、[Expression.tryResolve]などで使用されます
+ * @param name コマンドの名前、[me.naotiki.ese.core.commands.Expression.tryResolve]などで使用されます
  * @param description コマンドの説明、ヘルプで使用されます。(オプション)
  * @param R [execute]戻り値の型、基本は[Unit]
  * */

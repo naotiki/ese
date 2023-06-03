@@ -1,4 +1,4 @@
-package me.naotiki.ese.dev.plugin
+package me.naotiki.ese.plugin
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project

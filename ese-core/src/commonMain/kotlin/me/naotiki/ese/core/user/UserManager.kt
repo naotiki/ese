@@ -1,7 +1,7 @@
 package me.naotiki.ese.core.user
 
 /**
- * Virtual User Manager
+ * Ese User Manager
  * */
 class UserManager {
     private val users = mutableListOf<User>()

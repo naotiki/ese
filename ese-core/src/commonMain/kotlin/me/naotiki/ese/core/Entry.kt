@@ -38,7 +38,18 @@ fun programArg(args: List<String>) {
  * */
 var eseInitialized = false
     private set
-
+/**
+ * Initialize Ese Core.
+ *
+ * Must be called from client apps.
+ * Do not call this from plugins.
+ *
+ * If Ese Core is already initialized, it will fault.
+ *
+ * You can confirm its initialized from [eseInitialized]
+ * @param clientImpl Implementation of Ese Client
+ * @param initMessage Shown messages when ese core is initialized.
+ */
 suspend fun initialize(clientImpl: ClientImpl, initMessage: String = "") {
     check(!eseInitialized)
     ClientImpl = clientImpl

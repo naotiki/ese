@@ -1,18 +1,23 @@
 package me.naotiki.ese.core
 
 /**
- * EseError
+ * Not fatal error in Ese.
+ * Executing functions would be suspended, but Ese Client continues to work.
+ * @param msg Error message
+ * @param errorName Localized error name
  * */
 sealed class EseError(msg: String?,val errorName:String) : Throwable(msg) {
 
-    /**
-     * コマンドの引数要素数の不一致など
-     * このエラーは通常ArgsParserからのみ出力されます。**/
     class CommandParseError internal constructor(msg: String?) : EseError(msg,"コマンド解析エラー")
 
-    //引数のキャストが成功しなかった場合
+    /**
+     * Command args cast error
+     */
     class CommandIllegalArgumentError(msg: String?) : EseError(msg,"コマンド引数エラー")
 
+    /**
+     * Error when executing commands
+     */
     class CommandExecutionError(msg: String?) : EseError(msg,"コマンド実行時エラー")
 
     class FilePermissionError internal constructor(msg: String?) : EseError(msg,"ファイル操作拒否エラー")

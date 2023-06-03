@@ -5,11 +5,15 @@ import me.naotiki.ese.core.user.UserManager
 import me.naotiki.ese.core.vfs.FileSystem
 import me.naotiki.ese.core.vfs.FileTree
 
+/**
+ * Ese System Instances.
+ */
 object EseSystem : VirtualSingletonManager() {
     val UserManager by virtualSingle { UserManager() }
     val IO by virtualSingle { IO() }
     val FileTree by virtualSingle { FileTree() }
     lateinit var ClientImpl:ClientImpl
+        internal set
 }
 
 object Shell : VirtualSingletonManager() {

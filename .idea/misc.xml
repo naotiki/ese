@@ -4,8 +4,8 @@
   <component name="FrameworkDetectionExcludesConfiguration">
     <file type="web" url="file://$PROJECT_DIR$/clients" />
     <file type="web" url="file://$PROJECT_DIR$/ese-core" />
-    <file type="web" url="file://$PROJECT_DIR$/ese-gradle-plugin" />
     <file type="web" url="file://$PROJECT_DIR$/ese-lib" />
+    <file type="web" url="file://$PROJECT_DIR$/ese-noodle-plugin" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />

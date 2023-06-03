@@ -1,8 +1,3 @@
-import org.jetbrains.dokka.gradle.DokkaTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompileCommon
-import java.awt.SystemColor.text
-
 plugins {
     kotlin("multiplatform") //version "1.8.10"
     kotlin("plugin.serialization") version "1.8.10"
@@ -11,37 +6,27 @@ plugins {
     signing
 }
 
-group = "me.naotiki"
+group = "me.naotiki.ese"
 version = "0.0.1-dev2"
 
 repositories {
     mavenCentral()
 }
 val textVersion = project.properties.getOrDefault("appVersion", "0.0.1-dev").toString().trimStart('v')
-val generatedDir=buildDir.resolve("generated")
-val generateSource: Task by tasks.creating{
-    inputs.property("version",textVersion)
-    outputs.dir(generatedDir)
-    doLast {
-        val s=generatedDir.resolve("AppVersion.kt")
-        s.createNewFile()
-        s.outputStream().writer().append("""
-            package me.naotiki.ese.core
-            const val appVersion:String = "$textVersion"
-        """.trimIndent()).flush()
-    }
-}
+val generatedDir = buildDir.resolve("generated")
 
 afterEvaluate {
     buildDir.mkdir()
     generatedDir.mkdir()
-    val s=generatedDir.resolve("AppVersion.kt")
+    val s = generatedDir.resolve("AppVersion.kt")
 
     s.createNewFile()
-    s.outputStream().writer().append("""
+    s.outputStream().writer().append(
+        """
             package me.naotiki.ese.core
             const val appVersion:String = "$textVersion"
-        """.trimIndent()).flush()
+        """.trimIndent()
+    ).flush()
 }
 /*tasks{
     withType(JavaCompile::class).all{
@@ -56,7 +41,6 @@ afterEvaluate {
 kotlin {
     jvm {
         jvmToolchain(11)
-        withJava()
         testRuns["test"].executionTask.configure {
             useJUnitPlatform()
         }
@@ -90,7 +74,7 @@ kotlin {
 
     sourceSets {
         val commonMain by getting {
-            kotlin{
+            kotlin {
                 srcDir(buildDir.resolve("generated"))
             }
             dependencies {
@@ -120,19 +104,62 @@ kotlin {
             val nativeTest by getting*/
     }
 }
+tasks.dokkaHtml{
+    outputDirectory.set(buildDir.resolve("dokkaHtml"))
+}
+val dokkaHtmlJar by tasks.registering(Jar::class) {
+    dependsOn(tasks.dokkaHtml)
+    from(tasks.dokkaHtml.flatMap { it.outputDirectory })
+    archiveClassifier.set("javadoc")
+}
 
+val sonatypeUsername: String? by project
+val sonatypePassword: String? by project
 publishing {
-    this.repositories {
+    repositories {
         maven {
-            name = "localPluginRepository"
-            url = uri("../local-plugin-repository")
+            name = "sonatype"
+            setUrl("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+            credentials {
+                username = sonatypeUsername
+                password = sonatypePassword
+            }
         }
     }
     publications {
-        create<MavenPublication>("maven") {
-            groupId = "me.naotiki.ese"
-            from(components["kotlin"])
-            artifactId="core"
+        withType<MavenPublication>() {
+            artifact(dokkaHtmlJar.get())
+            pom {
+                name.set("Ese Core library")
+                description.set("Ese Core Multiplatform library")
+                url.set("https://github.com/naotiki/Ese")
+                licenses {
+                    license {
+                        name.set("MIT")
+                        url.set("https://opensource.org/licenses/MIT")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("naotiki")
+                        name.set("Naotiki")
+                        email.set("contact@naotiki.me")
+                    }
+                }
+                scm {
+                    url.set("https://github.com/naotiki/Ese")
+                }
+            }
+
         }
+        /*create<MavenPublication>("maven") {
+            groupId = "me.naotiki.ese"
+            from(components["java"])
+            artifactId="core"
+
+        }*/
     }
+}
+signing {
+    sign(publishing.publications)
 }

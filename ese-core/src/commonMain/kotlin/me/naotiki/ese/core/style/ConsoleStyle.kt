@@ -1,4 +1,4 @@
-package me.naotiki.ese.core
+package me.naotiki.ese.core.style
 
 import kotlin.jvm.JvmInline
 
@@ -9,9 +9,6 @@ interface ANSI<T : ANSIString> {
     val value: String
     fun ANSIBuilder<T>.wrap(): T
     fun wrap(): T
-}
-
-fun a() {
 }
 
 interface ANSIString {
@@ -38,9 +35,6 @@ value class Style(override val string: String) : ANSIString {
     }
 }
 
-/*operator fun core.ANSI<core.Style>.plus(b: core.ANSI<core.Style>): core.Style {
-    return core.Style("")
-}*/
 abstract class ANSIStyle : ANSI<Style> {
     override val postfix: String = "m"
 }
@@ -97,7 +91,6 @@ sealed class CharType(override val value: String) : ANSIStyle() {
      * What's this???
      */
     object Cancel : CharType("9")
-
 
 }
 

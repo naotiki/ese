@@ -4,32 +4,10 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
-        <option name="externalProjectPath" value="$PROJECT_DIR$/clients" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/ese-core" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$/clients" />
-            <option value="$PROJECT_DIR$/clients/androidApp" />
-            <option value="$PROJECT_DIR$/clients/composeShared" />
-            <option value="$PROJECT_DIR$/clients/cuiApp" />
-            <option value="$PROJECT_DIR$/clients/desktopApp" />
-            <option value="$PROJECT_DIR$/clients/webApp" />
             <option value="$PROJECT_DIR$/ese-core" />
-          </set>
-        </option>
-      </GradleProjectSettings>
-      <GradleProjectSettings>
-        <option name="externalProjectPath" value="$PROJECT_DIR$/ese-gradle-plugin" />
-        <option name="modules">
-          <set>
-            <option value="$PROJECT_DIR$/ese-gradle-plugin" />
-          </set>
-        </option>
-      </GradleProjectSettings>
-      <GradleProjectSettings>
-        <option name="externalProjectPath" value="$PROJECT_DIR$/ese-lib" />
-        <option name="modules">
-          <set>
-            <option value="$PROJECT_DIR$/ese-lib" />
           </set>
         </option>
       </GradleProjectSettings>

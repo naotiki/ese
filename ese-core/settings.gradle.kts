@@ -13,4 +13,3 @@ pluginManagement {
 }
 rootProject.name = "ese-core"
 
-include(":ese")

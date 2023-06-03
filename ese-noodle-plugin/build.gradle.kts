@@ -1,5 +1,5 @@
 
-group="me.naotiki.ese.dev"
+group="me.naotiki.ese"
 version = "0.0.1-dev2"
 
 plugins {
@@ -19,10 +19,10 @@ gradlePlugin{
     vcsUrl.set("https://github.com/naotiki/Ese.git")
     plugins {
         create("esePlugin"){
-            id="me.naotiki.ese.gradle-plugin"
+            id="me.naotiki.ese.noodle-plugin"
             displayName = "Gradle Plugin for Ese Plugin Development"
             description = "A Gradle Plugin for Ese Plugin Development"
-            implementationClass = "me.naotiki.ese.dev.plugin.EseGradlePlugin"
+            implementationClass = "me.naotiki.ese.plugin.EseGradlePlugin"
             tags.set(listOf("ese"))
         }
     }

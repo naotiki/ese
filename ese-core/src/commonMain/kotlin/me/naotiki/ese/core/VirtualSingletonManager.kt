@@ -2,7 +2,7 @@ package me.naotiki.ese.core
 
 import kotlinx.coroutines.sync.Mutex
 import me.naotiki.ese.core.EseSystem.UserManager
-import me.naotiki.ese.core.VirtualSingletonKey.Companion.virtualSingletonKey
+import me.naotiki.ese.core.VirtualSingletonKey.Companion.vsk
 import me.naotiki.ese.core.user.Group
 import me.naotiki.ese.core.user.User
 import kotlin.jvm.JvmInline
@@ -11,16 +11,22 @@ import kotlin.reflect.KProperty
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
+/**
+ * It's used for switching [VirtualSingletonManager] context.
+ * @sample [VirtualSingletonManager.DefaultKey]
+ */
 @JvmInline
 value class VirtualSingletonKey(val key: Any) {
 
     companion object {
-        internal val Any.virtualSingletonKey get() = VirtualSingletonKey(this)
+        internal val Any.vsk get() = VirtualSingletonKey(this)
     }
 }
 
 
-
+/**
+ * The VSM make singleton able to switch.
+ * */
 abstract class VirtualSingletonManager {
     private var currentKey: VirtualSingletonKey = DefaultKey
     private val keys = mutableSetOf(DefaultKey)
@@ -58,7 +64,7 @@ abstract class VirtualSingletonManager {
     inner class LazyVirtualSingleton<T> {
         private val instanceMap = mutableMapOf<VirtualSingletonKey, T>()
         operator fun setValue(vst: VirtualSingletonManager, property: KProperty<*>, value: T) {
-            instanceMap[vst.virtualSingletonKey] = value
+            instanceMap[vst.vsk] = value
         }
 
         private fun getInstance(vst: VirtualSingletonManager): T {
@@ -79,7 +85,10 @@ abstract class VirtualSingletonManager {
             virtualSingletonsMap[typeOf<T>()] = it
         }
     }
-
+    /**
+     * Switch to the existing context.
+     * @param key Existing key
+     */
     fun switch(key: VirtualSingletonKey) {
         val existsKey = keys.find { it == key }
         if (existsKey != null) {
@@ -87,6 +96,11 @@ abstract class VirtualSingletonManager {
         } else TODO("IllegalState")
     }
 
+    /**
+     * Create new context.
+     * @param key new context
+     * @param switch Switch context after creating. Default value is true.
+     */
     fun create(key: VirtualSingletonKey, switch: Boolean = true) {
         val isCreated = keys.add(key)
         check(isCreated)
@@ -97,18 +111,10 @@ abstract class VirtualSingletonManager {
 
     companion object {
         @JvmStatic
-        val DefaultKey = Unit.virtualSingletonKey
+        val DefaultKey = Unit.vsk
     }
 }
 
-
-private fun main(args: Array<out String>) {
-    println(UserManager.userList.map { it.name })
-    UserManager.addUser(User(UserManager, "a", Group(UserManager, "fyguyh")))
-    println(UserManager.userList.map { it.name })
-    EseSystem.create(1.virtualSingletonKey)
-    println(UserManager.userList.map { it.name })
-}
 
 
 
