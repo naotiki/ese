@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="ese-core-jvm-0.0.1-dev2">
+    <output-path>$PROJECT_DIR$/build/libs</output-path>
+    <root id="archive" name="ese-core-jvm-0.0.1-dev2.jar">
+      <element id="module-output" name="ese-core.jvmMain" />
+    </root>
+  </artifact>
+</component>
