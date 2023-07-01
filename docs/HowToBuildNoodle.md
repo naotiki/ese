@@ -1,5 +1,5 @@
 # How to build an Ese Plugins
-(There is an example project in [ese-lib](/ese-lib))
+(There is an template project in [naotiki/ese-noodle-template](https://github.com/naotiki/ese-noodle-template))
 
 ## Configure Ese Gradle Plugin
 Add this code to `plugins` block in `build.gradle.kts`.
@@ -16,26 +16,27 @@ esePlugin {
 }
 ```
 
-`pluginClass` is FQDN name of ese plugin class. (Required)
+`pluginClass` is FQDN of ese plugin class. (Required)
 
-`pluginName` is name of ese plugin. (Required)
+`pluginName` is display name of ese plugin. (Required)
 
 ## Implement Ese Plugin
 Create a class named same name of `pluginClass` configured by build.gradle.kts `esePlugin` block.
 It should be implementing `EsePlugin` interface.
 ```kotlin
 import me.naotiki.ese.core.api.EsePlugin
+
 class Main : EsePlugin {
     override suspend fun init(user: User) {
         //...
     }
 }
 ```
-You can do install processes in `init` function
+You can do install processes in `init` function.
 
 ## Build Ese Plugin
 Run `createEsePlugin`
 ```shell
 ./gradlew createEsePlugin
 ```
-On Success, `<pluginName>.ndl` file is Generated  into `build/ese/` directory.
+On Success, `<pluginName>.ndl` file is generated  into `build/ese/` directory.

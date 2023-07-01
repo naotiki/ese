@@ -5,67 +5,78 @@
 <div align="center">
 
 # Ese - Easy Shell Environment
-English / [日本語](README-JA.md)
+日本語 / [English](README-EN.md)
 
-Like Unix shell 
-
+Unixシェルを模した動作をするアプリ
 </div>
 
+## 概要
+「Easy Shell Environment (Ese)」は簡単で手軽に試せるシェルアプリです。
+仮想のファイル操作などができ、権限の設定もできます。
+現在、拡張機能開発用SDKを公開しており、今後はSDKで開発された拡張機能を簡単にダウンロードできる機能を実装予定です。
+Compose Multiplatformを採用し、幅広いプラットフォームに対応しています。
 
-# Install
-You can install the latest version in [Release](https://github.com/naotiki/Ese/releases/latest)
-# Web version
+# インストール
+[Release](https://github.com/naotiki/Ese/releases/latest)からインストーラーをダウンロードできます。
+# Web版
 [https://ese.naotiki.me](https://ese.naotiki.me)
-## Modules
-### `clients`
-The Client Apps for Ese
+
+## モジュール
+
+### `clients` Eseのクライアントアプリ
 #### `desktopApp` (JVM)
 #### `cuiApp` (JVM)
 #### `androidApp` (JVM)
 #### `webApp` (JS)
-(We're planning WASM support)
+(WASM対応予定)
 
 ---
-### `ese-core` (JVM / JS)
-Ese Core libraries
+### `ese-core` (JVM/JS)
+Eseのコアライブラリ
 
 ---
 
 ### Ese Plugin
 #### `ese-gradle-plugin`
-Gradle Plugin for creating Ese plugins (Noodle)
-#### `ese-lib`
-Example implementing Ese plugins (we plan to separate them to another repository)
+Eseプラグイン (Noodle)を作成するためのGradle Plugin
+#### ~~`ese-lib`~~
+~~Eseプラグインの実装例 (別リポジトリに分離予定)~~
 
-Detail of Ese Plugin is in [HowToBuildNoodle.md](docs/HowToBuildNoodle.md)
+[naotiki/ese-noodle-template](https://github.com/naotiki/ese-noodle-template)
+に移行
 
-# How to build
-First, Change current directory to `clients`
+
+Eseプラグインの詳細は[HowToBuildNoodle.md](docs/HowToBuildNoodle.md)
+
+# ビルド方法
+## 共通
+まず、`clients`フォルダに移動
 ```shell
 cd clients
 ```
 ---
-## Run Desktop Client
-Run `run`
+## デスクトップクライアントを実行
+`desktopApp`のタスク`run`を実行
 ```shell
 ./gradlew :desktopApp:run
 ```
-## Install Android Client
-Run `installDebug`
+## Androidクライアントを端末にインストール
+`androidApp`のタスク`installDebug`を実行
 ```shell
 ./gradlew :androidApp:installDebug
 ```
-## Run Web Client (Experimental)
-Run `jsBrowserDevelopmentRun`
+## Webクライアントを実行 (Experimental)
+`webApp`のタスク`jsBrowserDevelopmentRun`を実行
 ```shell
 ./gradlew :webApp:jsBrowserDevelopmentRun
 ```
-## Desktop Packaging
-Run `superReleaseBuild`
-Format of `<APP_VERSION>` is `vX.Y.Z-TEXT`
-For example, `-PappVersion=v0.9.0-beta`
+## デスクトップのパッケージング
+`desktopApp`のタスク`superReleaseBuild`を実行
+`vX.Y.Z(-TEXT)`の形式で`<APP_VERSION>`を指定できます。
 
-Default value of `<APP_VERSION>` is `0.0.1-dev`
+例:`-PappVersion=v0.9.0-beta`
+
+指定されなければ`v0.0.0-dev`で実行されます。
 ```shell
 ./gradlew :desktopApp:superReleaseBuild -PappVersion=<APP_VERSION>
 ```
