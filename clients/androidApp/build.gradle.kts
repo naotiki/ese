@@ -5,7 +5,7 @@ plugins {
 }
 
 kotlin {
-    android() {
+    androidTarget() {
         jvmToolchain(11)
     }
     sourceSets {

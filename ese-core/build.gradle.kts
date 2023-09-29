@@ -1,6 +1,6 @@
 plugins {
     kotlin("multiplatform") //version "1.8.10"
-    kotlin("plugin.serialization") version "1.8.10"
+    kotlin("plugin.serialization") version "1.9.0"
     id("org.jetbrains.dokka") version "1.8.10"
     `maven-publish`
     signing
@@ -78,11 +78,11 @@ kotlin {
                 srcDir(buildDir.resolve("generated"))
             }
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.4.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
-                implementation("org.jetbrains.kotlinx:atomicfu:0.20.1")
+                implementation("org.jetbrains.kotlinx:atomicfu:0.20.2")
                 implementation(kotlin("reflect"))
             }
         }

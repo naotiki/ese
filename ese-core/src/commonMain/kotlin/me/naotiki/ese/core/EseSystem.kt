@@ -13,7 +13,6 @@ object EseSystem : VirtualSingletonManager() {
     val IO by virtualSingle { IO() }
     val FileTree by virtualSingle { FileTree() }
     lateinit var ClientImpl:ClientImpl
-        internal set
 }
 
 object Shell : VirtualSingletonManager() {

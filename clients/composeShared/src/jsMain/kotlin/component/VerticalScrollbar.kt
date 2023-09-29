@@ -1,6 +1,7 @@
 package component
 
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
@@ -10,7 +11,14 @@ actual fun VerticalScrollbar(
     adapter: LazyListState,
     reverseLayout: Boolean
 ) {
-    Unit
+    androidx.compose.foundation.VerticalScrollbar(
+        modifier = modifier,
+        adapter = rememberScrollbarAdapter(
+            scrollState = adapter
+        ),
+        reverseLayout = reverseLayout
+
+    )
 }
 
 @Composable
